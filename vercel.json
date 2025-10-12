@@ -4,6 +4,14 @@
     {
       "src": "api/bot.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/tasks.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "pages/dashboard.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -12,8 +20,20 @@
       "dest": "/api/bot.js"
     },
     {
+      "src": "/api/tasks",
+      "dest": "/api/tasks.js"
+    },
+    {
       "src": "/webhook",
       "dest": "/api/bot.js"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/pages/dashboard.html"
+    },
+    {
+      "src": "/",
+      "dest": "/pages/dashboard.html"
     }
   ],
   "env": {
