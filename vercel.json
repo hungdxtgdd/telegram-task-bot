@@ -10,7 +10,23 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/users.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/auth-endpoint.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "pages/dashboard.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/login.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/users.html",
       "use": "@vercel/static"
     }
   ],
@@ -24,8 +40,24 @@
       "dest": "/api/tasks.js"
     },
     {
+      "src": "/api/users/(.*)",
+      "dest": "/api/users.js"
+    },
+    {
+      "src": "/api/auth/(.*)",
+      "dest": "/api/auth-endpoint.js"
+    },
+    {
       "src": "/webhook",
       "dest": "/api/bot.js"
+    },
+    {
+      "src": "/login",
+      "dest": "/pages/login.html"
+    },
+    {
+      "src": "/users",
+      "dest": "/pages/users.html"
     },
     {
       "src": "/dashboard",
@@ -33,7 +65,7 @@
     },
     {
       "src": "/",
-      "dest": "/pages/dashboard.html"
+      "dest": "/pages/login.html"
     }
   ],
   "env": {

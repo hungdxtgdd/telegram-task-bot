@@ -12,14 +12,18 @@
     "test-bot": "node scripts/test-bot.js",
     "bot-info": "node scripts/test-bot.js info",
     "setup-database": "node scripts/setup-database.js",
+    "setup-users": "node scripts/setup-users-table.js",
     "import-data": "node scripts/import-from-sheets.js",
-    "import-full": "node scripts/import-full-sheets.js"
+    "import-full": "node scripts/import-full-sheets.js",
+    "generate-password": "node scripts/generate-password.js"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.64.0",
     "pg": "^8.11.3",
     "dotenv": "^16.3.1",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3"
   },
   "engines": {
     "node": ">=18.0.0"

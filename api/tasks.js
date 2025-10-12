@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const { verifyToken } = require('./auth');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -25,6 +26,14 @@ module.exports = async (req, res) => {
     res.status(200).end();
     return;
   }
+
+  // Verify authentication for all task operations
+  verifyToken(req, res, async () => {
+    await handleTaskRequest(req, res);
+  });
+};
+
+async function handleTaskRequest(req, res) {
 
   if (req.method === 'GET') {
     try {
@@ -181,4 +190,4 @@ module.exports = async (req, res) => {
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
-};
+}
