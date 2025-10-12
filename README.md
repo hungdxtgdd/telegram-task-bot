@@ -171,3 +171,4 @@ Jack Ng - Creatorui.com
 
 For support, please open an issue or contact [@avakidsbot](https://t.me/avakidsbot) on Telegram.
 # Force redeploy
+# Environment variables added
