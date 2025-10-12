@@ -150,6 +150,7 @@
     <script>
         let tasks = [];
         let priorityChart, statusChart;
+        let isLoading = false;
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -158,6 +159,9 @@
         });
 
         async function loadTasks() {
+            if (isLoading) return;
+            
+            isLoading = true;
             try {
                 const response = await fetch('/api/tasks');
                 tasks = await response.json();
@@ -166,6 +170,8 @@
                 updateTable();
             } catch (error) {
                 console.error('Error loading tasks:', error);
+            } finally {
+                isLoading = false;
             }
         }
 
@@ -184,7 +190,10 @@
         function updateCharts() {
             // Priority Chart
             const priorityCtx = document.getElementById('priorityChart').getContext('2d');
-            if (priorityChart) priorityChart.destroy();
+            if (priorityChart) {
+                priorityChart.destroy();
+                priorityChart = null;
+            }
             
             const priorityData = {
                 Emergency: tasks.filter(t => t.priority === 'Emergency').length,
@@ -207,6 +216,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 0
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom'
@@ -217,7 +229,10 @@
 
             // Status Chart
             const statusCtx = document.getElementById('statusChart').getContext('2d');
-            if (statusChart) statusChart.destroy();
+            if (statusChart) {
+                statusChart.destroy();
+                statusChart = null;
+            }
             
             const statusData = {
                 Done: tasks.filter(t => t.status === 'Done').length,
@@ -239,6 +254,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 0
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -316,6 +334,7 @@
         }
 
         function refreshData() {
+            if (isLoading) return;
             loadTasks();
         }
 
