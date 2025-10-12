@@ -10,7 +10,9 @@
     "setup-webhook": "node scripts/setup-webhook.js",
     "check-webhook": "node scripts/setup-webhook.js check",
     "test-bot": "node scripts/test-bot.js",
-    "bot-info": "node scripts/test-bot.js info"
+    "bot-info": "node scripts/test-bot.js info",
+    "setup-database": "node scripts/setup-database.js",
+    "import-data": "node scripts/import-from-sheets.js"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.64.0",
