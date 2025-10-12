@@ -1,0 +1,33 @@
+{
+  "name": "telegram-task-bot",
+  "version": "1.0.0",
+  "description": "Telegram Task Manager Bot - Fast & Reliable",
+  "main": "api/bot.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "node api/bot.js",
+    "setup-webhook": "node scripts/setup-webhook.js",
+    "check-webhook": "node scripts/setup-webhook.js check",
+    "test-bot": "node scripts/test-bot.js",
+    "bot-info": "node scripts/test-bot.js info"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "task-manager",
+    "vercel",
+    "nodejs"
+  ],
+  "author": "Jack Ng - Creatorui.com",
+  "license": "MIT"
+}
