@@ -170,3 +170,4 @@ Jack Ng - Creatorui.com
 ## 📞 Support
 
 For support, please open an issue or contact [@avakidsbot](https://t.me/avakidsbot) on Telegram.
+# Force redeploy
