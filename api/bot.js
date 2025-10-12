@@ -713,7 +713,7 @@ async function setupWebhook() {
 module.exports = async (req, res) => {
   try {
     // Handle webhook
-    if (req.method === 'POST' && req.url === '/webhook') {
+    if (req.method === 'POST') {
       const update = req.body;
       
       if (update.message) {
