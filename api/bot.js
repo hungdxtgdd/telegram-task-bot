@@ -17,8 +17,8 @@ require('dotenv').config();
 // ========================================
 
 const config = {
-  botToken: process.env.TELEGRAM_BOT_TOKEN,
-  webhookUrl: process.env.TELEGRAM_WEBHOOK_URL,
+  botToken: process.env.BOT_TOKEN,
+  webhookUrl: process.env.WEBHOOK_URL,
   databaseUrl: process.env.DATABASE_URL,
   botUsername: process.env.BOT_USERNAME || '@avakidsbot',
   botLink: process.env.BOT_LINK || 'https://t.me/avakidsbot',

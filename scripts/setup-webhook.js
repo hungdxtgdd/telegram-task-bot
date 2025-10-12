@@ -5,8 +5,8 @@
 
 const https = require('https');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_BOT_TOKEN';
-const WEBHOOK_URL = process.env.TELEGRAM_WEBHOOK_URL || 'https://your-app.vercel.app/webhook';
+const BOT_TOKEN = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN';
+const WEBHOOK_URL = process.env.WEBHOOK_URL || 'https://your-app.vercel.app/api/bot';
 
 async function setupWebhook() {
   try {
