@@ -195,8 +195,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ hiện tại (%)</label>
-                        <input type="number" id="progressValue" min="0" max="100" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Số thực tế đạt được</label>
+                        <input type="number" id="actualValue" min="0" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nhập số thực tế (ví dụ: 345627)">
+                        <div id="calculatedProgress" class="mt-2 text-sm text-gray-600 hidden">
+                            <span class="font-medium">% hoàn thành: </span><span id="progressPercentage">0%</span>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
@@ -226,6 +229,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
             setupEventListeners();
+            
+            // Add event listeners for progress calculation
+            document.addEventListener('input', function(e) {
+                if (e.target.id === 'actualValue' || e.target.id === 'progressOKR') {
+                    calculateProgress();
+                }
+            });
         });
 
         async function checkAuth() {
@@ -659,7 +669,7 @@
             e.preventDefault();
             
             const okrId = document.getElementById('progressOKR').value;
-            const progressValue = parseFloat(document.getElementById('progressValue').value);
+            const actualValue = parseFloat(document.getElementById('actualValue').value);
             const notes = document.getElementById('progressNotes').value;
 
             try {
@@ -671,7 +681,7 @@
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        progress_percentage: progressValue,
+                        current_value: actualValue,
                         notes: notes
                     })
                 });
@@ -742,8 +752,29 @@
             const okr = okrs.find(o => o.id === okrId);
             if (okr) {
                 document.getElementById('progressOKR').value = okrId;
-                document.getElementById('progressValue').value = okr.current_value || 0;
+                document.getElementById('actualValue').value = okr.current_value || 0;
                 showProgressUpdateModal();
+                
+                // Calculate progress when OKR is selected
+                calculateProgress();
+            }
+        }
+
+        function calculateProgress() {
+            const okrId = document.getElementById('progressOKR').value;
+            const actualValue = parseFloat(document.getElementById('actualValue').value) || 0;
+            
+            if (okrId && actualValue > 0) {
+                const okr = okrs.find(o => o.id == okrId);
+                if (okr) {
+                    const targetValue = parseFloat(okr.target_value) || 1;
+                    const progressPercentage = Math.min((actualValue / targetValue) * 100, 100);
+                    
+                    document.getElementById('progressPercentage').textContent = progressPercentage.toFixed(1) + '%';
+                    document.getElementById('calculatedProgress').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('calculatedProgress').classList.add('hidden');
             }
         }
 
