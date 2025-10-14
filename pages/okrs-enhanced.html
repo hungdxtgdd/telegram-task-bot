@@ -458,15 +458,11 @@
                                 ${keyResults.map((kr, index) => {
                                     const krCurrent = parseFloat(kr.current) || 0;
                                     const krTarget = parseFloat(kr.target) || 1;
-                                    const krProgress = Math.min((krCurrent / krTarget) * 100, 100);
                                     return `
                                     <div class="key-result-item">
                                         <div class="flex justify-between items-start mb-2">
                                             <span class="text-sm font-medium text-gray-700">${kr.description}</span>
                                             <span class="text-sm font-bold text-gray-900">${krCurrent.toLocaleString()}/${krTarget.toLocaleString()} ${kr.unit || ''}</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2">
-                                            <div class="progress-bar h-2 rounded-full" style="width: ${krProgress}%"></div>
                                         </div>
                                     </div>
                                     `;
