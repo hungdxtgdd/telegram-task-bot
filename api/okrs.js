@@ -28,9 +28,8 @@ module.exports = async (req, res) => {
   }
 
   // Temporarily disable authentication for debugging
-  // verifyToken(req, res, async () => {
-    await handleOKRRequest(req, res);
-  // });
+  console.log('OKR API called:', { method: req.method, url: req.url });
+  await handleOKRRequest(req, res);
 };
 
 async function handleOKRRequest(req, res) {
@@ -66,7 +65,15 @@ async function handleOKRRequest(req, res) {
     // Test endpoint - more flexible matching
     if (url.includes('/api/okrs') && method === 'GET' && !okrId) {
       console.log('Test endpoint hit for GET /api/okrs');
-      return res.status(200).json({ message: 'OKR API is working', url, method, urlParts, okrId, endpoint });
+      return res.status(200).json({ 
+        message: 'OKR API is working', 
+        url, 
+        method, 
+        urlParts, 
+        okrId, 
+        endpoint,
+        timestamp: new Date().toISOString()
+      });
     }
     
     switch (method) {
