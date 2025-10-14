@@ -290,7 +290,7 @@
         async function loadOKRs() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/okrs/okrs', {
+                const response = await fetch('/api/okrs', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
