@@ -286,16 +286,48 @@ async function updateOKRProgress(req, res, okrId) {
   try {
     const { current_value } = req.body;
 
+    // First get current OKR to update key_results
+    const getOKRQuery = 'SELECT * FROM okrs WHERE id = $1';
+    const okrResult = await client.query(getOKRQuery, [okrId]);
+    
+    if (okrResult.rows.length === 0) {
+      res.status(404).json({ error: 'OKR not found' });
+      return;
+    }
+    
+    const okr = okrResult.rows[0];
+    let keyResults = [];
+    
+    // Parse and update key_results
+    if (okr.key_results) {
+      try {
+        keyResults = typeof okr.key_results === 'string' ? JSON.parse(okr.key_results) : okr.key_results;
+        
+        // Update the first key result with current_value
+        if (keyResults.length > 0) {
+          keyResults[0].current = current_value;
+        }
+      } catch (e) {
+        console.warn('Error parsing key_results:', e);
+        keyResults = [];
+      }
+    }
+
     const query = `
       UPDATE okrs
       SET
         current_value = $2,
+        key_results = $3,
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `;
 
-    const result = await client.query(query, [okrId, current_value]);
+    const result = await client.query(query, [
+      okrId, 
+      current_value, 
+      JSON.stringify(keyResults)
+    ]);
 
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'OKR not found' });
