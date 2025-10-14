@@ -276,9 +276,9 @@
         async function loadOKRs() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/okrs', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+        const response = await fetch('/api/okrs-enhanced/okrs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
                 
                 if (response.ok) {
                     okrs = await response.json();
@@ -627,8 +627,8 @@
 
             try {
                 const token = localStorage.getItem('authToken');
-                const url = currentOKR ? `/api/okrs/${currentOKR.id}` : '/api/okrs';
-                const method = currentOKR ? 'PUT' : 'POST';
+        const url = currentOKR ? `/api/okrs-enhanced/okrs/${currentOKR.id}` : '/api/okrs-enhanced/okrs';
+        const method = currentOKR ? 'PUT' : 'POST';
                 
                 const response = await fetch(url, {
                     method: method,
@@ -661,7 +661,7 @@
 
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/okrs/${okrId}/update-progress`, {
+                const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}/update-progress`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -691,10 +691,10 @@
 
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/okrs/${okrId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+        const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
                 if (response.ok) {
                     loadOKRs();

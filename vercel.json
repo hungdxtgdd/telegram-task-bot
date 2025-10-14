@@ -30,6 +30,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/okrs-enhanced.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/auth-endpoint.js",
       "use": "@vercel/node"
     },
@@ -106,6 +110,10 @@
     {
       "src": "/api/tasks-enhanced/(.*)",
       "dest": "/api/tasks-enhanced.js"
+    },
+    {
+      "src": "/api/okrs-enhanced/(.*)",
+      "dest": "/api/okrs-enhanced.js"
     },
     {
       "src": "/api/auth/(.*)",
