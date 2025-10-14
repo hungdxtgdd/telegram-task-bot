@@ -76,6 +76,10 @@
       "dest": "/api/test-okrs.js"
     },
     {
+      "src": "/api/okrs-simple",
+      "dest": "/api/okrs-simple.js"
+    },
+    {
       "src": "/api/projects-enhanced/(.*)",
       "dest": "/api/projects-enhanced.js"
     },
