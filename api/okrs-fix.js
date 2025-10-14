@@ -1,5 +1,5 @@
 module.exports = (req, res) => {
-  console.log('OKR API called:', { method: req.method, url: req.url });
+  console.log('OKR Fix API called:', { method: req.method, url: req.url });
   
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,7 +13,7 @@ module.exports = (req, res) => {
 
   // Simple response for any OKR request
   res.status(200).json({ 
-    message: 'OKR API is working!',
+    message: 'OKR Fix API is working!',
     method: req.method,
     url: req.url,
     timestamp: new Date().toISOString(),

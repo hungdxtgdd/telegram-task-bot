@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/okrs-fix.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/okrs/(.*)",
+      "dest": "/api/okrs-fix.js"
+    }
+  ]
+}
