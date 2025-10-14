@@ -91,9 +91,9 @@ async function getAllOKRs(req, res) {
     const query = `
       SELECT 
         o.*,
-        u.username as created_by_username
+        u.username as owner_username
       FROM okrs o
-      LEFT JOIN users u ON o.created_by = u.id
+      LEFT JOIN users u ON o.owner_id = u.id
       ORDER BY o.created_at DESC
     `;
     
@@ -114,9 +114,9 @@ async function getOKRById(req, res, okrId) {
     const query = `
       SELECT 
         o.*,
-        u.username as created_by_username
+        u.username as owner_username
       FROM okrs o
-      LEFT JOIN users u ON o.created_by = u.id
+      LEFT JOIN users u ON o.owner_id = u.id
       WHERE o.id = $1
     `;
     
@@ -141,38 +141,40 @@ async function createOKR(req, res) {
   
   try {
     const {
-      title,
-      description,
       objective,
       key_results,
       target_value,
       unit,
       current_value,
-      deadline,
-      priority,
-      status
+      status,
+      quarter,
+      year,
+      start_date,
+      end_date,
+      progress
     } = req.body;
 
     const query = `
       INSERT INTO okrs (
-        title, description, objective, key_results, target_value, unit,
-        current_value, deadline, priority, status, created_by, created_at, updated_at
+        objective, key_results, target_value, unit, current_value, status,
+        quarter, year, start_date, end_date, progress, owner_id, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
       RETURNING *
     `;
 
     const result = await client.query(query, [
-      title,
-      description,
       objective,
       JSON.stringify(key_results || []),
       target_value || null,
       unit || '%',
       current_value || 0,
-      deadline,
-      priority || 'medium',
       status || 'active',
+      quarter || null,
+      year || new Date().getFullYear(),
+      start_date || null,
+      end_date || null,
+      progress || 0,
       req.user.id
     ]);
 
@@ -190,31 +192,33 @@ async function updateOKR(req, res, okrId) {
   
   try {
     const {
-      title,
-      description,
       objective,
       key_results,
       target_value,
       unit,
       current_value,
-      deadline,
-      priority,
-      status
+      status,
+      quarter,
+      year,
+      start_date,
+      end_date,
+      progress
     } = req.body;
 
     const query = `
       UPDATE okrs
       SET
-        title = COALESCE($2, title),
-        description = COALESCE($3, description),
-        objective = COALESCE($4, objective),
-        key_results = COALESCE($5, key_results),
-        target_value = COALESCE($6, target_value),
-        unit = COALESCE($7, unit),
-        current_value = COALESCE($8, current_value),
-        deadline = COALESCE($9, deadline),
-        priority = COALESCE($10, priority),
-        status = COALESCE($11, status),
+        objective = COALESCE($2, objective),
+        key_results = COALESCE($3, key_results),
+        target_value = COALESCE($4, target_value),
+        unit = COALESCE($5, unit),
+        current_value = COALESCE($6, current_value),
+        status = COALESCE($7, status),
+        quarter = COALESCE($8, quarter),
+        year = COALESCE($9, year),
+        start_date = COALESCE($10, start_date),
+        end_date = COALESCE($11, end_date),
+        progress = COALESCE($12, progress),
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
@@ -222,16 +226,17 @@ async function updateOKR(req, res, okrId) {
 
     const result = await client.query(query, [
       okrId,
-      title,
-      description,
       objective,
       key_results ? JSON.stringify(key_results) : null,
       target_value,
       unit,
       current_value,
-      deadline,
-      priority,
-      status
+      status,
+      quarter,
+      year,
+      start_date,
+      end_date,
+      progress
     ]);
 
     if (result.rows.length === 0) {
