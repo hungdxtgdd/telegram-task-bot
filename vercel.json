@@ -80,6 +80,10 @@
       "dest": "/api/okrs-simple.js"
     },
     {
+      "src": "/api/okrs-fixed",
+      "dest": "/api/okrs-fixed.js"
+    },
+    {
       "src": "/api/projects-enhanced/(.*)",
       "dest": "/api/projects-enhanced.js"
     },
