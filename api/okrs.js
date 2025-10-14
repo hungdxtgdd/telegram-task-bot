@@ -45,17 +45,18 @@ async function handleOKRRequest(req, res) {
     let okrId = null;
     let endpoint = null;
     
-    if (urlParts.length >= 3 && urlParts[0] === 'api' && urlParts[1] === 'okrs') {
-      if (urlParts.length === 3) {
+    // Handle different URL patterns
+    if (urlParts.length >= 2 && urlParts[0] === 'api' && urlParts[1] === 'okrs') {
+      if (urlParts.length === 2) {
+        // /api/okrs
+        endpoint = 'okrs';
+      } else if (urlParts.length === 3) {
         // /api/okrs/123
         okrId = urlParts[2];
       } else if (urlParts.length === 4) {
         // /api/okrs/123/update-progress
         okrId = urlParts[2];
         endpoint = urlParts[3];
-      } else {
-        // /api/okrs
-        endpoint = 'okrs';
       }
     }
 
