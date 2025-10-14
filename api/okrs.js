@@ -63,6 +63,12 @@ async function handleOKRRequest(req, res) {
     // Debug logging
     console.log('OKR API Debug:', { method, url, urlParts, okrId, endpoint });
     
+    // Test endpoint
+    if (url === '/api/okrs' && method === 'GET') {
+      console.log('Test endpoint hit');
+      return res.status(200).json({ message: 'OKR API is working', url, method });
+    }
+    
     switch (method) {
       case 'GET':
         if (endpoint === 'okrs' && !okrId) {
