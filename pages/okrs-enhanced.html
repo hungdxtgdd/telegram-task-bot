@@ -393,10 +393,10 @@
                 const owner = users.find(u => u.id === okr.owner_id);
                 const okrProjects = projects.filter(p => p.okr_id === okr.id);
                 
-                // Calculate progress from projects (max value)
-                const maxProjectProgress = okrProjects.length > 0 ? 
-                    Math.max(...okrProjects.map(p => p.current_value || 0)) : 0;
-                const finalProgress = Math.max(okr.current_value || 0, maxProjectProgress);
+                // Calculate progress percentage
+                const targetValue = parseFloat(okr.target_value) || 1;
+                const currentValue = parseFloat(okr.current_value) || 0;
+                const finalProgress = Math.min((currentValue / targetValue) * 100, 100);
                 
                 return `
                     <div class="bg-white rounded-lg shadow-lg p-6">
@@ -435,7 +435,7 @@
                             </div>
                             <div class="flex justify-between text-xs text-gray-500 mt-1">
                                 <span>Mục tiêu: ${okr.target_value || 0}</span>
-                                <span>Thực tế: ${finalProgress.toFixed(1)}</span>
+                                <span>Thực tế: ${currentValue.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -443,17 +443,22 @@
                         <div class="mb-6">
                             <h4 class="text-lg font-medium text-gray-900 mb-3">Key Results</h4>
                             <div class="space-y-3">
-                                ${keyResults.map((kr, index) => `
+                                ${keyResults.map((kr, index) => {
+                                    const krCurrent = parseFloat(kr.current) || 0;
+                                    const krTarget = parseFloat(kr.target) || 1;
+                                    const krProgress = Math.min((krCurrent / krTarget) * 100, 100);
+                                    return `
                                     <div class="key-result-item">
                                         <div class="flex justify-between items-start mb-2">
                                             <span class="text-sm font-medium text-gray-700">${kr.description}</span>
-                                            <span class="text-sm font-bold text-gray-900">${kr.current || 0}/${kr.target} ${kr.unit || ''}</span>
+                                            <span class="text-sm font-bold text-gray-900">${krCurrent.toLocaleString()}/${krTarget.toLocaleString()} ${kr.unit || ''}</span>
                                         </div>
                                         <div class="w-full bg-gray-200 rounded-full h-2">
-                                            <div class="progress-bar h-2 rounded-full" style="width: ${((kr.current || 0) / kr.target) * 100}%"></div>
+                                            <div class="progress-bar h-2 rounded-full" style="width: ${krProgress}%"></div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
 
