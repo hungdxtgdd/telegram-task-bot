@@ -69,7 +69,7 @@
     },
     {
       "src": "/api/okrs/(.*)",
-      "dest": "/api/okrs-new.js"
+      "dest": "/api/okrs-working.js"
     },
     {
       "src": "/api/okrs-debug",
@@ -94,6 +94,10 @@
     {
       "src": "/api/test-simple",
       "dest": "/api/test-simple.js"
+    },
+    {
+      "src": "/api/working-test",
+      "dest": "/api/working-test.js"
     },
     {
       "src": "/api/projects-enhanced/(.*)",
