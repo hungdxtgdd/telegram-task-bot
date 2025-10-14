@@ -37,10 +37,35 @@ async function handleOKRRequest(req, res) {
   const { method, url } = req;
   
   try {
-    // Parse URL to get endpoint
-    const urlParts = url.split('?')[0].split('/');
-    const endpoint = urlParts[urlParts.length - 1];
-    const okrId = urlParts[urlParts.length - 2];
+    // Parse URL to get endpoint and ID
+    const cleanUrl = url.split('?')[0];
+    const urlParts = cleanUrl.split('/').filter(part => part);
+    
+    let okrId = null;
+    let endpoint = null;
+    
+    // Handle different URL patterns:
+    // /api/okrs-enhanced/okrs -> endpoint = 'okrs'
+    // /api/okrs-enhanced/okrs/123 -> okrId = '123'
+    // /api/okrs-enhanced/okrs/123/update-progress -> okrId = '123', endpoint = 'update-progress'
+    
+    if (urlParts.length >= 3 && urlParts[0] === 'api' && urlParts[1] === 'okrs-enhanced') {
+      if (urlParts[2] === 'okrs') {
+        if (urlParts.length === 3) {
+          // /api/okrs-enhanced/okrs
+          endpoint = 'okrs';
+        } else if (urlParts.length === 4) {
+          // /api/okrs-enhanced/okrs/123
+          okrId = urlParts[3];
+        } else if (urlParts.length === 5) {
+          // /api/okrs-enhanced/okrs/123/update-progress
+          okrId = urlParts[3];
+          endpoint = urlParts[4];
+        }
+      }
+    }
+
+    console.log('URL parsing:', { url: cleanUrl, urlParts, okrId, endpoint, method });
 
     switch (method) {
       case 'GET':
