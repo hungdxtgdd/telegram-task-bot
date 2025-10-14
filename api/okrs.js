@@ -37,14 +37,31 @@ async function handleOKRRequest(req, res) {
   const { method, url } = req;
   
   try {
-    // Parse URL to get endpoint
-    const urlParts = url.split('?')[0].split('/');
-    const endpoint = urlParts[urlParts.length - 1];
-    const okrId = urlParts[urlParts.length - 2];
+    // Parse URL to get endpoint and ID
+    const cleanUrl = url.split('?')[0];
+    const urlParts = cleanUrl.split('/').filter(part => part);
+    
+    // Extract okrId and endpoint
+    let okrId = null;
+    let endpoint = null;
+    
+    if (urlParts.length >= 3 && urlParts[0] === 'api' && urlParts[1] === 'okrs') {
+      if (urlParts.length === 3) {
+        // /api/okrs/123
+        okrId = urlParts[2];
+      } else if (urlParts.length === 4) {
+        // /api/okrs/123/update-progress
+        okrId = urlParts[2];
+        endpoint = urlParts[3];
+      } else {
+        // /api/okrs
+        endpoint = 'okrs';
+      }
+    }
 
     switch (method) {
       case 'GET':
-        if (endpoint === 'okrs') {
+        if (endpoint === 'okrs' && !okrId) {
           await getAllOKRs(req, res);
         } else if (okrId && !isNaN(okrId)) {
           await getOKRById(req, res, okrId);
