@@ -59,13 +59,19 @@ async function handleOKRRequest(req, res) {
       }
     }
 
+    // Debug logging
+    console.log('OKR API Debug:', { method, url, urlParts, okrId, endpoint });
+    
     switch (method) {
       case 'GET':
         if (endpoint === 'okrs' && !okrId) {
+          console.log('Getting all OKRs');
           await getAllOKRs(req, res);
         } else if (okrId && !isNaN(okrId)) {
+          console.log('Getting OKR by ID:', okrId);
           await getOKRById(req, res, okrId);
         } else {
+          console.log('GET endpoint not found:', { endpoint, okrId });
           res.status(404).json({ error: 'Endpoint not found' });
         }
         break;
