@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý OKRs - Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .status-not_started { @apply bg-gray-100 text-gray-800; }
+        .status-in_progress { @apply bg-blue-100 text-blue-800; }
+        .status-achieved { @apply bg-green-100 text-green-800; }
+        .status-at_risk { @apply bg-yellow-100 text-yellow-800; }
+        .status-dropped { @apply bg-red-100 text-red-800; }
+        .progress-bar { @apply bg-gradient-to-r from-blue-500 to-green-500; }
+        .key-result-item { @apply border border-gray-200 rounded-lg p-4 mb-3; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-bullseye mr-2 text-orange-600"></i>
+                        Quản lý OKRs
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm text-gray-700"></span>
+                    <a href="/projects" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        <i class="fas fa-project-diagram mr-2"></i>Quản lý Dự án
+                    </a>
+                    <a href="/tasks" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
+                        <i class="fas fa-tasks mr-2"></i>Quản lý Tasks
+                    </a>
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button onclick="showAddOKRModal()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>Thêm OKR
+                </button>
+                <button onclick="refreshData()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center justify-center">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+                <button onclick="exportOKRs()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+                <button onclick="showProgressUpdateModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
+                    <i class="fas fa-chart-line mr-2"></i>Cập nhật tiến độ
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Bộ lọc</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <select id="quarterFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Quý</option>
+                    <option value="1">Q1</option>
+                    <option value="2">Q2</option>
+                    <option value="3">Q3</option>
+                    <option value="4">Q4</option>
+                </select>
+                <select id="yearFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Năm</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+                <select id="statusFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Trạng thái</option>
+                    <option value="Not Started">Chưa bắt đầu</option>
+                    <option value="In Progress">Đang thực hiện</option>
+                    <option value="Achieved">Đã đạt được</option>
+                    <option value="At Risk">Có rủi ro</option>
+                    <option value="Dropped">Đã hủy</option>
+                </select>
+                <button onclick="applyFilters()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fas fa-filter mr-2"></i>Áp dụng
+                </button>
+            </div>
+        </div>
+
+        <!-- OKRs List -->
+        <div id="okrsContainer" class="space-y-6">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-4"></i>
+                <p class="text-gray-500">Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit OKR Modal -->
+    <div id="okrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900" id="modalTitle">Thêm OKR Mới</h3>
+                </div>
+                <form id="okrForm" class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu chính *</label>
+                            <textarea id="okrObjective" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nhập mục tiêu chính của OKR..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Chủ sở hữu</label>
+                            <select id="okrOwner" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Chọn chủ sở hữu</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quý</label>
+                            <select id="okrQuarter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="1">Q1</option>
+                                <option value="2">Q2</option>
+                                <option value="3">Q3</option>
+                                <option value="4">Q4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Năm</label>
+                            <input type="number" id="okrYear" min="2020" max="2030" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu tổng thể</label>
+                            <input type="number" id="okrTargetValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="100">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
+                            <input type="date" id="okrStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
+                            <input type="date" id="okrEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+
+                    <!-- Key Results Section -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Key Results *</label>
+                            <button type="button" onclick="addKeyResult()" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                <i class="fas fa-plus mr-1"></i>Thêm Key Result
+                            </button>
+                        </div>
+                        <div id="keyResultsContainer" class="space-y-3">
+                            <!-- Key Results will be added here dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeOKRModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                            Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Update Modal -->
+    <div id="progressModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Cập nhật tiến độ OKR</h3>
+                </div>
+                <form id="progressForm" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Chọn OKR</label>
+                        <select id="progressOKR" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            <option value="">Chọn OKR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ hiện tại (%)</label>
+                        <input type="number" id="progressValue" min="0" max="100" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
+                        <textarea id="progressNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Mô tả tiến độ hiện tại..."></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeProgressModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                            Cập nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let okrs = [];
+        let users = [];
+        let projects = [];
+        let currentOKR = null;
+        let keyResultCount = 0;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+        });
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch('/api/auth/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
+                    loadData();
+                } else {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userInfo');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('okrForm').addEventListener('submit', handleOKRSubmit);
+            document.getElementById('progressForm').addEventListener('submit', handleProgressSubmit);
+            document.getElementById('quarterFilter').addEventListener('change', applyFilters);
+            document.getElementById('yearFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        }
+
+        async function loadData() {
+            await Promise.all([
+                loadOKRs(),
+                loadUsers(),
+                loadProjects()
+            ]);
+        }
+
+        async function loadOKRs() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/okrs/okrs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    okrs = await response.json();
+                    renderOKRs();
+                } else {
+                    console.error('Error loading OKRs:', await response.text());
+                    // Show error message to user
+                    document.getElementById('okrsContainer').innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                            <p class="text-red-500 text-lg">Lỗi khi tải dữ liệu OKRs</p>
+                            <button onclick="loadOKRs()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                                <i class="fas fa-retry mr-2"></i>Thử lại
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading OKRs:', error);
+                document.getElementById('okrsContainer').innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                        <p class="text-red-500 text-lg">Lỗi kết nối: ${error.message}</p>
+                        <button onclick="loadOKRs()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                            <i class="fas fa-retry mr-2"></i>Thử lại
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/users/users?simple=true', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    users = await response.json();
+                    updateUserSelects();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    projects = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        function updateUserSelects() {
+            const okrOwner = document.getElementById('okrOwner');
+            if (okrOwner) {
+                okrOwner.innerHTML = '<option value="">Chọn chủ sở hữu</option>';
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.full_name;
+                    okrOwner.appendChild(option);
+                });
+            }
+        }
+
+        function renderOKRs() {
+            const container = document.getElementById('okrsContainer');
+            
+            if (okrs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-bullseye text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Chưa có OKR nào</p>
+                        <button onclick="showAddOKRModal()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                            <i class="fas fa-plus mr-2"></i>Tạo OKR đầu tiên
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = okrs.map(okr => {
+                let keyResults = [];
+                if (okr.key_results) {
+                    try {
+                        keyResults = typeof okr.key_results === 'string' ? JSON.parse(okr.key_results) : okr.key_results;
+                    } catch (e) {
+                        console.warn('Error parsing key_results:', e);
+                        keyResults = [];
+                    }
+                }
+                const owner = users.find(u => u.id === okr.owner_id);
+                const okrProjects = projects.filter(p => p.okr_id === okr.id);
+                
+                // Calculate progress from projects (max value)
+                const maxProjectProgress = okrProjects.length > 0 ? 
+                    Math.max(...okrProjects.map(p => p.current_value || 0)) : 0;
+                const finalProgress = Math.max(okr.current_value || 0, maxProjectProgress);
+                
+                return `
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">${okr.objective}</h3>
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span><i class="fas fa-calendar mr-1"></i>Q${okr.quarter} ${okr.year}</span>
+                                    <span><i class="fas fa-user mr-1"></i>${owner ? owner.full_name : 'Chưa gán'}</span>
+                                    <span><i class="fas fa-project-diagram mr-1"></i>${okrProjects.length} dự án</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-3 py-1 text-sm font-semibold rounded-full status-${okr.status.toLowerCase().replace(' ', '_')}">
+                                    ${getStatusText(okr.status)}
+                                </span>
+                                <div class="flex space-x-1">
+                                    <button onclick="editOKR(${okr.id})" class="text-blue-600 hover:text-blue-800 p-1">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteOKR(${okr.id})" class="text-red-600 hover:text-red-800 p-1">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overall Progress -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Tiến độ tổng thể</span>
+                                <span class="text-sm font-bold text-gray-900">${finalProgress.toFixed(1)}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="progress-bar h-3 rounded-full transition-all duration-300" style="width: ${finalProgress}%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Mục tiêu: ${okr.target_value || 0}</span>
+                                <span>Thực tế: ${finalProgress.toFixed(1)}</span>
+                            </div>
+                        </div>
+
+                        <!-- Key Results -->
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">Key Results</h4>
+                            <div class="space-y-3">
+                                ${keyResults.map((kr, index) => `
+                                    <div class="key-result-item">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="text-sm font-medium text-gray-700">${kr.description}</span>
+                                            <span class="text-sm font-bold text-gray-900">${kr.current || 0}/${kr.target} ${kr.unit || ''}</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="progress-bar h-2 rounded-full" style="width: ${((kr.current || 0) / kr.target) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Projects Summary -->
+                        <div class="mb-4">
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">Dự án liên quan</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                ${okrProjects.map(project => `
+                                    <div class="border border-gray-200 rounded-lg p-3">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-sm font-medium text-gray-900">${project.project_name}</span>
+                                            <span class="text-xs px-2 py-1 rounded-full status-${project.status.toLowerCase().replace(' ', '_')}">
+                                                ${getStatusText(project.status)}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            Mục tiêu: ${project.target_value || 0} | 
+                                            Thực tế: ${project.current_value || 0}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                            <div class="text-sm text-gray-500">
+                                Cập nhật lần cuối: ${new Date(okr.updated_at).toLocaleDateString('vi-VN')}
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="updateOKRProgress(${okr.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                    <i class="fas fa-chart-line mr-1"></i>Cập nhật tiến độ
+                                </button>
+                                <button onclick="viewOKRProjects(${okr.id})" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">
+                                    <i class="fas fa-project-diagram mr-1"></i>Xem dự án
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'Not Started': 'Chưa bắt đầu',
+                'In Progress': 'Đang thực hiện',
+                'Achieved': 'Đã đạt được',
+                'At Risk': 'Có rủi ro',
+                'Dropped': 'Đã hủy'
+            };
+            return statusMap[status] || status;
+        }
+
+        function showAddOKRModal() {
+            currentOKR = null;
+            document.getElementById('modalTitle').textContent = 'Thêm OKR Mới';
+            document.getElementById('okrForm').reset();
+            document.getElementById('keyResultsContainer').innerHTML = '';
+            keyResultCount = 0;
+            addKeyResult(); // Add one default key result
+            document.getElementById('okrModal').classList.remove('hidden');
+        }
+
+        function editOKR(okrId) {
+            currentOKR = okrs.find(o => o.id === okrId);
+            if (!currentOKR) return;
+
+            document.getElementById('modalTitle').textContent = 'Sửa OKR';
+            document.getElementById('okrObjective').value = currentOKR.objective;
+            document.getElementById('okrOwner').value = currentOKR.owner_id || '';
+            document.getElementById('okrQuarter').value = currentOKR.quarter || '';
+            document.getElementById('okrYear').value = currentOKR.year || '';
+            document.getElementById('okrTargetValue').value = currentOKR.target_value || '';
+            document.getElementById('okrStartDate').value = currentOKR.start_date || '';
+            document.getElementById('okrEndDate').value = currentOKR.end_date || '';
+            
+            // Load key results
+            let keyResults = [];
+            if (currentOKR.key_results) {
+                try {
+                    keyResults = typeof currentOKR.key_results === 'string' ? JSON.parse(currentOKR.key_results) : currentOKR.key_results;
+                } catch (e) {
+                    console.warn('Error parsing key_results:', e);
+                    keyResults = [];
+                }
+            }
+            document.getElementById('keyResultsContainer').innerHTML = '';
+            keyResultCount = 0;
+            keyResults.forEach(kr => addKeyResult(kr));
+            
+            document.getElementById('okrModal').classList.remove('hidden');
+        }
+
+        function addKeyResult(keyResult = null) {
+            keyResultCount++;
+            const container = document.getElementById('keyResultsContainer');
+            const keyResultDiv = document.createElement('div');
+            keyResultDiv.className = 'key-result-item';
+            keyResultDiv.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Mô tả</label>
+                        <input type="text" name="kr_description_${keyResultCount}" value="${keyResult ? keyResult.description : ''}" required class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="Mô tả key result...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Mục tiêu</label>
+                        <input type="number" name="kr_target_${keyResultCount}" value="${keyResult ? keyResult.target : ''}" step="0.01" required class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="100">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Đơn vị</label>
+                        <input type="text" name="kr_unit_${keyResultCount}" value="${keyResult ? keyResult.unit : ''}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="%, VND, người...">
+                    </div>
+                </div>
+                <div class="flex justify-end mt-2">
+                    <button type="button" onclick="removeKeyResult(this)" class="text-red-600 hover:text-red-800 text-sm">
+                        <i class="fas fa-trash mr-1"></i>Xóa
+                    </button>
+                </div>
+            `;
+            container.appendChild(keyResultDiv);
+        }
+
+        function removeKeyResult(button) {
+            button.closest('.key-result-item').remove();
+        }
+
+        function closeOKRModal() {
+            document.getElementById('okrModal').classList.add('hidden');
+            currentOKR = null;
+        }
+
+        function showProgressUpdateModal() {
+            const progressOKR = document.getElementById('progressOKR');
+            progressOKR.innerHTML = '<option value="">Chọn OKR</option>';
+            okrs.forEach(okr => {
+                const option = document.createElement('option');
+                option.value = okr.id;
+                option.textContent = okr.objective;
+                progressOKR.appendChild(option);
+            });
+            document.getElementById('progressModal').classList.remove('hidden');
+        }
+
+        function closeProgressModal() {
+            document.getElementById('progressModal').classList.add('hidden');
+        }
+
+        async function handleOKRSubmit(e) {
+            e.preventDefault();
+            
+            // Collect key results
+            const keyResults = [];
+            const keyResultInputs = document.querySelectorAll('[name^="kr_description_"]');
+            keyResultInputs.forEach(input => {
+                const index = input.name.split('_')[2];
+                const description = input.value;
+                const target = document.querySelector(`[name="kr_target_${index}"]`).value;
+                const unit = document.querySelector(`[name="kr_unit_${index}"]`).value;
+                
+                if (description && target) {
+                    keyResults.push({
+                        description,
+                        target: parseFloat(target),
+                        current: 0,
+                        unit: unit || ''
+                    });
+                }
+            });
+
+            const formData = {
+                objective: document.getElementById('okrObjective').value,
+                key_results: keyResults,
+                owner_id: document.getElementById('okrOwner').value || null,
+                quarter: parseInt(document.getElementById('okrQuarter').value),
+                year: parseInt(document.getElementById('okrYear').value),
+                target_value: parseFloat(document.getElementById('okrTargetValue').value) || null,
+                start_date: document.getElementById('okrStartDate').value || null,
+                end_date: document.getElementById('okrEndDate').value || null
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const url = currentOKR ? `/api/okrs/okrs/${currentOKR.id}` : '/api/okrs/okrs';
+                const method = currentOKR ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    closeOKRModal();
+                    loadOKRs();
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error saving OKR:', error);
+                alert('Lỗi khi lưu OKR');
+            }
+        }
+
+        async function handleProgressSubmit(e) {
+            e.preventDefault();
+            
+            const okrId = document.getElementById('progressOKR').value;
+            const progressValue = parseFloat(document.getElementById('progressValue').value);
+            const notes = document.getElementById('progressNotes').value;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/okrs/okrs/${okrId}/update-progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        progress_percentage: progressValue,
+                        notes: notes
+                    })
+                });
+
+                if (response.ok) {
+                    closeProgressModal();
+                    loadOKRs();
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error updating progress:', error);
+                alert('Lỗi khi cập nhật tiến độ');
+            }
+        }
+
+        async function deleteOKR(okrId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa OKR này?')) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/okrs/okrs/${okrId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadOKRs();
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error deleting OKR:', error);
+                alert('Lỗi khi xóa OKR');
+            }
+        }
+
+        function updateOKRProgress(okrId) {
+            const okr = okrs.find(o => o.id === okrId);
+            if (okr) {
+                document.getElementById('progressOKR').value = okrId;
+                document.getElementById('progressValue').value = okr.current_value || 0;
+                showProgressUpdateModal();
+            }
+        }
+
+        function viewOKRProjects(okrId) {
+            window.location.href = `/projects?okr_id=${okrId}`;
+        }
+
+        function applyFilters() {
+            const quarterFilter = document.getElementById('quarterFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filteredOKRs = okrs;
+
+            if (quarterFilter) {
+                filteredOKRs = filteredOKRs.filter(okr => okr.quarter == quarterFilter);
+            }
+            if (yearFilter) {
+                filteredOKRs = filteredOKRs.filter(okr => okr.year == yearFilter);
+            }
+            if (statusFilter) {
+                filteredOKRs = filteredOKRs.filter(okr => okr.status === statusFilter);
+            }
+
+            // Temporarily replace okrs array for rendering
+            const originalOKRs = okrs;
+            okrs = filteredOKRs;
+            renderOKRs();
+            okrs = originalOKRs;
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        function exportOKRs() {
+            // TODO: Implement export functionality
+            alert('Tính năng export sẽ được thêm sau');
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

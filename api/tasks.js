@@ -1,6 +1,5 @@
 require('dotenv').config();
 const { Pool } = require('pg');
-const { verifyToken } = require('./auth');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -27,42 +26,43 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Verify authentication for all task operations
-  verifyToken(req, res, async () => {
-    await handleTaskRequest(req, res);
-  });
-};
-
-async function handleTaskRequest(req, res) {
-
   if (req.method === 'GET') {
     try {
       const client = await pool.connect();
       
       // Get all tasks
-      const query = `
-        SELECT 
-          task_id,
-          task_name,
-          description,
-          assignee,
-          status,
-          priority,
-          deadline,
-          link_description,
-          notes,
-          created_at,
-          updated_at
-        FROM tasks 
-        ORDER BY 
-          CASE priority 
-            WHEN 'Emergency' THEN 1
-            WHEN 'High' THEN 2
-            WHEN 'Medium' THEN 3
-            WHEN 'Low' THEN 4
-          END,
-          deadline ASC
-      `;
+            const query = `
+              SELECT
+                t.task_id,
+                t.task_name,
+                t.description,
+                t.assignee,
+                t.status,
+                t.priority,
+                t.deadline,
+                t.link_description,
+                t.notes,
+                t.created_at,
+                t.updated_at,
+                p.project_name,
+                p.project_code,
+                o.objective as okr_objective,
+                u.full_name as assignee_name,
+                u.username as assignee_username,
+                u.email as assignee_email
+              FROM tasks t
+              LEFT JOIN projects p ON t.project_id = p.id
+              LEFT JOIN okrs o ON t.okr_id = o.id
+              LEFT JOIN users u ON t.assignee_id = u.id
+              ORDER BY
+                CASE t.priority
+                  WHEN 'Emergency' THEN 1
+                  WHEN 'High' THEN 2
+                  WHEN 'Medium' THEN 3
+                  WHEN 'Low' THEN 4
+                END,
+                t.deadline ASC
+            `;
       
       const result = await client.query(query);
       client.release();
@@ -76,7 +76,7 @@ async function handleTaskRequest(req, res) {
   } else if (req.method === 'POST') {
     // Create new task
     try {
-      const { task_name, description, assignee, priority, deadline, notes } = req.body;
+      const { task_name, description, assignee, priority, deadline, notes, assignee_id } = req.body;
       
       if (!task_name || !assignee || !priority) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -88,8 +88,8 @@ async function handleTaskRequest(req, res) {
       const taskId = `TASK-${Date.now().toString().slice(-4)}`;
       
       const query = `
-        INSERT INTO tasks (task_id, task_name, description, assignee, priority, deadline, notes, status, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+        INSERT INTO tasks (task_id, task_name, description, assignee, priority, deadline, notes, status, assignee_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
         RETURNING *
       `;
       
@@ -101,7 +101,8 @@ async function handleTaskRequest(req, res) {
         priority,
         deadline || null,
         notes || null,
-        'Pending'
+        'Pending',
+        assignee_id || null
       ]);
       
       client.release();
@@ -115,7 +116,7 @@ async function handleTaskRequest(req, res) {
   } else if (req.method === 'PUT') {
     // Update task
     try {
-      const { task_id, task_name, description, assignee, priority, deadline, notes, status } = req.body;
+      const { task_id, task_name, description, assignee, priority, deadline, notes, status, assignee_id } = req.body;
       
       if (!task_id) {
         return res.status(400).json({ error: 'Task ID is required' });
@@ -133,6 +134,7 @@ async function handleTaskRequest(req, res) {
           deadline = COALESCE($6, deadline),
           notes = COALESCE($7, notes),
           status = COALESCE($8, status),
+          assignee_id = COALESCE($9, assignee_id),
           updated_at = NOW()
         WHERE task_id = $1
         RETURNING *
@@ -146,7 +148,8 @@ async function handleTaskRequest(req, res) {
         priority,
         deadline,
         notes,
-        status
+        status,
+        assignee_id
       ]);
       
       client.release();
@@ -190,4 +193,4 @@ async function handleTaskRequest(req, res) {
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
-}
+};

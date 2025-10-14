@@ -131,3 +131,4 @@ setupUsersTable()
     console.error('\n❌ Setup failed:', error);
     process.exit(1);
   });
+

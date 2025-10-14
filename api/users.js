@@ -101,22 +101,41 @@ async function getAllUsers(req, res) {
   try {
     const client = await pool.connect();
     
-    const query = `
-      SELECT 
-        id,
-        username,
-        email,
-        full_name,
-        role,
-        is_active,
-        last_login,
-        created_at,
-        updated_at
-      FROM users 
-      ORDER BY created_at DESC
-    `;
+    // Check if requesting simple list for dropdowns
+    const simple = req.query.simple === 'true';
     
-    const result = await client.query(query);
+    let query, result;
+    
+    if (simple) {
+      query = `
+        SELECT 
+          id,
+          username,
+          full_name,
+          email
+        FROM users 
+        WHERE is_active = true
+        ORDER BY full_name ASC
+      `;
+      result = await client.query(query);
+    } else {
+      query = `
+        SELECT 
+          id,
+          username,
+          email,
+          full_name,
+          role,
+          is_active,
+          last_login,
+          created_at,
+          updated_at
+        FROM users 
+        ORDER BY created_at DESC
+      `;
+      result = await client.query(query);
+    }
+    
     client.release();
     
     res.status(200).json(result.rows);

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tasks - Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .priority-high { @apply bg-red-100 text-red-800; }
+        .priority-medium { @apply bg-yellow-100 text-yellow-800; }
+        .priority-low { @apply bg-green-100 text-green-800; }
+        .status-pending { @apply bg-gray-100 text-gray-800; }
+        .status-in_progress { @apply bg-blue-100 text-blue-800; }
+        .status-done { @apply bg-green-100 text-green-800; }
+        .status-cancelled { @apply bg-red-100 text-red-800; }
+        .status-blocked { @apply bg-yellow-100 text-yellow-800; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-tasks mr-2 text-orange-600"></i>
+                        Quản lý Tasks
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm text-gray-700"></span>
+                    <a href="/okrs" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
+                        <i class="fas fa-bullseye mr-2"></i>Quản lý OKRs
+                    </a>
+                    <a href="/projects" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        <i class="fas fa-project-diagram mr-2"></i>Quản lý Dự án
+                    </a>
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button onclick="showAddTaskModal()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>Thêm Task
+                </button>
+                <button onclick="refreshData()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center justify-center">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+                <button onclick="exportTasks()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+                <button onclick="bulkAssign()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
+                    <i class="fas fa-users mr-2"></i>Giao hàng loạt
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Bộ lọc</h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <select id="projectFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Dự án</option>
+                </select>
+                <select id="assigneeFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Người phụ trách</option>
+                </select>
+                <select id="statusFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Trạng thái</option>
+                    <option value="Pending">Chờ xử lý</option>
+                    <option value="In Progress">Đang thực hiện</option>
+                    <option value="Done">Hoàn thành</option>
+                    <option value="Cancelled">Hủy bỏ</option>
+                    <option value="Blocked">Bị chặn</option>
+                </select>
+                <select id="priorityFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Tất cả Ưu tiên</option>
+                    <option value="High">Cao</option>
+                    <option value="Medium">Trung bình</option>
+                    <option value="Low">Thấp</option>
+                </select>
+                <button onclick="applyFilters()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fas fa-filter mr-2"></i>Áp dụng
+                </button>
+            </div>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Danh sách Tasks</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dự án</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">OKR</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người phụ trách</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ưu tiên</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kết quả</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksContainer" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="9" class="px-6 py-12 text-center">
+                                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-500">Đang tải dữ liệu...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900" id="modalTitle">Thêm Task Mới</h3>
+                </div>
+                <form id="taskForm" class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dự án *</label>
+                            <select id="taskProject" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Chọn dự án</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tên task *</label>
+                            <input type="text" id="taskName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <textarea id="taskDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Người phụ trách</label>
+                            <select id="taskAssignee" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Chọn người phụ trách</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                            <select id="taskStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="Pending">Chờ xử lý</option>
+                                <option value="In Progress">Đang thực hiện</option>
+                                <option value="Done">Hoàn thành</option>
+                                <option value="Cancelled">Hủy bỏ</option>
+                                <option value="Blocked">Bị chặn</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ưu tiên</label>
+                            <select id="taskPriority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="High">Cao</option>
+                                <option value="Medium" selected>Trung bình</option>
+                                <option value="Low">Thấp</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
+                            <input type="date" id="taskDeadline" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ ước tính</label>
+                            <input type="number" id="taskEstimatedHours" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kết quả đạt được</label>
+                            <input type="text" id="taskResultDescription" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Giá trị kết quả</label>
+                            <input type="number" id="taskResultValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                            Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let projects = [];
+        let users = [];
+        let currentTask = null;
+        let isLoading = false;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+        });
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch('/api/auth/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
+                    loadData();
+                } else {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userInfo');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+            document.getElementById('projectFilter').addEventListener('change', applyFilters);
+            document.getElementById('assigneeFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+        }
+
+        async function loadData() {
+            await Promise.all([
+                loadTasks(),
+                loadProjects(),
+                loadUsers()
+            ]);
+        }
+
+        async function loadTasks() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            try {
+                const token = localStorage.getItem('authToken');
+                const urlParams = new URLSearchParams(window.location.search);
+                const projectId = urlParams.get('project_id');
+                
+                let url = '/api/tasks-enhanced/tasks';
+                if (projectId) {
+                    url += `?project_id=${projectId}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    tasks = await response.json();
+                    renderTasks();
+                } else {
+                    console.error('Error loading tasks:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    projects = await response.json();
+                    updateProjectFilter();
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/users/users?simple=true', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    users = await response.json();
+                    updateAssigneeFilter();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function updateProjectFilter() {
+            const projectFilter = document.getElementById('projectFilter');
+            const taskProject = document.getElementById('taskProject');
+            
+            [projectFilter, taskProject].forEach(select => {
+                if (select) {
+                    select.innerHTML = '<option value="">Chọn dự án</option>';
+                    projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.project_name;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        function updateAssigneeFilter() {
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            const taskAssignee = document.getElementById('taskAssignee');
+            
+            [assigneeFilter, taskAssignee].forEach(select => {
+                if (select) {
+                    select.innerHTML = '<option value="">Chọn người phụ trách</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.full_name;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center">
+                            <i class="fas fa-tasks text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 text-lg">Chưa có task nào</p>
+                            <button onclick="showAddTaskModal()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                                <i class="fas fa-plus mr-2"></i>Tạo task đầu tiên
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => {
+                const project = projects.find(p => p.id === task.project_id);
+                const assignee = users.find(u => u.id === task.assignee_id);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${task.task_name}</div>
+                            <div class="text-sm text-gray-500">${task.task_id}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${project ? project.project_name : 'N/A'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${task.okr_objective || 'N/A'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${assignee ? assignee.full_name : task.assignee || 'Chưa giao'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full status-${task.status.toLowerCase().replace(' ', '_')}">
+                                ${getStatusText(task.status)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full priority-${task.priority.toLowerCase()}">
+                                ${getPriorityText(task.priority)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${task.deadline ? new Date(task.deadline).toLocaleDateString('vi-VN') : '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${task.result_description || '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="editTask(${task.id})" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteTask(${task.id})" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'High': 'Cao',
+                'Medium': 'Trung bình',
+                'Low': 'Thấp'
+            };
+            return priorityMap[priority] || priority;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'Pending': 'Chờ xử lý',
+                'In Progress': 'Đang thực hiện',
+                'Done': 'Hoàn thành',
+                'Cancelled': 'Hủy bỏ',
+                'Blocked': 'Bị chặn'
+            };
+            return statusMap[status] || status;
+        }
+
+        function showAddTaskModal() {
+            currentTask = null;
+            document.getElementById('modalTitle').textContent = 'Thêm Task Mới';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function editTask(taskId) {
+            currentTask = tasks.find(t => t.id === taskId);
+            if (!currentTask) return;
+
+            document.getElementById('modalTitle').textContent = 'Sửa Task';
+            document.getElementById('taskProject').value = currentTask.project_id || '';
+            document.getElementById('taskName').value = currentTask.task_name;
+            document.getElementById('taskDescription').value = currentTask.description || '';
+            document.getElementById('taskAssignee').value = currentTask.assignee_id || '';
+            document.getElementById('taskStatus').value = currentTask.status;
+            document.getElementById('taskPriority').value = currentTask.priority;
+            document.getElementById('taskDeadline').value = currentTask.deadline || '';
+            document.getElementById('taskEstimatedHours').value = currentTask.estimated_hours || '';
+            document.getElementById('taskResultDescription').value = currentTask.result_description || '';
+            document.getElementById('taskResultValue').value = currentTask.result_value || '';
+            
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+            currentTask = null;
+        }
+
+        async function handleTaskSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                project_id: document.getElementById('taskProject').value,
+                task_name: document.getElementById('taskName').value,
+                description: document.getElementById('taskDescription').value,
+                assignee_id: document.getElementById('taskAssignee').value || null,
+                status: document.getElementById('taskStatus').value,
+                priority: document.getElementById('taskPriority').value,
+                deadline: document.getElementById('taskDeadline').value || null,
+                estimated_hours: document.getElementById('taskEstimatedHours').value || null,
+                result_description: document.getElementById('taskResultDescription').value || null,
+                result_value: document.getElementById('taskResultValue').value || null
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const url = currentTask ? `/api/tasks-enhanced/tasks/${currentTask.id}` : '/api/tasks-enhanced/tasks';
+                const method = currentTask ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    closeTaskModal();
+                    loadTasks();
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error saving task:', error);
+                alert('Lỗi khi lưu task');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa task này?')) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/tasks-enhanced/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadTasks();
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                alert('Lỗi khi xóa task');
+            }
+        }
+
+        function applyFilters() {
+            const projectFilter = document.getElementById('projectFilter').value;
+            const assigneeFilter = document.getElementById('assigneeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            let filteredTasks = tasks;
+
+            if (projectFilter) {
+                filteredTasks = filteredTasks.filter(t => t.project_id == projectFilter);
+            }
+            if (assigneeFilter) {
+                filteredTasks = filteredTasks.filter(t => t.assignee_id == assigneeFilter);
+            }
+            if (statusFilter) {
+                filteredTasks = filteredTasks.filter(t => t.status === statusFilter);
+            }
+            if (priorityFilter) {
+                filteredTasks = filteredTasks.filter(t => t.priority === priorityFilter);
+            }
+
+            // Temporarily replace tasks array for rendering
+            const originalTasks = tasks;
+            tasks = filteredTasks;
+            renderTasks();
+            tasks = originalTasks;
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        function exportTasks() {
+            // TODO: Implement export functionality
+            alert('Tính năng export sẽ được thêm sau');
+        }
+
+        function bulkAssign() {
+            // TODO: Implement bulk assign functionality
+            alert('Tính năng giao hàng loạt sẽ được thêm sau');
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

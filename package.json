@@ -13,9 +13,14 @@
     "bot-info": "node scripts/test-bot.js info",
     "setup-database": "node scripts/setup-database.js",
     "setup-users": "node scripts/setup-users-table.js",
+    "setup-enhanced": "node scripts/setup-enhanced-database.js",
+    "import-csv": "node scripts/import-csv-to-enhanced-db.js",
+    "import-sheets": "node scripts/import-from-google-sheets.js",
+    "create-users": "node scripts/create-users-from-tasks.js",
+    "update-tasks-users": "node scripts/update-tasks-user-relation.js",
+    "setup-okr-focused": "node scripts/setup-okr-focused-database.js",
     "import-data": "node scripts/import-from-sheets.js",
-    "import-full": "node scripts/import-full-sheets.js",
-    "generate-password": "node scripts/generate-password.js"
+    "import-full": "node scripts/import-full-sheets.js"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.64.0",

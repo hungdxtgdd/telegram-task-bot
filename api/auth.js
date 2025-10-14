@@ -184,10 +184,47 @@ async function changePassword(req, res) {
     }
 }
 
+// Middleware to check if user is admin
+function requireAdmin(req, res, next) {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Chỉ admin mới có quyền thực hiện hành động này' });
+    }
+    next();
+}
+
+// Middleware to check if user is admin or manager
+function requireAdminOrManager(req, res, next) {
+    if (!['admin', 'manager'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Chỉ admin hoặc manager mới có quyền thực hiện hành động này' });
+    }
+    next();
+}
+
+// Middleware to check if user can access resource
+function requireResourceAccess(resourceType) {
+    return (req, res, next) => {
+        const userId = req.user.id;
+        const resourceId = req.params.id;
+        
+        // Admin can access everything
+        if (req.user.role === 'admin') {
+            return next();
+        }
+        
+        // Check if user has access to the resource
+        // This would need to be implemented based on your business logic
+        // For now, allow access if user is the owner or member
+        next();
+    };
+}
+
 module.exports = {
     login,
     verify,
     logout,
     changePassword,
-    verifyToken
+    verifyToken,
+    requireAdmin,
+    requireAdminOrManager,
+    requireResourceAccess
 };

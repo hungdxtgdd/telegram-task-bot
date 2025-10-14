@@ -97,8 +97,8 @@
                     localStorage.setItem('authToken', result.token);
                     localStorage.setItem('userInfo', JSON.stringify(result.user));
                     
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard';
+                    // Redirect to Projects management page
+                    window.location.href = '/projects';
                 } else {
                     // Show error message
                     errorText.textContent = result.error || 'Đăng nhập thất bại';

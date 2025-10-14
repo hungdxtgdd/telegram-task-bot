@@ -154,3 +154,4 @@ Thêm 2FA với Google Authenticator hoặc SMS.
 Nếu gặp vấn đề về bảo mật, vui lòng liên hệ:
 - Email: support@avakids.com
 - Telegram: @avakids_support
+
