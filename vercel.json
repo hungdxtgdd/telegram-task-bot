@@ -140,6 +140,10 @@
       "dest": "/pages/okrs-enhanced.html"
     },
     {
+      "src": "/user-management",
+      "dest": "/pages/users-management.html"
+    },
+    {
       "src": "/",
       "dest": "/pages/projects-enhanced.html"
     }

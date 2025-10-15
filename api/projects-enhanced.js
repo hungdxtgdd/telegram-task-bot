@@ -37,14 +37,22 @@ async function handleProjectRequest(req, res) {
   const { method, url } = req;
   
   try {
-    // Parse URL to get endpoint
-    const urlParts = url.split('?')[0].split('/');
-    const endpoint = urlParts[urlParts.length - 1];
-    const projectId = urlParts[urlParts.length - 2];
+    // Parse URL to get endpoint and project ID
+    // Remove leading slash and split
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    const urlParts = cleanUrl.split('?')[0].split('/').filter(part => part !== '');
+    const lastPart = urlParts[urlParts.length - 1];
+    const secondLastPart = urlParts[urlParts.length - 2];
+    
+    // Check if last part is a number (project ID)
+    const projectId = !isNaN(lastPart) ? lastPart : null;
+    const endpoint = projectId ? secondLastPart : lastPart;
+    
+    console.log('URL parsing:', { url, cleanUrl, urlParts, projectId, endpoint });
 
     switch (method) {
       case 'GET':
-        if (endpoint === 'projects') {
+        if (endpoint === 'projects' && !projectId) {
           await getAllProjects(req, res);
         } else if (projectId && !isNaN(projectId)) {
           await getProjectById(req, res, projectId);
@@ -76,13 +84,17 @@ async function handleProjectRequest(req, res) {
         break;
         
       case 'DELETE':
+        console.log('DELETE request:', { projectId, endpoint, isNaN: isNaN(projectId) });
         if (projectId && !isNaN(projectId)) {
           if (endpoint === 'members') {
             requireAdminOrManager(req, res, () => removeProjectMember(req, res, projectId));
           } else {
+            console.log('Calling deleteProject with ID:', projectId);
+            console.log('Checking admin permission for user:', req.user);
             requireAdmin(req, res, () => deleteProject(req, res, projectId));
           }
         } else {
+          console.log('DELETE failed - Project ID required:', { projectId, endpoint });
           res.status(404).json({ error: 'Project ID required' });
         }
         break;
@@ -392,6 +404,8 @@ async function updateProject(req, res, projectId) {
 // Delete Project
 async function deleteProject(req, res, projectId) {
   try {
+    console.log('deleteProject called with:', { projectId, user: req.user });
+    
     const client = await pool.connect();
     
     const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';
@@ -400,9 +414,11 @@ async function deleteProject(req, res, projectId) {
     client.release();
     
     if (result.rows.length === 0) {
+      console.log('Project not found:', projectId);
       return res.status(404).json({ error: 'Dự án không tồn tại' });
     }
     
+    console.log('Project deleted successfully:', result.rows[0]);
     res.status(200).json({
       message: 'Xóa dự án thành công',
       project: result.rows[0]

@@ -37,14 +37,22 @@ async function handleTaskRequest(req, res) {
   const { method, url } = req;
   
   try {
-    // Parse URL to get endpoint
-    const urlParts = url.split('?')[0].split('/');
-    const endpoint = urlParts[urlParts.length - 1];
-    const taskId = urlParts[urlParts.length - 2];
+    // Parse URL to get endpoint and task ID
+    // Remove leading slash and split
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    const urlParts = cleanUrl.split('?')[0].split('/').filter(part => part !== '');
+    const lastPart = urlParts[urlParts.length - 1];
+    const secondLastPart = urlParts[urlParts.length - 2];
+    
+    // Check if last part is a number (task ID)
+    const taskId = !isNaN(lastPart) ? lastPart : null;
+    const endpoint = taskId ? secondLastPart : lastPart;
+    
+    console.log('URL parsing:', { url, cleanUrl, urlParts, taskId, endpoint });
 
     switch (method) {
       case 'GET':
-        if (endpoint === 'tasks') {
+        if (endpoint === 'tasks' && !taskId) {
           await getAllTasks(req, res);
         } else if (taskId && !isNaN(taskId)) {
           await getTaskById(req, res, taskId);
@@ -74,9 +82,12 @@ async function handleTaskRequest(req, res) {
         break;
         
       case 'DELETE':
+        console.log('DELETE request:', { taskId, endpoint, isNaN: isNaN(taskId) });
         if (taskId && !isNaN(taskId)) {
+          console.log('Calling deleteTask with ID:', taskId);
           requireAdminOrManager(req, res, () => deleteTask(req, res, taskId));
         } else {
+          console.log('DELETE failed - Task ID required:', { taskId, endpoint });
           res.status(404).json({ error: 'Task ID required' });
         }
         break;
@@ -396,6 +407,8 @@ async function updateTask(req, res, taskId) {
 // Delete Task
 async function deleteTask(req, res, taskId) {
   try {
+    console.log('deleteTask called with:', { taskId, user: req.user });
+    
     const client = await pool.connect();
     
     const query = 'DELETE FROM tasks WHERE id = $1 RETURNING *';
@@ -404,9 +417,11 @@ async function deleteTask(req, res, taskId) {
     client.release();
     
     if (result.rows.length === 0) {
+      console.log('Task not found:', taskId);
       return res.status(404).json({ error: 'Task không tồn tại' });
     }
     
+    console.log('Task deleted successfully:', result.rows[0]);
     res.status(200).json({
       message: 'Xóa task thành công',
       task: result.rows[0]

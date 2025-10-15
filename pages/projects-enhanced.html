@@ -37,6 +37,9 @@
                     <a href="/tasks" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                         <i class="fas fa-tasks mr-2"></i>Quản lý Tasks
                     </a>
+                    <button id="userManagementBtn" onclick="goToUserManagement()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition hidden">
+                        <i class="fas fa-users mr-2"></i>Quản lý User
+                    </button>
                     <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
                         <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
                     </button>
@@ -49,15 +52,12 @@
         <!-- Quick Actions -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button onclick="showAddProjectModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
                     <i class="fas fa-plus mr-2"></i>Thêm Dự án
                 </button>
                 <button onclick="refreshData()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center justify-center">
                     <i class="fas fa-sync-alt mr-2"></i>Refresh
-                </button>
-                <button onclick="exportProjects()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center">
-                    <i class="fas fa-download mr-2"></i>Export
                 </button>
                 <a href="/tasks" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center justify-center">
                     <i class="fas fa-tasks mr-2"></i>Quản lý Tasks
@@ -236,6 +236,12 @@
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
+                    
+                    // Show user management button for admin
+                    if (data.user.role === 'admin') {
+                        document.getElementById('userManagementBtn').classList.remove('hidden');
+                    }
+                    
                     loadData();
                 } else {
                     localStorage.removeItem('authToken');
@@ -255,6 +261,11 @@
             document.getElementById('okrFilter').addEventListener('change', applyFilters);
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
             document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+        }
+
+        // Go to user management page
+        function goToUserManagement() {
+            window.location.href = '/user-management';
         }
 
         async function loadData() {
@@ -548,10 +559,6 @@
             loadData();
         }
 
-        function exportProjects() {
-            // TODO: Implement export functionality
-            alert('Tính năng export sẽ được thêm sau');
-        }
 
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
