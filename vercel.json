@@ -72,6 +72,10 @@
     {
       "src": "pages/test-dashboard.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "pages/test-simple-dashboard.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -91,10 +95,14 @@
           "src": "/test-auth",
           "dest": "/pages/test-auth.html"
         },
-        {
-          "src": "/test-dashboard",
-          "dest": "/pages/test-dashboard.html"
-        },
+    {
+      "src": "/test-dashboard",
+      "dest": "/pages/test-dashboard.html"
+    },
+    {
+      "src": "/test-simple-dashboard",
+      "dest": "/pages/test-simple-dashboard.html"
+    },
     {
       "src": "/projects",
       "dest": "/pages/projects-enhanced.html"

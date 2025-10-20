@@ -33,6 +33,13 @@ description: Clarify the problem space, gather requirements, and define success 
 - Export/Import dữ liệu từ Google Sheets
 - Báo cáo tiến độ và analytics
 
+### UI/UX Goals (NEW)
+- **Giao diện thông minh**: Dễ sử dụng, dễ hiểu, flow quản lý thông minh
+- **Mobile-first design**: Tối ưu cho mobile, responsive trên mọi thiết bị
+- **Modern UI/UX**: Thiết kế hiện đại theo chuẩn quốc tế (Asana, Trello, Monday.com)
+- **Workflow thông minh**: Drag & drop, real-time updates, smart notifications
+- **Visual hierarchy**: Rõ ràng, trực quan, dễ navigation
+
 ### Non-goals
 - Không phải là CRM system
 - Không tích hợp với các hệ thống bên ngoài khác ngoài Telegram
@@ -52,6 +59,14 @@ description: Clarify the problem space, gather requirements, and define success 
 ### Regular Users
 - As a **User**, I want to **xem projects và OKRs** so that **tôi hiểu mục tiêu của team**
 - As a **User**, I want to **tạo và quản lý tasks của mình** so that **tôi có thể theo dõi công việc cá nhân**
+
+### UI/UX User Stories (NEW)
+- As a **User**, I want to **sử dụng giao diện trực quan** so that **tôi có thể quản lý công việc hiệu quả**
+- As a **User**, I want to **drag & drop tasks** so that **tôi có thể cập nhật trạng thái nhanh chóng**
+- As a **User**, I want to **xem real-time updates** so that **tôi luôn có thông tin mới nhất**
+- As a **User**, I want to **sử dụng mobile dễ dàng** so that **tôi có thể làm việc mọi lúc mọi nơi**
+- As a **Manager**, I want to **xem dashboard tổng quan** so that **tôi có cái nhìn toàn diện về team**
+- As a **Manager**, I want to **nhận thông báo thông minh** so that **tôi không bỏ lỡ thông tin quan trọng**
 
 ### Key Workflows
 1. **Project Creation**: Admin/Manager tạo project → Tự động tạo mã → Assign OKR → Set đơn vị đo lường
@@ -76,6 +91,18 @@ description: Clarify the problem space, gather requirements, and define success 
 - [ ] Đơn vị đo lường tự động sync giữa OKR và Project
 - [ ] Telegram Bot hoạt động ổn định với webhook
 - [ ] Web dashboard responsive trên mobile/desktop
+
+### UI/UX Acceptance Criteria (NEW)
+- [ ] **Modern Design System**: Sử dụng color palette, typography, spacing chuẩn
+- [ ] **Mobile-First**: Giao diện tối ưu cho mobile, touch interactions
+- [ ] **Sidebar Navigation**: Thay thế header buttons bằng sidebar collapsible
+- [ ] **Kanban Boards**: Drag & drop cho task management
+- [ ] **Real-time Updates**: WebSocket cho live collaboration
+- [ ] **Smart Notifications**: Toast, badges, alerts thông minh
+- [ ] **Visual Hierarchy**: Rõ ràng, dễ hiểu, dễ navigation
+- [ ] **Performance**: < 2s page load, smooth animations
+- [ ] **Accessibility**: WCAG 2.1 compliance
+- [ ] **Dark Mode**: Hỗ trợ dark/light theme
 
 ### Performance Benchmarks
 - **API Response Time**: < 2 giây

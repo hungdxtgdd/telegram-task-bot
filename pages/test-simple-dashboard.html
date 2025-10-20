@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold mb-4">Test Simple Dashboard</h1>
+        
+        <div id="status" class="mb-4 p-4 bg-blue-100 rounded">
+            <p>Checking authentication...</p>
+        </div>
+        
+        <div id="userInfo" class="mb-4 p-4 bg-green-100 rounded hidden">
+            <p>User info will appear here</p>
+        </div>
+        
+        <div id="error" class="mb-4 p-4 bg-red-100 rounded hidden">
+            <p>Error will appear here</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('[TEST] Starting simple dashboard test...');
+        
+        async function testAuth() {
+            const token = localStorage.getItem('token');
+            console.log('[TEST] Token exists:', !!token);
+            console.log('[TEST] Token value:', token ? token.substring(0, 20) + '...' : 'null');
+            
+            if (!token) {
+                console.log('[TEST] No token, redirecting to login');
+                document.getElementById('status').innerHTML = '<p class="text-red-600">No token found, redirecting to login...</p>';
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
+                return;
+            }
+            
+            try {
+                console.log('[TEST] Calling verify API...');
+                const response = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('[TEST] Verify response status:', response.status);
+                console.log('[TEST] Verify response ok:', response.ok);
+                
+                if (!response.ok) {
+                    console.error('[TEST] Verify failed:', response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error('[TEST] Error response:', errorText);
+                    document.getElementById('error').innerHTML = `<p class="text-red-600">Verify failed: ${response.status} ${response.statusText}</p>`;
+                    document.getElementById('error').classList.remove('hidden');
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('[TEST] Verify successful:', data);
+                
+                if (!data.user) {
+                    console.error('[TEST] No user data in response');
+                    document.getElementById('error').innerHTML = '<p class="text-red-600">No user data in response</p>';
+                    document.getElementById('error').classList.remove('hidden');
+                    return;
+                }
+                
+                console.log('[TEST] Authentication successful!');
+                document.getElementById('status').innerHTML = '<p class="text-green-600">Authentication successful!</p>';
+                document.getElementById('userInfo').innerHTML = `
+                    <p><strong>Name:</strong> ${data.user.name}</p>
+                    <p><strong>Role:</strong> ${data.user.role}</p>
+                    <p><strong>Email:</strong> ${data.user.email}</p>
+                `;
+                document.getElementById('userInfo').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('[TEST] Auth error:', error);
+                document.getElementById('error').innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+        
+        // Run test when page loads
+        testAuth();
+    </script>
+</body>
+</html>
