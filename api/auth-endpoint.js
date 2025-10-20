@@ -2,13 +2,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 
-console.log('🔍 Auth-endpoint DATABASE_URL:', DATABASE_URL ? 'exists' : 'missing');
-console.log('🔍 Auth-endpoint JWT_SECRET:', JWT_SECRET ? 'exists' : 'missing');
 
 const pool = new Pool({
   connectionString: DATABASE_URL,

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
