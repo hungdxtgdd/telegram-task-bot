@@ -84,6 +84,15 @@ graph TB
 - **Platform**: Vercel (Serverless)
 - **External**: Telegram Bot API
 
+### UI/UX Technology Stack (NEW)
+- **Design System**: Custom design system với Tailwind CSS
+- **Icons**: Font Awesome 6.0, Heroicons
+- **Charts**: Chart.js, D3.js cho advanced visualizations
+- **Animations**: CSS Transitions, Framer Motion (future)
+- **Mobile**: PWA support, touch gestures
+- **Real-time**: WebSocket cho live updates
+- **State Management**: Vanilla JS với custom state manager
+
 ## Data Models
 **What data do we need to manage?**
 
@@ -356,6 +365,17 @@ DELETE /api/okrs-enhanced/okrs/{id}
 - **OKRs Dashboard** (`pages/okrs-enhanced.html`): OKR tracking
 - **User Management** (`pages/users-management.html`): Admin user control
 
+### UI/UX Components (NEW)
+- **Sidebar Navigation** (`components/sidebar.html`): Collapsible navigation
+- **Kanban Board** (`components/kanban.html`): Drag & drop task management
+- **Smart Dashboard** (`components/dashboard.html`): Interactive widgets
+- **Mobile Bottom Nav** (`components/mobile-nav.html`): Mobile navigation
+- **Notification System** (`components/notifications.html`): Toast, badges, alerts
+- **Progress Rings** (`components/progress-rings.html`): OKR progress visualization
+- **Task Cards** (`components/task-cards.html`): Interactive task cards
+- **Project Cards** (`components/project-cards.html`): Project visualization
+- **Real-time Updates** (`components/realtime.html`): Live collaboration
+
 ### Backend Services/Modules
 - **Auth Service** (`api/auth-endpoint.js`): Login, verify, password change
 - **Users Service** (`api/users-enhanced.js`): User CRUD operations
@@ -437,4 +457,94 @@ DELETE /api/okrs-enhanced/okrs/{id}
 - **Logging**: Comprehensive error tracking
 - **Monitoring**: Vercel built-in monitoring
 - **Backup**: Vercel Postgres automated backups
+
+## UI/UX Design System (NEW)
+**Modern, intuitive interface design**
+
+### Design Principles
+- **Mobile-First**: Thiết kế cho mobile trước, desktop sau
+- **Progressive Enhancement**: Từ cơ bản đến nâng cao
+- **Accessibility**: WCAG 2.1 compliance
+- **Performance**: < 2s load time, smooth animations
+- **Consistency**: Design system thống nhất
+
+### Color Palette
+```css
+/* Primary Colors */
+--primary-50: #eff6ff;
+--primary-500: #3b82f6;
+--primary-900: #1e3a8a;
+
+/* Secondary Colors */
+--secondary-50: #ecfdf5;
+--secondary-500: #10b981;
+--secondary-900: #064e3b;
+
+/* Neutral Colors */
+--gray-50: #f9fafb;
+--gray-100: #f3f4f6;
+--gray-500: #6b7280;
+--gray-900: #111827;
+
+/* Status Colors */
+--success: #10b981;
+--warning: #f59e0b;
+--error: #ef4444;
+--info: #3b82f6;
+```
+
+### Typography Scale
+```css
+/* Headings */
+--text-3xl: 1.875rem; /* 30px */
+--text-2xl: 1.5rem;   /* 24px */
+--text-xl: 1.25rem;   /* 20px */
+
+/* Body Text */
+--text-base: 1rem;    /* 16px */
+--text-sm: 0.875rem;  /* 14px */
+--text-xs: 0.75rem;   /* 12px */
+```
+
+### Layout System
+```css
+/* Grid System */
+--grid-cols-1: repeat(1, minmax(0, 1fr));
+--grid-cols-2: repeat(2, minmax(0, 1fr));
+--grid-cols-3: repeat(3, minmax(0, 1fr));
+--grid-cols-4: repeat(4, minmax(0, 1fr));
+
+/* Spacing Scale */
+--space-1: 0.25rem;   /* 4px */
+--space-2: 0.5rem;    /* 8px */
+--space-4: 1rem;      /* 16px */
+--space-6: 1.5rem;    /* 24px */
+--space-8: 2rem;      /* 32px */
+```
+
+### Component Library
+- **Buttons**: Primary, secondary, ghost, icon buttons
+- **Cards**: Project cards, task cards, OKR cards
+- **Forms**: Input fields, selects, textareas, checkboxes
+- **Navigation**: Sidebar, mobile bottom nav, breadcrumbs
+- **Charts**: Progress rings, bar charts, line charts
+- **Modals**: Dialog, drawer, popover
+- **Notifications**: Toast, badge, alert
+
+### Responsive Breakpoints
+```css
+/* Mobile First */
+sm: 640px   /* Mobile */
+md: 768px   /* Tablet */
+lg: 1024px  /* Desktop */
+xl: 1280px  /* Large Desktop */
+2xl: 1536px /* Extra Large */
+```
+
+### Animation System
+- **Page Transitions**: Smooth fade in/out
+- **Micro-interactions**: Hover, click, focus states
+- **Loading States**: Skeleton screens, spinners
+- **Scroll Animations**: Parallax, reveal effects
+- **Drag & Drop**: Smooth transitions, visual feedback
 

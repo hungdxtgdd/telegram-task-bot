@@ -93,6 +93,15 @@ BOT_LINK=https://t.me/your_prod_bot
 - [ ] **Telegram Bot**: Webhook configured
 - [ ] **Dependencies**: All dependencies up to date
 
+### UI/UX Pre-deployment Checklist (NEW)
+- [ ] **Design System**: All components follow design system
+- [ ] **Mobile Testing**: Tested on multiple mobile devices
+- [ ] **Performance**: Page load time < 2 seconds
+- [ ] **Accessibility**: WCAG 2.1 compliance verified
+- [ ] **Cross-browser**: Tested on all supported browsers
+- [ ] **Real-time Features**: WebSocket connections tested
+- [ ] **Animations**: Smooth transitions and micro-interactions
+
 ### Deployment Execution Steps
 1. **Commit Changes**: `git add . && git commit -m "Deploy: description"`
 2. **Push to GitHub**: `git push origin main`
@@ -107,6 +116,16 @@ BOT_LINK=https://t.me/your_prod_bot
 - [ ] **Telegram Bot**: Test bot commands
 - [ ] **User Login**: Test authentication flow
 - [ ] **Role Permissions**: Test role-based access
+
+### UI/UX Post-deployment Validation (NEW)
+- [ ] **Design System**: Verify all components render correctly
+- [ ] **Mobile Experience**: Test on actual mobile devices
+- [ ] **Performance**: Check page load times and animations
+- [ ] **Real-time Updates**: Test WebSocket connections
+- [ ] **Kanban Boards**: Test drag & drop functionality
+- [ ] **Notifications**: Test toast, badges, alerts
+- [ ] **Accessibility**: Verify keyboard navigation and screen reader
+- [ ] **Cross-browser**: Test on Chrome, Firefox, Safari, Edge
 
 ### Rollback Procedure
 1. **Identify Issue**: Check Vercel logs and error reports
@@ -208,6 +227,14 @@ NODE_ENV=production
 - **Error Rate**: < 1% target
 - **Database Queries**: < 500ms target
 - **Function Duration**: < 10 seconds target
+
+### UI/UX Performance Metrics (NEW)
+- **Page Load Time**: < 2 seconds target
+- **First Contentful Paint**: < 1.5 seconds
+- **Largest Contentful Paint**: < 2.5 seconds
+- **Cumulative Layout Shift**: < 0.1
+- **Mobile Performance**: Lighthouse score > 90
+- **Accessibility Score**: Lighthouse score > 95
 
 ### Alerting
 - **Vercel Alerts**: Automatic alerts for errors

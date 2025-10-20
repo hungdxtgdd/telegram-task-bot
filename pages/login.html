@@ -102,14 +102,26 @@
                     console.log('Token stored:', localStorage.getItem('token'));
                     console.log('User info stored:', localStorage.getItem('userInfo'));
                     
-                    // Redirect based on user role
-                    if (result.user.role === 'admin') {
-                        console.log('Redirecting admin to dashboard...');
-                        window.location.href = '/dashboard';
-                    } else {
-                        console.log('Redirecting user to projects...');
-                        window.location.href = '/projects';
-                    }
+                    // Add small delay to ensure localStorage is synced
+                    setTimeout(() => {
+                        // Double-check token is still there
+                        const storedToken = localStorage.getItem('token');
+                        console.log('Token before redirect:', storedToken);
+                        
+                        if (!storedToken) {
+                            console.error('Token was lost! Login failed.');
+                            return;
+                        }
+                        
+                        // Redirect based on user role
+                        if (result.user.role === 'admin') {
+                            console.log('Redirecting admin to dashboard...');
+                            window.location.href = '/dashboard';
+                        } else {
+                            console.log('Redirecting user to projects...');
+                            window.location.href = '/projects';
+                        }
+                    }, 100);
                 } else {
                     // Show error message
                     errorText.textContent = result.error || 'Đăng nhập thất bại';
