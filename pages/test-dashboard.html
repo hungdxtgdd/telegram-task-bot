@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Test Dashboard</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-blue-500 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Dự án</p>
+                        <p class="text-3xl font-bold" id="totalProjects">-</p>
+                    </div>
+                    <i class="fas fa-project-diagram text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <div class="bg-green-500 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng OKRs</p>
+                        <p class="text-3xl font-bold" id="totalOKRs">-</p>
+                    </div>
+                    <i class="fas fa-bullseye text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <div class="bg-yellow-500 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Tasks</p>
+                        <p class="text-3xl font-bold" id="totalTasks">-</p>
+                    </div>
+                    <i class="fas fa-tasks text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <div class="bg-purple-500 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Users</p>
+                        <p class="text-3xl font-bold" id="totalUsers">-</p>
+                    </div>
+                    <i class="fas fa-users text-4xl opacity-80"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Debug Info</h3>
+            <div id="debugInfo" class="space-y-2 text-sm">
+                <!-- Debug info will be loaded here -->
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <button onclick="testAPIs()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                Test APIs
+            </button>
+            <button onclick="clearData()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition ml-4">
+                Clear Data
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function addDebugInfo(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            const p = document.createElement('p');
+            p.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            debugDiv.appendChild(p);
+        }
+
+        async function testAPIs() {
+            addDebugInfo('Starting API tests...');
+            
+            const token = localStorage.getItem('token');
+            addDebugInfo(`Token: ${token ? 'exists' : 'not found'}`);
+            
+            if (!token) {
+                addDebugInfo('No token found, please login first');
+                return;
+            }
+
+            try {
+                // Test projects API
+                addDebugInfo('Testing projects API...');
+                const projectsRes = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                addDebugInfo(`Projects API: ${projectsRes.status} ${projectsRes.statusText}`);
+                
+                if (projectsRes.ok) {
+                    const projects = await projectsRes.json();
+                    addDebugInfo(`Projects data: ${projects.length} items`);
+                    document.getElementById('totalProjects').textContent = projects.length;
+                } else {
+                    const error = await projectsRes.json();
+                    addDebugInfo(`Projects error: ${JSON.stringify(error)}`);
+                }
+
+                // Test OKRs API
+                addDebugInfo('Testing OKRs API...');
+                const okrsRes = await fetch('/api/okrs-enhanced/okrs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                addDebugInfo(`OKRs API: ${okrsRes.status} ${okrsRes.statusText}`);
+                
+                if (okrsRes.ok) {
+                    const okrs = await okrsRes.json();
+                    addDebugInfo(`OKRs data: ${okrs.length} items`);
+                    document.getElementById('totalOKRs').textContent = okrs.length;
+                } else {
+                    const error = await okrsRes.json();
+                    addDebugInfo(`OKRs error: ${JSON.stringify(error)}`);
+                }
+
+                // Test tasks API
+                addDebugInfo('Testing tasks API...');
+                const tasksRes = await fetch('/api/tasks-enhanced/tasks', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                addDebugInfo(`Tasks API: ${tasksRes.status} ${tasksRes.statusText}`);
+                
+                if (tasksRes.ok) {
+                    const tasks = await tasksRes.json();
+                    addDebugInfo(`Tasks data: ${tasks.length} items`);
+                    document.getElementById('totalTasks').textContent = tasks.length;
+                } else {
+                    const error = await tasksRes.json();
+                    addDebugInfo(`Tasks error: ${JSON.stringify(error)}`);
+                }
+
+                // Test users API
+                addDebugInfo('Testing users API...');
+                const usersRes = await fetch('/api/users-enhanced', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                addDebugInfo(`Users API: ${usersRes.status} ${usersRes.statusText}`);
+                
+                if (usersRes.ok) {
+                    const users = await usersRes.json();
+                    addDebugInfo(`Users data: ${users.length} items`);
+                    document.getElementById('totalUsers').textContent = users.length;
+                } else {
+                    const error = await usersRes.json();
+                    addDebugInfo(`Users error: ${JSON.stringify(error)}`);
+                }
+
+                addDebugInfo('API tests completed');
+            } catch (error) {
+                addDebugInfo(`Error: ${error.message}`);
+            }
+        }
+
+        function clearData() {
+            document.getElementById('totalProjects').textContent = '-';
+            document.getElementById('totalOKRs').textContent = '-';
+            document.getElementById('totalTasks').textContent = '-';
+            document.getElementById('totalUsers').textContent = '-';
+            document.getElementById('debugInfo').innerHTML = '';
+        }
+
+        // Auto-test on load
+        window.onload = function() {
+            addDebugInfo('Page loaded, ready for testing');
+        };
+    </script>
+</body>
+</html>

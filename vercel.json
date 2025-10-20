@@ -6,19 +6,19 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/tasks.js",
+      "src": "api/users-enhanced.js",
       "use": "@vercel/node"
     },
     {
-      "src": "api/users.js",
+      "src": "api/update-database.js",
       "use": "@vercel/node"
     },
     {
-      "src": "api/projects.js",
+      "src": "api/optimize-database.js",
       "use": "@vercel/node"
     },
     {
-      "src": "api/okrs.js",
+      "src": "api/health.js",
       "use": "@vercel/node"
     },
     {
@@ -52,81 +52,49 @@
     {
       "src": "pages/okrs-enhanced.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "pages/users-management.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/dashboard-enhanced.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/monitoring.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/test-auth.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/test-dashboard.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/bot",
-      "dest": "/api/bot.js"
-    },
-    {
-      "src": "/api/tasks",
-      "dest": "/api/tasks.js"
-    },
-    {
-      "src": "/api/users/(.*)",
-      "dest": "/api/users.js"
-    },
-    {
-      "src": "/api/projects/(.*)",
-      "dest": "/api/projects.js"
-    },
-    {
-      "src": "/api/okrs/(.*)",
-      "dest": "/api/okrs-test.js"
-    },
-    {
-      "src": "/api/okrs-debug",
-      "dest": "/api/okrs-debug.js"
-    },
-    {
-      "src": "/api/test-okrs",
-      "dest": "/api/test-okrs.js"
-    },
-    {
-      "src": "/api/okrs-simple",
-      "dest": "/api/okrs-simple.js"
-    },
-    {
-      "src": "/api/okrs-fixed",
-      "dest": "/api/okrs-fixed.js"
-    },
-    {
-      "src": "/api/hello",
-      "dest": "/api/hello.js"
-    },
-    {
-      "src": "/api/test-simple",
-      "dest": "/api/test-simple.js"
-    },
-    {
-      "src": "/api/working-test",
-      "dest": "/api/working-test.js"
-    },
-    {
-      "src": "/api/projects-enhanced/(.*)",
-      "dest": "/api/projects-enhanced.js"
-    },
-    {
-      "src": "/api/tasks-enhanced/(.*)",
-      "dest": "/api/tasks-enhanced.js"
-    },
-    {
-      "src": "/api/okrs-enhanced/(.*)",
-      "dest": "/api/okrs-enhanced.js"
-    },
-    {
-      "src": "/api/auth/(.*)",
-      "dest": "/api/auth-endpoint.js"
-    },
-    {
-      "src": "/webhook",
-      "dest": "/api/bot.js"
-    },
-    {
       "src": "/login",
       "dest": "/pages/login.html"
     },
+    {
+      "src": "/dashboard",
+      "dest": "/pages/dashboard-enhanced.html"
+    },
+    {
+      "src": "/monitoring",
+      "dest": "/pages/monitoring.html"
+    },
+        {
+          "src": "/test-auth",
+          "dest": "/pages/test-auth.html"
+        },
+        {
+          "src": "/test-dashboard",
+          "dest": "/pages/test-dashboard.html"
+        },
     {
       "src": "/projects",
       "dest": "/pages/projects-enhanced.html"
@@ -140,12 +108,96 @@
       "dest": "/pages/okrs-enhanced.html"
     },
     {
-      "src": "/user-management",
+      "src": "/admin-users",
       "dest": "/pages/users-management.html"
+    },
+    {
+      "src": "/test-user",
+      "dest": "/pages/test-user.html"
     },
     {
       "src": "/",
       "dest": "/pages/projects-enhanced.html"
+    },
+    {
+      "src": "/api/bot",
+      "dest": "/api/bot.js"
+    },
+    {
+      "src": "/api/users-enhanced",
+      "dest": "/api/users-enhanced.js"
+    },
+    {
+      "src": "/api/users-enhanced/",
+      "dest": "/api/users-enhanced.js"
+    },
+    {
+      "src": "/api/users-enhanced/(.*)",
+      "dest": "/api/users-enhanced.js"
+    },
+    {
+      "src": "/api/update-database",
+      "dest": "/api/update-database.js"
+    },
+    {
+      "src": "/api/optimize-database",
+      "dest": "/api/optimize-database.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/projects-enhanced",
+      "dest": "/api/projects-enhanced.js"
+    },
+    {
+      "src": "/api/projects-enhanced/",
+      "dest": "/api/projects-enhanced.js"
+    },
+    {
+      "src": "/api/projects-enhanced/(.*)",
+      "dest": "/api/projects-enhanced.js"
+    },
+    {
+      "src": "/api/tasks-enhanced",
+      "dest": "/api/tasks-enhanced.js"
+    },
+    {
+      "src": "/api/tasks-enhanced/",
+      "dest": "/api/tasks-enhanced.js"
+    },
+    {
+      "src": "/api/tasks-enhanced/(.*)",
+      "dest": "/api/tasks-enhanced.js"
+    },
+    {
+      "src": "/api/okrs-enhanced",
+      "dest": "/api/okrs-enhanced.js"
+    },
+    {
+      "src": "/api/okrs-enhanced/",
+      "dest": "/api/okrs-enhanced.js"
+    },
+    {
+      "src": "/api/okrs-enhanced/(.*)",
+      "dest": "/api/okrs-enhanced.js"
+    },
+    {
+      "src": "/api/auth",
+      "dest": "/api/auth-endpoint.js"
+    },
+    {
+      "src": "/api/auth/",
+      "dest": "/api/auth-endpoint.js"
+    },
+    {
+      "src": "/api/auth/(.*)",
+      "dest": "/api/auth-endpoint.js"
+    },
+    {
+      "src": "/webhook",
+      "dest": "/api/bot.js"
     }
   ],
   "env": {

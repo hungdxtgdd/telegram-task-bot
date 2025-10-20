@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
 
@@ -79,25 +79,25 @@ async function handleOKRRequest(req, res) {
         break;
       case 'POST':
         if (endpoint === 'okrs') {
-          await createOKR(req, res);
+          requireAdminOrManager(req, res, () => createOKR(req, res));
         } else if (endpoint === 'update-progress' && okrId && !isNaN(okrId)) {
-          await updateOKRProgress(req, res, okrId);
+          requireAdminOrManager(req, res, () => updateOKRProgress(req, res, okrId));
         } else if (endpoint === 'sync-real-data' && okrId && !isNaN(okrId)) {
-          await syncOKRWithRealData(req, res, okrId);
+          requireAdminOrManager(req, res, () => syncOKRWithRealData(req, res, okrId));
         } else {
           res.status(404).json({ error: 'OKR endpoint not found' });
         }
         break;
       case 'PUT':
         if (okrId && !isNaN(okrId)) {
-          await updateOKR(req, res, okrId);
+          requireAdminOrManager(req, res, () => updateOKR(req, res, okrId));
         } else {
           res.status(404).json({ error: 'OKR ID required for update' });
         }
         break;
       case 'DELETE':
         if (okrId && !isNaN(okrId)) {
-          await deleteOKR(req, res, okrId);
+          requireAdmin(req, res, () => deleteOKR(req, res, okrId));
         } else {
           res.status(404).json({ error: 'OKR ID required for deletion' });
         }

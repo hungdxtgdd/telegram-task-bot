@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
 
@@ -65,7 +65,8 @@ async function handleTaskRequest(req, res) {
         
       case 'POST':
         if (endpoint === 'tasks') {
-          requireAdminOrManager(req, res, () => createTask(req, res));
+          // All authenticated users can create tasks
+          await createTask(req, res);
         } else if (endpoint === 'comment' && taskId) {
           await addTaskComment(req, res, taskId);
         } else {
@@ -75,6 +76,7 @@ async function handleTaskRequest(req, res) {
         
       case 'PUT':
         if (taskId && !isNaN(taskId)) {
+          // All authenticated users can update tasks
           await updateTask(req, res, taskId);
         } else {
           res.status(404).json({ error: 'Task ID required' });
@@ -85,7 +87,8 @@ async function handleTaskRequest(req, res) {
         console.log('DELETE request:', { taskId, endpoint, isNaN: isNaN(taskId) });
         if (taskId && !isNaN(taskId)) {
           console.log('Calling deleteTask with ID:', taskId);
-          requireAdminOrManager(req, res, () => deleteTask(req, res, taskId));
+          // All authenticated users can delete tasks
+          await deleteTask(req, res, taskId);
         } else {
           console.log('DELETE failed - Task ID required:', { taskId, endpoint });
           res.status(404).json({ error: 'Task ID required' });
@@ -228,6 +231,8 @@ async function getTaskById(req, res, taskId) {
 // Create new Task
 async function createTask(req, res) {
   try {
+    console.log('createTask called with user:', req.user);
+    
     const {
       project_id,
       task_name,
@@ -246,11 +251,10 @@ async function createTask(req, res) {
 
     const client = await pool.connect();
     
-    // Generate task_id
-    const taskIdQuery = 'SELECT COUNT(*) as count FROM tasks WHERE project_id = $1';
-    const countResult = await client.query(taskIdQuery, [project_id]);
-    const taskCount = parseInt(countResult.rows[0].count) + 1;
-    const task_id = `TASK-${String(taskCount).padStart(4, '0')}`;
+    // Generate task_id - use timestamp to ensure uniqueness
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    const task_id = `TASK-${timestamp}-${random}`;
     
     const query = `
       INSERT INTO tasks (
@@ -261,6 +265,20 @@ async function createTask(req, res) {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
       RETURNING *
     `;
+    
+    console.log('Executing query with values:', [
+      task_id,
+      project_id,
+      task_name,
+      description || null,
+      assignee_id || null,
+      priority || 'Medium',
+      deadline || null,
+      estimated_hours || null,
+      result_description || null,
+      result_value || null,
+      req.user.id
+    ]);
     
     const result = await client.query(query, [
       task_id,

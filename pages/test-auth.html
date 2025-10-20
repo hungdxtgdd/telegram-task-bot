@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth - Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Test Authentication</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">1. Test Login</h2>
+            <button onclick="testLogin()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Test Login (admin/admin123)
+            </button>
+            <div id="loginResult" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">2. Test Token Verification</h2>
+            <button onclick="testVerify()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Test Verify Token
+            </button>
+            <div id="verifyResult" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">3. Test Dashboard Access</h2>
+            <button onclick="testDashboard()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                Go to Dashboard
+            </button>
+            <div id="dashboardResult" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Current Token Status</h2>
+            <div id="tokenStatus" class="p-4 bg-gray-100 rounded">
+                <p>Token: <span id="tokenValue">Not found</span></p>
+                <p>User: <span id="userValue">Not found</span></p>
+            </div>
+            <button onclick="clearToken()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                Clear Token
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Update token status
+        function updateTokenStatus() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('userInfo');
+            
+            document.getElementById('tokenValue').textContent = token ? 'Found' : 'Not found';
+            document.getElementById('userValue').textContent = user ? JSON.parse(user).username : 'Not found';
+        }
+
+        // Test login
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = 'Testing login...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">
+                            <strong>Login Success!</strong><br>
+                            Token: ${data.token.substring(0, 50)}...<br>
+                            User: ${data.user.username} (${data.user.role})
+                        </div>
+                    `;
+                    updateTokenStatus();
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="text-red-600">
+                            <strong>Login Failed!</strong><br>
+                            ${data.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="text-red-600">
+                        <strong>Error:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Test verify
+        async function testVerify() {
+            const resultDiv = document.getElementById('verifyResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = 'Testing verify...';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<div class="text-red-600">No token found!</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">
+                            <strong>Verify Success!</strong><br>
+                            Valid: ${data.valid}<br>
+                            User: ${data.user.username} (${data.user.role})
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="text-red-600">
+                            <strong>Verify Failed!</strong><br>
+                            Status: ${response.status}<br>
+                            Error: ${data.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="text-red-600">
+                        <strong>Error:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Test dashboard
+        function testDashboard() {
+            const resultDiv = document.getElementById('dashboardResult');
+            resultDiv.classList.remove('hidden');
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<div class="text-red-600">No token found! Please login first.</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="text-blue-600">Redirecting to dashboard...</div>';
+            window.location.href = '/dashboard';
+        }
+
+        // Clear token
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userInfo');
+            updateTokenStatus();
+        }
+
+        // Initialize
+        updateTokenStatus();
+    </script>
+</body>
+</html>

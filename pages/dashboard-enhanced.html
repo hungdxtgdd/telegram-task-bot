@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-card-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
+                        Dashboard
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm text-gray-700">Loading...</span>
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Projects -->
+            <div class="stat-card rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Dự án</p>
+                        <p class="text-3xl font-bold" id="totalProjects">-</p>
+                    </div>
+                    <i class="fas fa-project-diagram text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <!-- Total OKRs -->
+            <div class="stat-card-2 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng OKRs</p>
+                        <p class="text-3xl font-bold" id="totalOKRs">-</p>
+                    </div>
+                    <i class="fas fa-bullseye text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <!-- Total Tasks -->
+            <div class="stat-card-3 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Tasks</p>
+                        <p class="text-3xl font-bold" id="totalTasks">-</p>
+                    </div>
+                    <i class="fas fa-tasks text-4xl opacity-80"></i>
+                </div>
+            </div>
+
+            <!-- Total Users -->
+            <div class="stat-card-4 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">Tổng Users</p>
+                        <p class="text-3xl font-bold" id="totalUsers">-</p>
+                    </div>
+                    <i class="fas fa-users text-4xl opacity-80"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Project Status Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Trạng thái Dự án</h3>
+                <canvas id="projectStatusChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Task Priority Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Độ ưu tiên Tasks</h3>
+                <canvas id="taskPriorityChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- OKR Progress Chart -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tiến độ OKRs</h3>
+            <canvas id="okrProgressChart" width="800" height="300"></canvas>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Recent Projects -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Dự án Gần đây</h3>
+                </div>
+                <div class="p-6">
+                    <div id="recentProjects" class="space-y-4">
+                        <!-- Projects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tasks -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Tasks Gần đây</h3>
+                </div>
+                <div class="p-6">
+                    <div id="recentTasks" class="space-y-4">
+                        <!-- Tasks will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let charts = {};
+        let isRedirecting = false;
+        let dataLoaded = false;
+        let authCheckInProgress = false;
+
+        // Check authentication
+        async function checkAuth() {
+            // Prevent multiple simultaneous auth checks
+            if (authCheckInProgress || isRedirecting) {
+                return;
+            }
+
+            authCheckInProgress = true;
+
+            const token = localStorage.getItem('token');
+            console.log('Dashboard checkAuth - token:', token ? 'exists' : 'not found');
+            if (!token) {
+                console.log('No token found, showing login form');
+                // Show login form instead of redirecting
+                showLoginForm();
+                authCheckInProgress = false;
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    console.log('Token verification failed, removing token and showing login form');
+                    console.log('Response status:', response.status);
+                    console.log('Response statusText:', response.statusText);
+                    localStorage.removeItem('token');
+                    showLoginForm();
+                    authCheckInProgress = false;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Token verification successful, user:', data.user);
+                console.log('Response data:', data);
+                
+                if (!data.user) {
+                    console.error('No user data in response:', data);
+                    localStorage.removeItem('token');
+                    showLoginForm();
+                    authCheckInProgress = false;
+                    return;
+                }
+                
+                currentUser = data.user;
+                document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
+                
+                // Test token storage
+                console.log('Stored token:', localStorage.getItem('token'));
+                console.log('Token length:', localStorage.getItem('token')?.length);
+
+                // Only show dashboard for admin
+                if (data.user.role !== 'admin') {
+                    console.log('User is not admin, redirecting to projects');
+                    if (!isRedirecting) {
+                        isRedirecting = true;
+                        // Use replace instead of href to prevent back button issues
+                        window.location.replace('/projects');
+                    }
+                    return;
+                }
+
+                console.log('Loading dashboard data...');
+                
+                // Test API first
+                console.log('Testing API endpoints...');
+                const token = localStorage.getItem('token');
+                console.log('Token for API test:', token ? 'exists' : 'not found');
+                try {
+                    const testResponse = await fetch('/api/projects-enhanced/projects', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    console.log('Test API response:', testResponse.status, testResponse.statusText);
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        console.log('Test data:', testData.length, 'projects');
+                    } else {
+                        const errorData = await testResponse.json();
+                        console.log('Test API error:', errorData);
+                    }
+                } catch (error) {
+                    console.error('Test API error:', error);
+                }
+                
+                console.log('Calling loadDashboardData...');
+                // Test if loadDashboardData function exists
+                if (typeof loadDashboardData === 'function') {
+                    console.log('loadDashboardData function exists, calling it...');
+                    loadDashboardData();
+                } else {
+                    console.error('loadDashboardData function not found!');
+                }
+                authCheckInProgress = false;
+            } catch (error) {
+                console.error('Auth error:', error);
+                localStorage.removeItem('token');
+                showLoginForm();
+                authCheckInProgress = false;
+            }
+        }
+
+        // Redirect to login page
+        function showLoginForm() {
+            console.log('Redirecting to login page...');
+            window.location.href = '/login';
+        }
+
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            console.log('Starting to load dashboard data...');
+            try {
+                console.log('Calling loadStats...');
+                await loadStats();
+                console.log('loadStats completed');
+                
+                console.log('Calling loadProjectStatusChart...');
+                await loadProjectStatusChart();
+                console.log('loadProjectStatusChart completed');
+                
+                console.log('Calling loadTaskPriorityChart...');
+                await loadTaskPriorityChart();
+                console.log('loadTaskPriorityChart completed');
+                
+                console.log('Calling loadOKRProgressChart...');
+                await loadOKRProgressChart();
+                console.log('loadOKRProgressChart completed');
+                
+                console.log('Calling loadRecentProjects...');
+                await loadRecentProjects();
+                console.log('loadRecentProjects completed');
+                
+                console.log('Calling loadRecentTasks...');
+                await loadRecentTasks();
+                console.log('loadRecentTasks completed');
+                
+                console.log('Dashboard data loaded successfully');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                console.log('Loading stats...');
+                const token = localStorage.getItem('token');
+                console.log('Token for API calls:', token ? 'exists' : 'not found');
+                
+                const [projectsRes, okrsRes, tasksRes, usersRes] = await Promise.all([
+                    fetch('/api/projects-enhanced/projects', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/okrs-enhanced/okrs', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/tasks-enhanced/tasks', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/users-enhanced', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+
+                console.log('API responses:', {
+                    projects: projectsRes.status,
+                    okrs: okrsRes.status,
+                    tasks: tasksRes.status,
+                    users: usersRes.status
+                });
+
+                const [projects, okrs, tasks, users] = await Promise.all([
+                    projectsRes.json(),
+                    okrsRes.json(),
+                    tasksRes.json(),
+                    usersRes.json()
+                ]);
+
+                console.log('Data loaded:', {
+                    projects: projects.length,
+                    okrs: okrs.length,
+                    tasks: tasks.length,
+                    users: users.length
+                });
+
+                // Update UI elements
+                const totalProjectsEl = document.getElementById('totalProjects');
+                const totalOKRsEl = document.getElementById('totalOKRs');
+                const totalTasksEl = document.getElementById('totalTasks');
+                const totalUsersEl = document.getElementById('totalUsers');
+
+                console.log('UI elements found:', {
+                    totalProjects: !!totalProjectsEl,
+                    totalOKRs: !!totalOKRsEl,
+                    totalTasks: !!totalTasksEl,
+                    totalUsers: !!totalUsersEl
+                });
+
+                if (totalProjectsEl) totalProjectsEl.textContent = projects.length;
+                if (totalOKRsEl) totalOKRsEl.textContent = okrs.length;
+                if (totalTasksEl) totalTasksEl.textContent = tasks.length;
+                if (totalUsersEl) totalUsersEl.textContent = users.length;
+
+                console.log('UI updated successfully');
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Show error in UI
+                document.getElementById('totalProjects').textContent = 'Error';
+                document.getElementById('totalOKRs').textContent = 'Error';
+                document.getElementById('totalTasks').textContent = 'Error';
+                document.getElementById('totalUsers').textContent = 'Error';
+            }
+        }
+
+        // Load project status chart
+        async function loadProjectStatusChart() {
+            try {
+                console.log('Loading project status chart...');
+                // Destroy existing chart if it exists
+                if (charts.projectStatus) {
+                    charts.projectStatus.destroy();
+                }
+
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                console.log('Project status chart API response:', response.status);
+                const projects = await response.json();
+                console.log('Projects for chart:', projects.length);
+
+                const statusCounts = projects.reduce((acc, project) => {
+                    acc[project.status] = (acc[project.status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const ctx = document.getElementById('projectStatusChart').getContext('2d');
+                console.log('Creating project status chart with data:', statusCounts);
+                charts.projectStatus = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusCounts),
+                        datasets: [{
+                            data: Object.values(statusCounts),
+                            backgroundColor: [
+                                '#10B981', // active
+                                '#3B82F6', // completed
+                                '#F59E0B', // on_hold
+                                '#EF4444'  // cancelled
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading project status chart:', error);
+            }
+        }
+
+        // Load task priority chart
+        async function loadTaskPriorityChart() {
+            try {
+                // Destroy existing chart if it exists
+                if (charts.taskPriority) {
+                    charts.taskPriority.destroy();
+                }
+
+                const response = await fetch('/api/tasks-enhanced/tasks', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const tasks = await response.json();
+
+                const priorityCounts = tasks.reduce((acc, task) => {
+                    acc[task.priority] = (acc[task.priority] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const ctx = document.getElementById('taskPriorityChart').getContext('2d');
+                charts.taskPriority = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(priorityCounts),
+                        datasets: [{
+                            label: 'Số lượng',
+                            data: Object.values(priorityCounts),
+                            backgroundColor: [
+                                '#EF4444', // Emergency
+                                '#F59E0B', // High
+                                '#3B82F6', // Medium
+                                '#10B981'  // Low
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading task priority chart:', error);
+            }
+        }
+
+        // Load OKR progress chart
+        async function loadOKRProgressChart() {
+            try {
+                // Destroy existing chart if it exists
+                if (charts.okrProgress) {
+                    charts.okrProgress.destroy();
+                }
+
+                const response = await fetch('/api/okrs-enhanced/okrs', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const okrs = await response.json();
+
+                const ctx = document.getElementById('okrProgressChart').getContext('2d');
+                charts.okrProgress = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: okrs.map(okr => okr.objective),
+                        datasets: [{
+                            label: 'Mục tiêu',
+                            data: okrs.map(okr => okr.target_value),
+                            backgroundColor: '#3B82F6'
+                        }, {
+                            label: 'Thực tế',
+                            data: okrs.map(okr => okr.current_value),
+                            backgroundColor: '#10B981'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading OKR progress chart:', error);
+            }
+        }
+
+        // Load recent projects
+        async function loadRecentProjects() {
+            try {
+                console.log('Loading recent projects...');
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const projects = await response.json();
+                console.log('Recent projects data:', projects.length, 'projects');
+
+                const recentProjects = projects
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .slice(0, 5);
+
+                console.log('Recent projects (top 5):', recentProjects);
+
+                const container = document.getElementById('recentProjects');
+                console.log('Recent projects container found:', !!container);
+                
+                if (container) {
+                    container.innerHTML = recentProjects.map(project => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">${project.project_name}</p>
+                                <p class="text-sm text-gray-500">${project.project_code}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                ${project.status}
+                            </span>
+                        </div>
+                    `).join('');
+                    console.log('Recent projects rendered successfully');
+                } else {
+                    console.error('Recent projects container not found');
+                }
+            } catch (error) {
+                console.error('Error loading recent projects:', error);
+            }
+        }
+
+        // Load recent tasks
+        async function loadRecentTasks() {
+            try {
+                console.log('Loading recent tasks...');
+                const response = await fetch('/api/tasks-enhanced/tasks', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const tasks = await response.json();
+                console.log('Recent tasks data:', tasks.length, 'tasks');
+
+                const recentTasks = tasks
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .slice(0, 5);
+
+                console.log('Recent tasks (top 5):', recentTasks);
+
+                const container = document.getElementById('recentTasks');
+                console.log('Recent tasks container found:', !!container);
+                
+                if (container) {
+                    container.innerHTML = recentTasks.map(task => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">${task.task_name}</p>
+                                <p class="text-sm text-gray-500">${task.project_name || 'No Project'}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                ${task.status}
+                            </span>
+                        </div>
+                    `).join('');
+                    console.log('Recent tasks rendered successfully');
+                } else {
+                    console.error('Recent tasks container not found');
+                }
+            } catch (error) {
+                console.error('Error loading recent tasks:', error);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        // Initialize dashboard with debounce
+        let initTimeout;
+        function initDashboard() {
+            if (initTimeout) {
+                clearTimeout(initTimeout);
+            }
+            initTimeout = setTimeout(() => {
+                checkAuth();
+            }, 100);
+        }
+
+        // Initialize dashboard
+        initDashboard();
+    </script>
+</body>
+</html>

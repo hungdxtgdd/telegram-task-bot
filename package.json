@@ -1,45 +1,54 @@
 {
-  "name": "telegram-task-bot",
+  "name": "telegram-bot-vercel",
   "version": "1.0.0",
-  "description": "Telegram Task Manager Bot - Fast & Reliable",
+  "description": "Telegram Bot for Task Management with Vercel deployment",
   "main": "api/bot.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step required'",
     "start": "node api/bot.js",
-    "setup-webhook": "node scripts/setup-webhook.js",
-    "check-webhook": "node scripts/setup-webhook.js check",
-    "test-bot": "node scripts/test-bot.js",
-    "bot-info": "node scripts/test-bot.js info",
-    "setup-database": "node scripts/setup-database.js",
-    "setup-users": "node scripts/setup-users-table.js",
-    "setup-enhanced": "node scripts/setup-enhanced-database.js",
-    "import-csv": "node scripts/import-csv-to-enhanced-db.js",
+    "dev": "node api/bot.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "setup-db": "node scripts/setup-database.js",
+    "setup-enhanced-db": "node scripts/setup-enhanced-database.js",
+    "setup-okr-db": "node scripts/setup-okr-focused-database.js",
+    "setup-complete-db": "node scripts/setup-complete-database.js",
+    "setup-phase1-db": "node scripts/setup-phase1-database.js",
+    "fix-db": "node scripts/fix-database-schema.js",
+    "optimize-db": "node scripts/optimize-database-schema.js",
     "import-sheets": "node scripts/import-from-google-sheets.js",
-    "create-users": "node scripts/create-users-from-tasks.js",
-    "update-tasks-users": "node scripts/update-tasks-user-relation.js",
-    "setup-okr-focused": "node scripts/setup-okr-focused-database.js",
-    "import-data": "node scripts/import-from-sheets.js",
     "import-full": "node scripts/import-full-sheets.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.64.0",
-    "pg": "^8.11.3",
-    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3"
+    "node-telegram-bot-api": "^0.64.0",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": [
-    "telegram",
-    "bot",
-    "task-manager",
-    "vercel",
-    "nodejs"
-  ],
-  "author": "Jack Ng - Creatorui.com",
-  "license": "MIT"
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "api/**/*.js",
+      "!api/bot.js",
+      "!api/hello.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  }
 }

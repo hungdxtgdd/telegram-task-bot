@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const { verifyToken } = require('./auth');
@@ -36,22 +36,61 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Verify authentication for all user operations
-  verifyToken(req, res, async () => {
-    await handleUserRequest(req, res);
-  });
-};
-
-async function handleUserRequest(req, res) {
   const { method, url } = req;
   
   try {
     // Parse URL to get endpoint
-    const urlParts = url.split('?')[0].split('/');
-    const endpoint = urlParts[urlParts.length - 1];
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    const urlParts = cleanUrl.split('?')[0].split('/').filter(part => part !== '');
+    console.log('Users URL parsing:', { url, cleanUrl, urlParts });
     
+    // Check if this is a sub-endpoint like /api/users-enhanced/123
+    let userId = null;
+    let endpoint = '';
+    
+    // More flexible URL parsing
+    if (urlParts.length >= 2) {
+      if (urlParts[0] === 'api' && urlParts[1] === 'users-enhanced') {
+        if (urlParts.length >= 3 && !isNaN(urlParts[2])) {
+          userId = urlParts[2]; // /api/users-enhanced/123
+          endpoint = 'user';
+        } else if (urlParts.length >= 3) {
+          endpoint = urlParts[2]; // /api/users-enhanced/something
+        } else {
+          endpoint = 'list'; // /api/users-enhanced
+        }
+      } else if (urlParts.length >= 3 && urlParts[1] === 'users-enhanced' && !isNaN(urlParts[2])) {
+        // Handle case where api is missing from urlParts
+        userId = urlParts[2];
+        endpoint = 'user';
+      } else {
+        endpoint = 'list';
+      }
+    } else {
+      endpoint = 'list';
+    }
+    
+    console.log('Users endpoint:', { endpoint, userId });
+
+    // Verify authentication for all user operations
+  verifyToken(req, res, async () => {
+    console.log('Calling handleUserRequest with:', { endpoint, userId, method: req.method });
+    await handleUserRequest(req, res, endpoint, userId);
+  });
+  } catch (error) {
+    console.error('Error in users-enhanced API:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+};
+
+async function handleUserRequest(req, res, endpoint, userId) {
+  const { method } = req;
+  
+  console.log('handleUserRequest called with:', { endpoint, userId, method });
+  
+  try {
     // Handle different endpoints
-    if (endpoint === 'users') {
+    if (endpoint === 'list') {
       switch (method) {
         case 'GET':
           await getAllUsers(req, res);
@@ -65,22 +104,22 @@ async function handleUserRequest(req, res) {
         default:
           res.status(405).json({ error: 'Phương thức không được hỗ trợ' });
       }
-    } else if (endpoint.match(/^\d+$/)) {
-      const userId = parseInt(endpoint);
+    } else if (endpoint === 'user' && userId) {
+      const userIdInt = parseInt(userId);
       switch (method) {
         case 'GET':
-          await getUserById(req, res, userId);
+          await getUserById(req, res, userIdInt);
           break;
         case 'PUT':
           // Update user - require admin
           requireAdmin(req, res, () => {
-            updateUser(req, res, userId);
+            updateUser(req, res, userIdInt);
           });
           break;
         case 'DELETE':
           // Delete user - require admin
           requireAdmin(req, res, () => {
-            deleteUser(req, res, userId);
+            deleteUser(req, res, userIdInt);
           });
           break;
         default:
@@ -195,8 +234,8 @@ async function createUser(req, res) {
       return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
     }
     
-    if (!['admin', 'user'].includes(role)) {
-      return res.status(400).json({ error: 'Role phải là admin hoặc user' });
+    if (!['admin', 'manager', 'user'].includes(role)) {
+      return res.status(400).json({ error: 'Role phải là admin, manager hoặc user' });
     }
     
     const client = await pool.connect();
@@ -246,12 +285,16 @@ async function updateUser(req, res, userId) {
   try {
     const { username, email, full_name, role, is_active, password } = req.body;
     
+    console.log('updateUser called with:', { userId, body: req.body });
+    
     // Validation
-    if (role && !['admin', 'user'].includes(role)) {
-      return res.status(400).json({ error: 'Role phải là admin hoặc user' });
+    if (role && !['admin', 'manager', 'user'].includes(role)) {
+      console.log('Role validation failed:', role);
+      return res.status(400).json({ error: 'Role phải là admin, manager hoặc user' });
     }
     
     if (password && password.length < 6) {
+      console.log('Password validation failed:', password.length);
       return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
     }
     
@@ -328,8 +371,13 @@ async function updateUser(req, res, userId) {
       RETURNING id, username, email, full_name, role, is_active, updated_at
     `;
     
+    console.log('Executing update query:', updateQuery);
+    console.log('With values:', updateValues);
+    
     const result = await client.query(updateQuery, updateValues);
     client.release();
+    
+    console.log('Update successful:', result.rows[0]);
     
     res.status(200).json({
       message: 'Cập nhật user thành công',

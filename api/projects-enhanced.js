@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
 
@@ -90,8 +90,8 @@ async function handleProjectRequest(req, res) {
             requireAdminOrManager(req, res, () => removeProjectMember(req, res, projectId));
           } else {
             console.log('Calling deleteProject with ID:', projectId);
-            console.log('Checking admin permission for user:', req.user);
-            requireAdmin(req, res, () => deleteProject(req, res, projectId));
+            console.log('Checking admin/manager permission for user:', req.user);
+            requireAdminOrManager(req, res, () => deleteProject(req, res, projectId));
           }
         } else {
           console.log('DELETE failed - Project ID required:', { projectId, endpoint });
@@ -257,12 +257,14 @@ async function getProjectMembers(req, res, projectId) {
 // Create new Project
 async function createProject(req, res) {
   try {
+    console.log('createProject called with body:', req.body);
+    
     const {
       okr_id,
-      project_code,
       project_name,
       description,
       priority,
+      status,
       start_date,
       end_date,
       deadline,
@@ -271,36 +273,59 @@ async function createProject(req, res) {
       budget
     } = req.body;
 
-    if (!project_code || !project_name) {
-      return res.status(400).json({ error: 'Mã dự án và tên dự án là bắt buộc' });
+    if (!project_name) {
+      return res.status(400).json({ error: 'Tên dự án là bắt buộc' });
     }
 
     const client = await pool.connect();
     
+    // Generate project_code automatically using simple sequential approach
+    const countQuery = 'SELECT COUNT(*) as count FROM projects';
+    const countResult = await client.query(countQuery);
+    const projectCount = parseInt(countResult.rows[0].count) + 1;
+    const project_code = `P${String(projectCount).padStart(4, '0')}`;
+    
+    console.log('Generated project_code:', project_code);
+    console.log('User ID:', req.user.id);
+    console.log('Project name:', project_name);
+    console.log('Priority:', priority);
+    console.log('Status:', status);
+    console.log('Description:', description);
+    console.log('Start date:', start_date);
+    console.log('End date:', end_date);
+    console.log('Target value:', target_value);
+    console.log('Unit:', unit);
+    console.log('Budget:', budget);
+    console.log('OKR ID:', okr_id);
+    
     const query = `
       INSERT INTO projects (
-        okr_id, project_code, project_name, description, priority,
-        start_date, end_date, deadline, target_value, unit, budget, created_by,
+        okr_id, project_code, project_name, description, priority, status,
+        start_date, end_date, target_value, unit, budget, created_by,
         created_at, updated_at
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
       RETURNING *
     `;
     
-    const result = await client.query(query, [
+    const values = [
       okr_id || null,
       project_code,
       project_name,
       description || null,
       priority || 'Medium',
+      status || 'active',
       start_date || null,
       end_date || null,
-      deadline || null,
       target_value || null,
       unit || '%',
       budget || null,
       req.user.id
-    ]);
+    ];
+    
+    console.log('Executing query with values:', values);
+    
+    const result = await client.query(query, values);
     
     // Add creator as project owner
     const addOwnerQuery = `
@@ -329,6 +354,8 @@ async function createProject(req, res) {
 // Update Project
 async function updateProject(req, res, projectId) {
   try {
+    console.log('updateProject called with:', { projectId, body: req.body });
+    
     const {
       okr_id,
       project_code,
@@ -338,7 +365,6 @@ async function updateProject(req, res, projectId) {
       priority,
       start_date,
       end_date,
-      deadline,
       target_value,
       unit,
       current_value,
@@ -358,17 +384,16 @@ async function updateProject(req, res, projectId) {
         priority = COALESCE($7, priority),
         start_date = COALESCE($8, start_date),
         end_date = COALESCE($9, end_date),
-        deadline = COALESCE($10, deadline),
-        target_value = COALESCE($11, target_value),
-        unit = COALESCE($12, unit),
-        current_value = COALESCE($13, current_value),
-        budget = COALESCE($14, budget),
+        target_value = COALESCE($10, target_value),
+        unit = COALESCE($11, unit),
+        current_value = COALESCE($12, current_value),
+        budget = COALESCE($13, budget),
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `;
     
-    const result = await client.query(query, [
+    const values = [
       projectId,
       okr_id,
       project_code,
@@ -378,12 +403,15 @@ async function updateProject(req, res, projectId) {
       priority,
       start_date,
       end_date,
-      deadline,
       target_value,
       unit,
       current_value,
       budget
-    ]);
+    ];
+    
+    console.log('Executing update query with values:', values);
+    
+    const result = await client.query(query, values);
     
     client.release();
     
@@ -408,24 +436,40 @@ async function deleteProject(req, res, projectId) {
     
     const client = await pool.connect();
     
-    const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';
-    const result = await client.query(query, [projectId]);
-    
-    client.release();
-    
-    if (result.rows.length === 0) {
-      console.log('Project not found:', projectId);
-      return res.status(404).json({ error: 'Dự án không tồn tại' });
+    try {
+      await client.query('BEGIN');
+      
+      // First, delete related tasks
+      await client.query('DELETE FROM tasks WHERE project_id = $1', [projectId]);
+      console.log('Deleted related tasks for project:', projectId);
+      
+      // Then delete the project
+      const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';
+      const result = await client.query(query, [projectId]);
+      
+      if (result.rows.length === 0) {
+        console.log('Project not found:', projectId);
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(404).json({ error: 'Dự án không tồn tại' });
+      }
+      
+      await client.query('COMMIT');
+      console.log('Project deleted successfully:', result.rows[0]);
+      
+      res.status(200).json({
+        message: 'Xóa dự án thành công',
+        project: result.rows[0]
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-    
-    console.log('Project deleted successfully:', result.rows[0]);
-    res.status(200).json({
-      message: 'Xóa dự án thành công',
-      project: result.rows[0]
-    });
   } catch (error) {
     console.error('Error deleting project:', error);
-    res.status(500).json({ error: 'Lỗi khi xóa dự án' });
+    res.status(500).json({ error: 'Lỗi khi xóa dự án: ' + error.message });
   }
 }
 

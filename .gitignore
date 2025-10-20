@@ -79,3 +79,4 @@ jspm_packages/
 
 # Google Apps Script
 .gas/
+.env*.local

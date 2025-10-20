@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý User - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .role-admin { @apply bg-red-100 text-red-800; }
-        .role-manager { @apply bg-blue-100 text-blue-800; }
-        .role-member { @apply bg-green-100 text-green-800; }
-        .status-active { @apply bg-green-100 text-green-800; }
-        .status-inactive { @apply bg-gray-100 text-gray-800; }
+        .role-admin { background-color: #fee2e2; color: #991b1b; }
+        .role-manager { background-color: #dbeafe; color: #1e40af; }
+        .role-member { background-color: #d1fae5; color: #065f46; }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-inactive { background-color: #f3f4f6; color: #374151; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -195,7 +196,7 @@
 
         // Check authentication
         function checkAuth() {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             const userInfo = localStorage.getItem('userInfo');
             
             if (!token || !userInfo) {
@@ -218,8 +219,8 @@
         // Load users data
         async function loadData() {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/users', {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users-enhanced', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -269,8 +270,8 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full status-${user.status}">
-                            ${user.status}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full status-${user.is_active ? 'active' : 'inactive'}">
+                            ${user.is_active ? 'Hoạt động' : 'Không hoạt động'}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -326,8 +327,8 @@
             if (!confirm('Bạn có chắc chắn muốn xóa user này?')) return;
 
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/users/${userId}`, {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/users-enhanced/${userId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -352,11 +353,11 @@
             e.preventDefault();
             
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const formData = new FormData(e.target);
                 const userData = Object.fromEntries(formData);
 
-                const response = await fetch('/api/users', {
+                const response = await fetch('/api/users-enhanced', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -384,7 +385,7 @@
             e.preventDefault();
             
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const formData = new FormData(e.target);
                 const userData = Object.fromEntries(formData);
                 const userId = userData.id;
@@ -394,7 +395,7 @@
                     delete userData.password;
                 }
 
-                const response = await fetch(`/api/users/${userId}`, {
+                const response = await fetch(`/api/users-enhanced/${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -425,7 +426,7 @@
         // Logout
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }

@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Tasks - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .priority-high { @apply bg-red-100 text-red-800; }
-        .priority-medium { @apply bg-yellow-100 text-yellow-800; }
-        .priority-low { @apply bg-green-100 text-green-800; }
-        .status-pending { @apply bg-gray-100 text-gray-800; }
-        .status-in_progress { @apply bg-blue-100 text-blue-800; }
-        .status-done { @apply bg-green-100 text-green-800; }
-        .status-cancelled { @apply bg-red-100 text-red-800; }
-        .status-blocked { @apply bg-yellow-100 text-yellow-800; }
+        .priority-high { background-color: #fee2e2; color: #991b1b; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-low { background-color: #d1fae5; color: #065f46; }
+        .status-pending { background-color: #f3f4f6; color: #374151; }
+        .status-in_progress { background-color: #dbeafe; color: #1e40af; }
+        .status-done { background-color: #d1fae5; color: #065f46; }
+        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+        .status-blocked { background-color: #fef3c7; color: #92400e; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -30,6 +31,9 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="userInfo" class="text-sm text-gray-700"></span>
+                    <a href="/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
                     <a href="/okrs" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
                         <i class="fas fa-bullseye mr-2"></i>Quản lý OKRs
                     </a>
@@ -230,7 +234,7 @@
 
         async function checkAuth() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 if (!token) {
                     window.location.href = '/login';
                     return;
@@ -251,13 +255,13 @@
                     
                     loadData();
                 } else {
-                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('token');
                     localStorage.removeItem('userInfo');
                     window.location.href = '/login';
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }
@@ -273,7 +277,7 @@
 
         // Go to user management page
         function goToUserManagement() {
-            window.location.href = '/user-management';
+            window.location.href = '/admin-users';
         }
 
         async function loadData() {
@@ -289,7 +293,7 @@
             
             isLoading = true;
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const urlParams = new URLSearchParams(window.location.search);
                 const projectId = urlParams.get('project_id');
                 
@@ -317,7 +321,7 @@
 
         async function loadProjects() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/projects-enhanced/projects', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -333,7 +337,7 @@
 
         async function loadUsers() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/users/users?simple=true', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -517,7 +521,7 @@
             };
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const url = currentTask ? `/api/tasks-enhanced/tasks/${currentTask.id}` : '/api/tasks-enhanced/tasks';
                 const method = currentTask ? 'PUT' : 'POST';
                 
@@ -547,7 +551,7 @@
             if (!confirm('Bạn có chắc chắn muốn xóa task này?')) return;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/tasks-enhanced/tasks/${taskId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -605,7 +609,7 @@
 
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }

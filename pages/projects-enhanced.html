@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Dự án - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📁</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .priority-high { @apply bg-red-100 text-red-800; }
-        .priority-medium { @apply bg-yellow-100 text-yellow-800; }
-        .priority-low { @apply bg-green-100 text-green-800; }
-        .status-not_started { @apply bg-gray-100 text-gray-800; }
-        .status-in_progress { @apply bg-blue-100 text-blue-800; }
-        .status-completed { @apply bg-green-100 text-green-800; }
-        .status-on_hold { @apply bg-yellow-100 text-yellow-800; }
-        .status-cancelled { @apply bg-red-100 text-red-800; }
-        .progress-bar { @apply bg-gradient-to-r from-blue-500 to-green-500; }
+        .priority-high { background-color: #fee2e2; color: #991b1b; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-low { background-color: #d1fae5; color: #065f46; }
+        .status-not_started { background-color: #f3f4f6; color: #374151; }
+        .status-in_progress { background-color: #dbeafe; color: #1e40af; }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-on_hold { background-color: #fef3c7; color: #92400e; }
+        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+        .progress-bar { background: linear-gradient(to right, #3b82f6, #10b981); }
+        .unit-disabled { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -31,6 +33,9 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="userInfo" class="text-sm text-gray-700"></span>
+                    <a href="/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
                     <a href="/okrs" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
                         <i class="fas fa-bullseye mr-2"></i>Quản lý OKRs
                     </a>
@@ -114,15 +119,9 @@
                     <h3 class="text-lg font-semibold text-gray-900" id="modalTitle">Thêm Dự án Mới</h3>
                 </div>
                 <form id="projectForm" class="p-6 space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã dự án *</label>
-                            <input type="text" id="projectCode" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tên dự án *</label>
-                            <input type="text" id="projectName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên dự án *</label>
+                        <input type="text" id="projectName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div>
@@ -140,11 +139,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                             <select id="projectStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="Not Started">Chưa bắt đầu</option>
-                                <option value="In Progress">Đang thực hiện</option>
-                                <option value="Completed">Hoàn thành</option>
-                                <option value="On Hold">Tạm dừng</option>
-                                <option value="Cancelled">Hủy bỏ</option>
+                                <option value="active">Hoạt động</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="on_hold">Tạm dừng</option>
+                                <option value="cancelled">Hủy bỏ</option>
                             </select>
                         </div>
                         <div>
@@ -157,7 +155,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
                             <input type="date" id="projectStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -166,19 +164,25 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
                             <input type="date" id="projectEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
-                            <input type="date" id="projectDeadline" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu tổng thể</label>
                             <input type="number" id="projectTargetValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="100">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị đo lường</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thực tế</label>
+                            <input type="number" id="projectCurrentValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Đơn vị đo lường
+                                <span class="text-xs text-gray-500 ml-1" title="Tự động lấy từ OKR khi chọn OKR">(tự động từ OKR)</span>
+                            </label>
                             <select id="projectUnit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="%">%</option>
                                 <option value="VND">VND</option>
@@ -223,7 +227,7 @@
 
         async function checkAuth() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 if (!token) {
                     window.location.href = '/login';
                     return;
@@ -235,6 +239,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    currentUser = data.user;
                     document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
                     
                     // Show user management button for admin
@@ -242,15 +247,18 @@
                         document.getElementById('userManagementBtn').classList.remove('hidden');
                     }
                     
+                    // Setup role-based UI
+                    setupRoleBasedUI();
+                    
                     loadData();
                 } else {
-                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('token');
                     localStorage.removeItem('userInfo');
                     window.location.href = '/login';
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }
@@ -265,7 +273,17 @@
 
         // Go to user management page
         function goToUserManagement() {
-            window.location.href = '/user-management';
+            window.location.href = '/admin-users';
+        }
+
+        function setupRoleBasedUI() {
+            // Hide project management buttons for regular users
+            if (currentUser.role === 'user') {
+                const addProjectBtn = document.querySelector('button[onclick="showAddProjectModal()"]');
+                if (addProjectBtn) {
+                    addProjectBtn.style.display = 'none';
+                }
+            }
         }
 
         async function loadData() {
@@ -280,7 +298,7 @@
             
             isLoading = true;
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/projects-enhanced/projects', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -300,8 +318,8 @@
 
         async function loadOKRs() {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/okrs', {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/okrs-enhanced/okrs', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -325,10 +343,31 @@
                         const option = document.createElement('option');
                         option.value = okr.id;
                         option.textContent = okr.objective;
+                        option.dataset.unit = okr.unit || '%'; // Store unit in dataset
                         select.appendChild(option);
                     });
                 }
             });
+            
+            // Add event listener for OKR selection in project form
+            if (projectOKR) {
+                projectOKR.addEventListener('change', function() {
+                    const selectedOKRId = this.value;
+                    const selectedOption = this.options[this.selectedIndex];
+                    const unitSelect = document.getElementById('projectUnit');
+                    
+                    if (selectedOKRId && selectedOption.dataset.unit) {
+                        // Set unit from selected OKR
+                        unitSelect.value = selectedOption.dataset.unit;
+                        unitSelect.disabled = true; // Disable manual unit selection
+                        unitSelect.classList.add('unit-disabled');
+                    } else {
+                        // No OKR selected, enable manual unit selection
+                        unitSelect.disabled = false;
+                        unitSelect.classList.remove('unit-disabled');
+                    }
+                });
+            }
         }
 
         function renderProjects() {
@@ -387,8 +426,8 @@
                         
                         <div class="flex justify-between items-center">
                             <div class="text-sm text-gray-500">
-                                ${project.target_value ? `Mục tiêu: ${project.target_value}` : ''}
-                                ${project.current_value ? ` | Thực tế: ${project.current_value}` : ''}
+                                ${project.target_value ? `Mục tiêu: ${project.target_value} ${project.unit || ''}` : ''}
+                                ${project.current_value ? ` | Thực tế: ${project.current_value} ${project.unit || ''}` : ''}
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="viewProjectTasks(${project.id})" class="text-orange-600 hover:text-orange-800 text-sm font-medium">
@@ -431,6 +470,12 @@
             currentProject = null;
             document.getElementById('modalTitle').textContent = 'Thêm Dự án Mới';
             document.getElementById('projectForm').reset();
+            
+            // Enable unit selection for new project
+            const unitSelect = document.getElementById('projectUnit');
+            unitSelect.disabled = false;
+            unitSelect.classList.remove('unit-disabled');
+            
             document.getElementById('projectModal').classList.remove('hidden');
         }
 
@@ -439,16 +484,43 @@
             if (!currentProject) return;
 
             document.getElementById('modalTitle').textContent = 'Sửa Dự án';
-            document.getElementById('projectCode').value = currentProject.project_code;
             document.getElementById('projectName').value = currentProject.project_name;
             document.getElementById('projectDescription').value = currentProject.description || '';
             document.getElementById('projectOKR').value = currentProject.okr_id || '';
             document.getElementById('projectStatus').value = currentProject.status;
             document.getElementById('projectPriority').value = currentProject.priority;
-            document.getElementById('projectStartDate').value = currentProject.start_date || '';
-            document.getElementById('projectEndDate').value = currentProject.end_date || '';
-            document.getElementById('projectDeadline').value = currentProject.deadline || '';
+            
+            // Set unit based on selected OKR - use setTimeout to ensure OKR dropdown is populated
+            setTimeout(() => {
+                const okrSelect = document.getElementById('projectOKR');
+                const unitSelect = document.getElementById('projectUnit');
+                if (currentProject.okr_id) {
+                    const selectedOption = okrSelect.options[okrSelect.selectedIndex];
+                    if (selectedOption && selectedOption.dataset.unit) {
+                        unitSelect.value = selectedOption.dataset.unit;
+                        unitSelect.disabled = true;
+                        unitSelect.classList.add('unit-disabled');
+                    } else {
+                        // Fallback: find OKR in okrs array and set unit
+                        const okr = okrs.find(o => o.id == currentProject.okr_id);
+                        if (okr && okr.unit) {
+                            unitSelect.value = okr.unit;
+                            unitSelect.disabled = true;
+                            unitSelect.classList.add('unit-disabled');
+                        }
+                    }
+                } else {
+                    unitSelect.disabled = false;
+                    unitSelect.classList.remove('unit-disabled');
+                }
+            }, 100);
+            // Format dates for input type="date" (YYYY-MM-DD)
+            const startDate = currentProject.start_date ? currentProject.start_date.split('T')[0] : '';
+            const endDate = currentProject.end_date ? currentProject.end_date.split('T')[0] : '';
+            document.getElementById('projectStartDate').value = startDate;
+            document.getElementById('projectEndDate').value = endDate;
             document.getElementById('projectTargetValue').value = currentProject.target_value || '';
+            document.getElementById('projectCurrentValue').value = currentProject.current_value || '';
             document.getElementById('projectUnit').value = currentProject.unit || '%';
             document.getElementById('projectBudget').value = currentProject.budget || '';
             
@@ -464,7 +536,6 @@
             e.preventDefault();
             
             const formData = {
-                project_code: document.getElementById('projectCode').value,
                 project_name: document.getElementById('projectName').value,
                 description: document.getElementById('projectDescription').value,
                 okr_id: document.getElementById('projectOKR').value || null,
@@ -472,14 +543,14 @@
                 priority: document.getElementById('projectPriority').value,
                 start_date: document.getElementById('projectStartDate').value || null,
                 end_date: document.getElementById('projectEndDate').value || null,
-                deadline: document.getElementById('projectDeadline').value || null,
                 target_value: document.getElementById('projectTargetValue').value || null,
+                current_value: document.getElementById('projectCurrentValue').value || null,
                 unit: document.getElementById('projectUnit').value || '%',
                 budget: document.getElementById('projectBudget').value || null
             };
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const url = currentProject ? `/api/projects-enhanced/projects/${currentProject.id}` : '/api/projects-enhanced/projects';
                 const method = currentProject ? 'PUT' : 'POST';
                 
@@ -509,7 +580,7 @@
             if (!confirm('Bạn có chắc chắn muốn xóa dự án này?')) return;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -562,7 +633,7 @@
 
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }

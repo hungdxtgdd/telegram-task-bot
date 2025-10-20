@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý OKRs - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -41,6 +42,9 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="userInfo" class="text-sm text-gray-700"></span>
+                    <a href="/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
                     <a href="/projects" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
                         <i class="fas fa-project-diagram mr-2"></i>Quản lý Dự án
                     </a>
@@ -236,6 +240,7 @@
         let projects = [];
         let currentOKR = null;
         let keyResultCount = 0;
+        let currentUser = null;
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -252,7 +257,7 @@
 
         async function checkAuth() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 if (!token) {
                     window.location.href = '/login';
                     return;
@@ -264,6 +269,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    currentUser = data.user;
                     document.getElementById('userInfo').textContent = `Xin chào, ${data.user.name}`;
                     
                     // Show user management button for admin
@@ -271,17 +277,30 @@
                         document.getElementById('userManagementBtn').classList.remove('hidden');
                     }
                     
+                    // Setup role-based UI
+                    setupRoleBasedUI();
+                    
                     loadData();
                 } else {
-                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('token');
                     localStorage.removeItem('userInfo');
                     window.location.href = '/login';
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
+            }
+        }
+
+        function setupRoleBasedUI() {
+            // Hide OKR management buttons for regular users
+            if (currentUser.role === 'user') {
+                const addOKRBtn = document.querySelector('button[onclick="showAddOKRModal()"]');
+                if (addOKRBtn) {
+                    addOKRBtn.style.display = 'none';
+                }
             }
         }
 
@@ -303,7 +322,7 @@
 
         async function loadOKRs() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
         const response = await fetch('/api/okrs-enhanced/okrs', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -340,7 +359,7 @@
 
         async function loadUsers() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/users/users?simple=true', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -356,7 +375,7 @@
 
         async function loadProjects() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/projects-enhanced/projects', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -655,7 +674,7 @@
             };
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
         const url = currentOKR ? `/api/okrs-enhanced/okrs/${currentOKR.id}` : '/api/okrs-enhanced/okrs';
         const method = currentOKR ? 'PUT' : 'POST';
                 
@@ -689,7 +708,7 @@
             const notes = document.getElementById('progressNotes').value;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}/update-progress`, {
                     method: 'POST',
                     headers: {
@@ -720,7 +739,7 @@
             if (!confirm('Bạn có chắc chắn muốn xóa OKR này?')) return;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
         const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
@@ -802,13 +821,13 @@
 
         // Go to user management page
         function goToUserManagement() {
-            window.location.href = '/user-management';
+            window.location.href = '/admin-users';
         }
 
 
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 window.location.href = '/login';
             }

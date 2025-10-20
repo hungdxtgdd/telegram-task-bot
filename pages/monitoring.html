@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring - Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .status-healthy { background-color: #10B981; }
+        .status-degraded { background-color: #F59E0B; }
+        .status-unhealthy { background-color: #EF4444; }
+        .metric-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-chart-line mr-2 text-green-600"></i>
+                        System Monitoring
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="refreshData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- System Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Overall Status -->
+            <div class="metric-card rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-90">System Status</p>
+                        <p class="text-2xl font-bold" id="overallStatus">-</p>
+                    </div>
+                    <i class="fas fa-heartbeat text-3xl opacity-80"></i>
+                </div>
+            </div>
+
+            <!-- Response Time -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Response Time</p>
+                        <p class="text-2xl font-bold text-gray-900" id="responseTime">-</p>
+                    </div>
+                    <i class="fas fa-stopwatch text-3xl text-blue-600"></i>
+                </div>
+            </div>
+
+            <!-- Uptime -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Uptime</p>
+                        <p class="text-2xl font-bold text-gray-900" id="uptime">-</p>
+                    </div>
+                    <i class="fas fa-clock text-3xl text-green-600"></i>
+                </div>
+            </div>
+
+            <!-- Memory Usage -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Memory</p>
+                        <p class="text-2xl font-bold text-gray-900" id="memoryUsage">-</p>
+                    </div>
+                    <i class="fas fa-memory text-3xl text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Checks -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Database Status -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Database Health</h3>
+                </div>
+                <div class="p-6">
+                    <div id="databaseStatus" class="space-y-4">
+                        <!-- Database status will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Endpoints Status -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">API Endpoints</h3>
+                </div>
+                <div class="p-6">
+                    <div id="apiStatus" class="space-y-4">
+                        <!-- API status will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Database Response</p>
+                    <p class="text-3xl font-bold text-blue-600" id="dbResponseTime">-</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">API Response</p>
+                    <p class="text-3xl font-bold text-green-600" id="apiResponseTime">-</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Total Requests</p>
+                    <p class="text-3xl font-bold text-purple-600" id="totalRequests">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">System Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-2">Environment</h4>
+                    <p class="text-sm text-gray-600" id="environment">-</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-2">Version</h4>
+                    <p class="text-sm text-gray-600" id="version">-</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-2">Last Check</h4>
+                    <p class="text-sm text-gray-600" id="lastCheck">-</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-2">Next Check</h4>
+                    <p class="text-sm text-gray-600" id="nextCheck">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval;
+
+        // Load monitoring data
+        async function loadMonitoringData() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+
+                // Update overall status
+                document.getElementById('overallStatus').textContent = data.status.toUpperCase();
+                document.getElementById('overallStatus').className = `text-2xl font-bold status-${data.status}`;
+
+                // Update metrics
+                document.getElementById('responseTime').textContent = data.responseTime + 'ms';
+                document.getElementById('uptime').textContent = formatUptime(data.uptime);
+                document.getElementById('memoryUsage').textContent = data.checks.memory?.used || '-';
+
+                // Update database status
+                updateDatabaseStatus(data.checks.database);
+
+                // Update API status
+                updateAPIStatus(data.checks.apis);
+
+                // Update performance metrics
+                document.getElementById('dbResponseTime').textContent = 
+                    data.checks.database?.responseTime + 'ms' || '-';
+                
+                const apiChecks = data.checks.apis || {};
+                const avgApiResponse = Object.values(apiChecks)
+                    .filter(check => check.responseTime)
+                    .reduce((sum, check) => sum + check.responseTime, 0) / 
+                    Object.values(apiChecks).filter(check => check.responseTime).length;
+                
+                document.getElementById('apiResponseTime').textContent = 
+                    avgApiResponse ? Math.round(avgApiResponse) + 'ms' : '-';
+
+                // Update system information
+                document.getElementById('environment').textContent = data.environment || '-';
+                document.getElementById('version').textContent = data.version || '-';
+                document.getElementById('lastCheck').textContent = new Date(data.timestamp).toLocaleString();
+                
+                const nextCheck = new Date(Date.now() + 30000); // 30 seconds from now
+                document.getElementById('nextCheck').textContent = nextCheck.toLocaleString();
+
+            } catch (error) {
+                console.error('Error loading monitoring data:', error);
+                document.getElementById('overallStatus').textContent = 'ERROR';
+                document.getElementById('overallStatus').className = 'text-2xl font-bold status-unhealthy';
+            }
+        }
+
+        function updateDatabaseStatus(dbCheck) {
+            const container = document.getElementById('databaseStatus');
+            if (!dbCheck) {
+                container.innerHTML = '<p class="text-red-600">Database check failed</p>';
+                return;
+            }
+
+            const statusClass = dbCheck.status === 'healthy' ? 'text-green-600' : 
+                               dbCheck.status === 'degraded' ? 'text-yellow-600' : 'text-red-600';
+
+            container.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">Connection</span>
+                    <span class="${statusClass}">${dbCheck.status.toUpperCase()}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Response Time</span>
+                    <span class="text-sm">${dbCheck.responseTime || 0}ms</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Message</span>
+                    <span class="text-sm">${dbCheck.message || 'No message'}</span>
+                </div>
+            `;
+        }
+
+        function updateAPIStatus(apiChecks) {
+            const container = document.getElementById('apiStatus');
+            if (!apiChecks) {
+                container.innerHTML = '<p class="text-red-600">API checks failed</p>';
+                return;
+            }
+
+            let html = '';
+            for (const [name, check] of Object.entries(apiChecks)) {
+                const statusClass = check.status === 'healthy' ? 'text-green-600' : 
+                                   check.status === 'degraded' ? 'text-yellow-600' : 'text-red-600';
+                
+                html += `
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium capitalize">${name}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="${statusClass}">${check.status.toUpperCase()}</span>
+                            ${check.responseTime ? `<span class="text-xs text-gray-500">${check.responseTime}ms</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
+        }
+
+        function refreshData() {
+            loadMonitoringData();
+        }
+
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // Auto-refresh every 30 seconds
+        function startAutoRefresh() {
+            refreshInterval = setInterval(loadMonitoringData, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Initialize monitoring
+        loadMonitoringData();
+        startAutoRefresh();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', stopAutoRefresh);
+    </script>
+</body>
+</html>
