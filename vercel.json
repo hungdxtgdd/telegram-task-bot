@@ -58,10 +58,6 @@
       "use": "@vercel/static"
     },
     {
-      "src": "pages/dashboard-enhanced.html",
-      "use": "@vercel/static"
-    },
-    {
       "src": "pages/monitoring.html",
       "use": "@vercel/static"
     },
@@ -82,10 +78,6 @@
     {
       "src": "/login",
       "dest": "/pages/login.html"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/pages/dashboard-enhanced.html"
     },
     {
       "src": "/monitoring",

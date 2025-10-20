@@ -14,6 +14,9 @@ description: Define testing approach, test cases, and quality assurance
 - **End-to-End Test Scenarios**: Complete user journeys across all roles
 - **Performance Testing**: API response times < 2s, database queries < 500ms
 - **Security Testing**: Authentication, authorization, input validation
+- **Mobile Testing**: Touch interactions, swipe gestures, responsive design
+- **Real-time Testing**: WebSocket connections, live collaboration
+- **Feature Testing**: Camera, voice notes, file attachments
 
 ## Unit Tests
 **What individual components need testing?**
@@ -192,14 +195,15 @@ npm run test:coverage
 ### UI/UX Testing (NEW - Phase 4)
 - [ ] **Design System**: Color palette, typography, spacing consistency
 - [ ] **Mobile-First**: Touch interactions, responsive breakpoints
-- [ ] **Sidebar Navigation**: Collapsible, role-based menu items
-- [ ] **Kanban Boards**: Drag & drop functionality, auto-save
-- [ ] **Smart Dashboard**: Interactive widgets, real-time updates
-- [ ] **Progress Rings**: OKR progress visualization accuracy
-- [ ] **Task Cards**: Hover effects, click interactions
-- [ ] **Project Cards**: Visual hierarchy, quick actions
-- [ ] **Notification System**: Toast, badges, alerts timing
-- [ ] **Real-time Updates**: WebSocket connection, live collaboration
+- [ ] **Hamburger Menu**: Mobile navigation functionality
+- [ ] **Swipe Gestures**: Task completion, navigation gestures
+- [ ] **Pull-to-Refresh**: Data refresh functionality
+- [ ] **Camera Integration**: Photo capture and upload
+- [ ] **Voice Notes**: Audio recording and playback
+- [ ] **File Attachments**: Google Docs/Sheets integration
+- [ ] **Keyboard Shortcuts**: Shortcut functionality and help
+- [ ] **Real-time Updates**: WebSocket live collaboration
+- [ ] **Performance**: < 2s page load, smooth animations
 
 ### Browser/Device Compatibility
 - [ ] **Desktop**: Chrome, Firefox, Safari, Edge

@@ -34,11 +34,12 @@ description: Clarify the problem space, gather requirements, and define success 
 - Báo cáo tiến độ và analytics
 
 ### UI/UX Goals (NEW)
-- **Giao diện thông minh**: Dễ sử dụng, dễ hiểu, flow quản lý thông minh
-- **Mobile-first design**: Tối ưu cho mobile, responsive trên mọi thiết bị
-- **Modern UI/UX**: Thiết kế hiện đại theo chuẩn quốc tế (Asana, Trello, Monday.com)
-- **Workflow thông minh**: Drag & drop, real-time updates, smart notifications
-- **Visual hierarchy**: Rõ ràng, trực quan, dễ navigation
+- **Mobile-first design**: Ưu tiên mobile với hamburger menu, swipe gestures
+- **Modern UI/UX**: Thiết kế hiện đại như CreatorUI - clean, professional
+- **Workflow thông minh**: OKR → Project → Task, tập trung vào Projects & Tasks
+- **Real-time collaboration**: Nhiều người dùng cùng lúc, live updates
+- **Performance optimized**: Page load < 2s, lazy loading, compression vừa phải
+- **User-friendly**: Keyboard shortcuts, global search, breadcrumbs, audit trail
 
 ### Non-goals
 - Không phải là CRM system
@@ -61,12 +62,14 @@ description: Clarify the problem space, gather requirements, and define success 
 - As a **User**, I want to **tạo và quản lý tasks của mình** so that **tôi có thể theo dõi công việc cá nhân**
 
 ### UI/UX User Stories (NEW)
-- As a **User**, I want to **sử dụng giao diện trực quan** so that **tôi có thể quản lý công việc hiệu quả**
-- As a **User**, I want to **drag & drop tasks** so that **tôi có thể cập nhật trạng thái nhanh chóng**
-- As a **User**, I want to **xem real-time updates** so that **tôi luôn có thông tin mới nhất**
-- As a **User**, I want to **sử dụng mobile dễ dàng** so that **tôi có thể làm việc mọi lúc mọi nơi**
-- As a **Manager**, I want to **xem dashboard tổng quan** so that **tôi có cái nhìn toàn diện về team**
-- As a **Manager**, I want to **nhận thông báo thông minh** so that **tôi không bỏ lỡ thông tin quan trọng**
+- As a **User**, I want to **sử dụng mobile dễ dàng** so that **tôi có thể CRUD tasks mọi lúc mọi nơi**
+- As a **User**, I want to **swipe để complete task** so that **tôi có thể cập nhật trạng thái nhanh chóng**
+- As a **User**, I want to **xem real-time updates** so that **tôi luôn có thông tin mới nhất khi team làm việc**
+- As a **User**, I want to **sử dụng keyboard shortcuts** so that **tôi có thể thao tác nhanh hơn**
+- As a **Manager**, I want to **xem dashboard tổng quan** so that **tôi có cái nhìn toàn diện về workload team**
+- As a **Manager**, I want to **xem metrics chi tiết** so that **tôi biết ai quá tải, ai ít việc, ai trễ deadline**
+- As a **User**, I want to **đính kèm Google Docs/Sheets** so that **tôi có thể chia sẻ tài liệu dễ dàng**
+- As a **User**, I want to **ghi chú và comment** so that **tôi có thể thảo luận về tasks**
 
 ### Key Workflows
 1. **Project Creation**: Admin/Manager tạo project → Tự động tạo mã → Assign OKR → Set đơn vị đo lường
@@ -93,16 +96,16 @@ description: Clarify the problem space, gather requirements, and define success 
 - [ ] Web dashboard responsive trên mobile/desktop
 
 ### UI/UX Acceptance Criteria (NEW)
-- [ ] **Modern Design System**: Sử dụng color palette, typography, spacing chuẩn
-- [ ] **Mobile-First**: Giao diện tối ưu cho mobile, touch interactions
-- [ ] **Sidebar Navigation**: Thay thế header buttons bằng sidebar collapsible
-- [ ] **Kanban Boards**: Drag & drop cho task management
-- [ ] **Real-time Updates**: WebSocket cho live collaboration
-- [ ] **Smart Notifications**: Toast, badges, alerts thông minh
-- [ ] **Visual Hierarchy**: Rõ ràng, dễ hiểu, dễ navigation
-- [ ] **Performance**: < 2s page load, smooth animations
-- [ ] **Accessibility**: WCAG 2.1 compliance
-- [ ] **Dark Mode**: Hỗ trợ dark/light theme
+- [ ] **Mobile-First Design**: Hamburger menu, swipe gestures, pull-to-refresh
+- [ ] **Modern UI**: Clean design như CreatorUI, smooth animations vừa phải
+- [ ] **Performance**: < 2s page load, lazy loading, compression vừa phải
+- [ ] **Real-time Collaboration**: WebSocket cho live updates, nhiều người dùng
+- [ ] **User Experience**: Keyboard shortcuts, global search, breadcrumbs
+- [ ] **File Integration**: Đính kèm Google Docs/Sheets links
+- [ ] **Comments System**: Ghi chú và thảo luận trên tasks
+- [ ] **Audit Trail**: Track logs khi edit OKR/Projects/Tasks
+- [ ] **Daily Backup**: Tự động backup 12h đêm mỗi ngày
+- [ ] **Workload Analytics**: Metrics quá tải, ít việc, trễ deadline
 
 ### Detailed UI/UX Requirements by Module (NEW)
 
@@ -150,7 +153,10 @@ description: Clarify the problem space, gather requirements, and define success 
 - **API Response Time**: < 2 giây
 - **Database Queries**: < 500ms
 - **Telegram Bot Response**: < 1 giây
-- **Page Load Time**: < 3 giây
+- **Page Load Time**: < 2 giây (mobile-first)
+- **Lazy Loading**: Load data khi cần thiết
+- **Image Compression**: Vừa phải, không làm bể hình
+- **Real-time Updates**: < 1 giây delay
 
 ## Constraints & Assumptions
 **What limitations do we need to work within?**
@@ -182,10 +188,12 @@ description: Clarify the problem space, gather requirements, and define success 
 - [x] Auto-generated project codes
 
 ### Open Items
-- [ ] **Backup Strategy**: Làm sao backup dữ liệu quan trọng?
-- [ ] **Data Migration**: Có cần migrate từ Google Sheets không?
-- [ ] **Mobile Optimization**: Web dashboard có cần PWA không?
-- [ ] **Analytics**: Cần tracking user behavior không?
+- [x] **Backup Strategy**: Daily backup 12h đêm mỗi ngày ✅
+- [x] **Data Migration**: Không cần migrate từ Google Sheets ✅
+- [x] **Mobile Optimization**: Mobile-first design, không cần PWA ✅
+- [x] **Analytics**: Workload analytics - quá tải, ít việc, trễ deadline ✅
+- [x] **File Storage**: Camera integration với lo ngại Vercel storage limits ✅
+- [x] **Voice Notes**: Có nếu có thể implement ✅
 
 ### Research Needed
 - [ ] **Vercel Limits**: Kiểm tra giới hạn của Hobby plan

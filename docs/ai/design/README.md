@@ -725,25 +725,226 @@ xl: 1280px  /* Large Desktop */
 
 #### Mobile Navigation Patterns
 ```css
-/* Bottom Navigation */
-.mobile-nav {
+/* Hamburger Menu */
+.hamburger-menu {
   position: fixed;
-  bottom: 0;
+  top: 0;
   left: 0;
-  right: 0;
-  height: 60px;
+  width: 280px;
+  height: 100vh;
   background: white;
-  border-top: 1px solid #e5e7eb;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
 }
 
-/* Collapsible Sidebar */
-.sidebar {
-  transform: translateX(-100%);
+.hamburger-menu.open {
+  transform: translateX(0);
+}
+
+/* Swipe Gestures */
+.swipe-container {
+  touch-action: pan-x;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.swipe-item {
   transition: transform 0.3s ease;
 }
 
-.sidebar.open {
-  transform: translateX(0);
+.swipe-item.swiping {
+  transform: translateX(var(--swipe-distance));
+}
+
+/* Pull to Refresh */
+.pull-to-refresh {
+  position: relative;
+  overflow: hidden;
+}
+
+.refresh-indicator {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 0.3s ease;
+}
+
+.refresh-indicator.active {
+  top: 20px;
+}
+```
+
+### Mobile-Specific Features (NEW)
+
+#### Camera Integration
+```css
+/* Camera Modal */
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 2000;
+}
+
+.camera-preview {
+  width: 100%;
+  height: 70%;
+  object-fit: cover;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* File Attachment */
+.file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.file-icon {
+  width: 24px;
+  height: 24px;
+  color: #3b82f6;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: #374151;
+  text-decoration: none;
+}
+
+.file-name:hover {
+  text-decoration: underline;
+}
+```
+
+#### Voice Notes
+```css
+/* Voice Recording */
+.voice-recorder {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.voice-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-button.recording {
+  background: #dc2626;
+  animation: pulse 1s infinite;
+}
+
+.voice-button:hover {
+  transform: scale(1.05);
+}
+
+.voice-waveform {
+  flex: 1;
+  height: 40px;
+  background: #e5e7eb;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.voice-wave {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #3b82f6;
+  transform: translateY(-50%);
+  animation: wave 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes wave {
+  0%, 100% { transform: translateY(-50%) scaleX(0.3); }
+  50% { transform: translateY(-50%) scaleX(1); }
+}
+```
+
+#### Keyboard Shortcuts
+```css
+/* Shortcut Help Modal */
+.shortcut-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 1500;
+  max-width: 500px;
+  width: 90%;
+}
+
+.shortcut-list {
+  padding: 1.5rem;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.shortcut-key {
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.shortcut-description {
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 ```
 

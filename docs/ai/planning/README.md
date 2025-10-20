@@ -222,10 +222,16 @@ description: Break down work into actionable tasks and estimate timeline
 - **Target**: Complete by end of week
 
 ### Phase 4: UI/UX Enhancement 🎨 NEW - HIGH PRIORITY
-- **Duration**: 2-3 weeks
-- **Effort**: 40 hours
+- **Duration**: 3-4 weeks (updated for mobile features)
+- **Effort**: 60 hours (updated for additional features)
 - **Status**: 📋 Planned
 - **Target**: Complete by end of month
+
+### Phase 4.1: Mobile-First Implementation 📱 NEW
+- **Duration**: 2 weeks
+- **Effort**: 35 hours
+- **Status**: 📋 Planned
+- **Target**: Complete by mid-month
 
 ### Phase 5: Production Ready 📋 PLANNED
 - **Duration**: 2-3 days
@@ -234,9 +240,15 @@ description: Break down work into actionable tasks and estimate timeline
 - **Target**: Complete by next week
 
 ### Overall Timeline
-- **Total Duration**: 5-6 weeks (updated with UI/UX phase)
-- **Total Effort**: 150 hours (updated with UI/UX effort)
+- **Total Duration**: 6-7 weeks (updated with mobile features)
+- **Total Effort**: 170 hours (updated with mobile features)
 - **Current Progress**: 60% complete (adjusted for new phase)
+
+### Mobile Features Timeline (NEW)
+- **Week 1**: Design System + Mobile Navigation
+- **Week 2**: Swipe Gestures + Camera Integration
+- **Week 3**: Voice Notes + Real-time Collaboration
+- **Week 4**: Performance Optimization + Testing
 
 ## Risks & Mitigation
 **What could go wrong?**

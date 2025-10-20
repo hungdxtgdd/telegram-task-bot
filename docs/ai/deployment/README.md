@@ -18,8 +18,11 @@ description: Define deployment process, infrastructure, and release procedures
 ### Infrastructure Components
 - **Serverless Functions**: Node.js 18+ Edge Functions
 - **Database**: PostgreSQL with connection pooling
-- **Storage**: Database-only (no file storage)
+- **Storage**: Database-only (no file storage for camera uploads)
 - **External APIs**: Telegram Bot API
+- **Real-time**: WebSocket connections for live collaboration
+- **File Storage**: Google Drive integration for attachments
+- **Backup**: Daily automated backup at 12 AM
 
 ### Environment Separation
 - **Development**: Local development with `vercel dev`
