@@ -169,10 +169,15 @@
                     }
                 });
 
+                console.log('[DEBUG] Verify response status:', response.status);
+                console.log('[DEBUG] Verify response ok:', response.ok);
+
                 if (!response.ok) {
-                    console.log('Token verification failed, removing token and showing login form');
-                    console.log('Response status:', response.status);
-                    console.log('Response statusText:', response.statusText);
+                    console.error('[ERROR] Token verification failed!');
+                    console.error('[ERROR] Response status:', response.status);
+                    console.error('[ERROR] Response statusText:', response.statusText);
+                    const errorText = await response.text();
+                    console.error('[ERROR] Response body:', errorText);
                     localStorage.removeItem('token');
                     showLoginForm();
                     authCheckInProgress = false;
@@ -180,11 +185,13 @@
                 }
 
                 const data = await response.json();
-                console.log('Token verification successful, user:', data.user);
-                console.log('Response data:', data);
+                console.log('[DEBUG] Token verification successful!');
+                console.log('[DEBUG] Response data:', JSON.stringify(data));
+                console.log('[DEBUG] User data:', JSON.stringify(data.user));
                 
                 if (!data.user) {
-                    console.error('No user data in response:', data);
+                    console.error('[ERROR] No user data in response!');
+                    console.error('[ERROR] Full response:', JSON.stringify(data));
                     localStorage.removeItem('token');
                     showLoginForm();
                     authCheckInProgress = false;
@@ -286,6 +293,8 @@
                 console.log('Dashboard data loaded successfully');
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+                // Don't redirect to login on data loading errors
+                // The user is already authenticated, just show error in UI
             }
         }
 
