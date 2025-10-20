@@ -606,8 +606,12 @@
             }, 100);
         }
 
-        // Initialize dashboard
-        initDashboard();
+        // Initialize dashboard with delay to allow console to open
+        console.log('[DASHBOARD] Starting dashboard initialization...');
+        setTimeout(() => {
+            console.log('[DASHBOARD] Calling initDashboard...');
+            initDashboard();
+        }, 2000);
     </script>
 </body>
 </html>

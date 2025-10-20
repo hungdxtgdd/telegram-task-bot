@@ -104,6 +104,48 @@ description: Clarify the problem space, gather requirements, and define success 
 - [ ] **Accessibility**: WCAG 2.1 compliance
 - [ ] **Dark Mode**: Hỗ trợ dark/light theme
 
+### Detailed UI/UX Requirements by Module (NEW)
+
+#### 👥 Users Management Module
+- [ ] **User Cards Layout**: Card-based design thay vì table
+- [ ] **Smart Search**: Real-time search với filter chips
+- [ ] **User Analytics**: Dashboard với user statistics
+- [ ] **Bulk Operations**: Multi-select với bulk actions
+- [ ] **Role Visualization**: Color-coded role indicators
+- [ ] **Activity Timeline**: User activity history
+- [ ] **Mobile Navigation**: Bottom tabs cho mobile
+- [ ] **Floating Action Button**: Quick add user
+
+#### 🎯 OKRs Management Module
+- [ ] **Progress Rings**: Circular progress indicators
+- [ ] **OKR Cards**: Card layout với key results
+- [ ] **Quarterly View**: Timeline view cho quarters
+- [ ] **Analytics Dashboard**: Performance charts
+- [ ] **Key Results Visualization**: Progress bars cho KRs
+- [ ] **Project Linking**: Visual connection to projects
+- [ ] **Status Indicators**: Color-coded status badges
+- [ ] **Mobile Gestures**: Swipe to update progress
+
+#### 📁 Projects Management Module
+- [ ] **Kanban Board**: Drag & drop project management
+- [ ] **Project Cards**: Rich project cards với progress
+- [ ] **Timeline View**: Gantt-style project timeline
+- [ ] **Health Metrics**: Project health indicators
+- [ ] **Team Assignment**: Visual team member assignment
+- [ ] **Budget Tracking**: Visual budget progress
+- [ ] **Milestone Tracking**: Project milestone visualization
+- [ ] **Mobile Kanban**: Touch-friendly kanban board
+
+#### ✅ Tasks Management Module
+- [ ] **Task Kanban**: Multi-column task board
+- [ ] **Task Cards**: Rich task cards với metadata
+- [ ] **Priority Indicators**: Visual priority system
+- [ ] **Assignee Avatars**: User avatar assignments
+- [ ] **Deadline Alerts**: Visual deadline warnings
+- [ ] **Time Tracking**: Built-in time tracking
+- [ ] **Task Dependencies**: Visual dependency lines
+- [ ] **Mobile Task View**: Optimized mobile task interface
+
 ### Performance Benchmarks
 - **API Response Time**: < 2 giây
 - **Database Queries**: < 500ms
