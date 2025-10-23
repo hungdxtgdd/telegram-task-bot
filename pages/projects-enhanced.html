@@ -241,6 +241,16 @@
                 tokenLength: token ? token.length : 0,
                 allKeys: Object.keys(localStorage)
             });
+            
+            // Test token every 5 seconds
+            setInterval(() => {
+                const currentToken = localStorage.getItem('token');
+                console.log('Token check interval:', {
+                    token: currentToken ? currentToken.substring(0, 20) + '...' : 'null',
+                    tokenLength: currentToken ? currentToken.length : 0,
+                    timestamp: new Date().toISOString()
+                });
+            }, 5000);
         });
 
         async function checkAuth() {
@@ -610,9 +620,15 @@
 
         async function deleteProject(projectId) {
             try {
+                console.log('=== DELETE PROJECT START ===');
+                console.log('Project ID:', projectId);
+                console.log('Current URL:', window.location.href);
+                console.log('Current timestamp:', new Date().toISOString());
+                
                 // Ensure we have a valid token
                 const token = ensureValidToken();
                 if (!token) {
+                    console.log('=== DELETE PROJECT FAILED - NO TOKEN ===');
                     return; // ensureValidToken already handles redirect
                 }
                 
@@ -621,7 +637,11 @@
                     token: token.substring(0, 20) + '...',
                     tokenLength: token.length,
                     userInfo: localStorage.getItem('userInfo') ? 'exists' : 'missing',
-                    allLocalStorage: Object.keys(localStorage)
+                    allLocalStorage: Object.keys(localStorage),
+                    localStorageContent: {
+                        token: localStorage.getItem('token') ? 'exists' : 'missing',
+                        userInfo: localStorage.getItem('userInfo') ? 'exists' : 'missing'
+                    }
                 });
 
                 console.log('Deleting project:', projectId);
@@ -634,10 +654,20 @@
                 };
                 
                 console.log('Request headers:', headers);
+                console.log('Authorization header value:', headers.Authorization);
+                console.log('Full token for verification:', token);
 
+                console.log('Making DELETE request to:', `/api/projects-enhanced/projects/${projectId}`);
                 const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
                     method: 'DELETE',
                     headers: headers
+                });
+                
+                console.log('Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
                 });
 
                 if (response.ok) {
