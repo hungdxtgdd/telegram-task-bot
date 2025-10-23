@@ -150,54 +150,6 @@
                         </div>
                     </div>
     
-    <!-- Desktop Layout -->
-    <div class="lg:flex">
-        <!-- Desktop Sidebar -->
-        <div id="desktop-sidebar-container"></div>
-        
-        <!-- Main Content -->
-        <div class="flex-1 lg:ml-64">
-            <!-- Mobile Header -->
-            <header class="bg-white shadow-sm border-b lg:hidden">
-                <div class="px-4 py-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <h1 class="text-xl font-semibold text-gray-900">
-                                <i class="fas fa-project-diagram mr-2 text-primary-600"></i>
-                                Projects
-                            </h1>
-                        </div>
-                        <button id="hamburger-btn" class="btn-icon" onclick="toggleMobileMenu()">
-                            <i class="fas fa-bars text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Desktop Header -->
-            <header class="bg-white shadow-sm border-b hidden lg:block">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between items-center py-4">
-                        <div class="flex items-center">
-                            <h1 class="text-2xl font-bold text-gray-900">
-                                <i class="fas fa-project-diagram mr-2 text-primary-600"></i>
-                                Quản lý Projects
-                            </h1>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button onclick="showAddProjectModal()" class="btn btn-primary">
-                                <i class="fas fa-plus mr-2"></i>
-                                Thêm Project
-                            </button>
-                            <button onclick="toggleViewMode()" class="btn btn-ghost" id="viewModeBtn">
-                                <i class="fas fa-th-large mr-2"></i>
-                                Kanban
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <!-- Main Content -->
             <main class="p-4 lg:p-8">
                 <!-- Stats Cards -->
@@ -392,8 +344,6 @@
                     </button>
                 </div>
             </main>
-        </div>
-    </div>
 
     <!-- Add Project Modal -->
     <div id="addProjectModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
@@ -544,33 +494,11 @@
         // Mobile navigation and sidebar are now handled by CoreUI layout
         // No need to fetch external components
 
-        // Load keyboard shortcuts
-        fetch('/components/ui/keyboard-shortcuts.html')
-            .then(response => response.text())
-            .then(html => {
-                document.body.insertAdjacentHTML('beforeend', html);
-            });
-
-        // Load camera integration
-        fetch('/components/ui/camera-integration.html')
-            .then(response => response.text())
-            .then(html => {
-                document.body.insertAdjacentHTML('beforeend', html);
-            });
-
-        // Load voice notes
-        fetch('/components/ui/voice-notes.html')
-            .then(response => response.text())
-            .then(html => {
-                document.body.insertAdjacentHTML('beforeend', html);
-            });
+        // Components are now handled by CoreUI layout
+        // No need to fetch external components
     </script>
 
-    <!-- Load Mobile Gestures -->
-    <script src="/components/ui/swipe-gestures.js"></script>
-    <script src="/components/ui/pull-to-refresh.js"></script>
-    <script src="/components/ui/infinite-scroll.js"></script>
-    <script src="/components/ui/realtime-collaboration.js"></script>
+    <!-- Mobile Gestures are now handled by CoreUI -->
 
     <!-- Main JavaScript -->
     <script>
