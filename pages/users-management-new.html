@@ -542,31 +542,51 @@
         // Setup event listeners
         function setupEventListeners() {
             // Search
-            document.getElementById('searchInput').addEventListener('input', filterUsers);
-            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterUsers);
+            }
             
             // Filters
-            document.getElementById('roleFilter').addEventListener('change', filterUsers);
-            document.getElementById('statusFilter').addEventListener('change', filterUsers);
+            const roleFilter = document.getElementById('roleFilter');
+            if (roleFilter) {
+                roleFilter.addEventListener('change', filterUsers);
+            }
+            
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterUsers);
+            }
             
             // Forms
-            document.getElementById('addUserForm').addEventListener('submit', handleAddUser);
-            document.getElementById('editUserForm').addEventListener('submit', handleEditUser);
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', handleAddUser);
+            }
+            
+            const editUserForm = document.getElementById('editUserForm');
+            if (editUserForm) {
+                editUserForm.addEventListener('submit', handleEditUser);
+            }
         }
 
         // Filter users
         function filterUsers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const roleFilter = document.getElementById('roleFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+            const searchInput = document.getElementById('searchInput');
+            const roleFilter = document.getElementById('roleFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const roleValue = roleFilter ? roleFilter.value : '';
+            const statusValue = statusFilter ? statusFilter.value : '';
             
             filteredUsers = users.filter(user => {
                 const matchesSearch = !searchTerm || 
                     (user.full_name && user.full_name.toLowerCase().includes(searchTerm)) ||
                     (user.email && user.email.toLowerCase().includes(searchTerm));
                 
-                const matchesRole = !roleFilter || user.role === roleFilter;
-                const matchesStatus = !statusFilter || (user.status || 'active') === statusFilter;
+                const matchesRole = !roleValue || user.role === roleValue;
+                const matchesStatus = !statusValue || (user.status || 'active') === statusValue;
                 
                 return matchesSearch && matchesRole && matchesStatus;
             });

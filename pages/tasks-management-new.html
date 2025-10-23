@@ -828,34 +828,59 @@
         // Setup event listeners
         function setupEventListeners() {
             // Search
-            document.getElementById('searchInput').addEventListener('input', filterTasks);
-            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterTasks);
+            }
             
             // Filters
-            document.getElementById('statusFilter').addEventListener('change', filterTasks);
-            document.getElementById('priorityFilter').addEventListener('change', filterTasks);
-            document.getElementById('assigneeFilter').addEventListener('change', filterTasks);
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterTasks);
+            }
+            
+            const priorityFilter = document.getElementById('priorityFilter');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', filterTasks);
+            }
+            
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            if (assigneeFilter) {
+                assigneeFilter.addEventListener('change', filterTasks);
+            }
             
             // Forms
-            document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
-            document.getElementById('editTaskForm').addEventListener('submit', handleEditTask);
+            const addTaskForm = document.getElementById('addTaskForm');
+            if (addTaskForm) {
+                addTaskForm.addEventListener('submit', handleAddTask);
+            }
+            
+            const editTaskForm = document.getElementById('editTaskForm');
+            if (editTaskForm) {
+                editTaskForm.addEventListener('submit', handleEditTask);
+            }
         }
 
         // Filter tasks
         function filterTasks() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            const assigneeFilter = document.getElementById('assigneeFilter').value;
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const priorityFilter = document.getElementById('priorityFilter');
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const statusValue = statusFilter ? statusFilter.value : '';
+            const priorityValue = priorityFilter ? priorityFilter.value : '';
+            const assigneeValue = assigneeFilter ? assigneeFilter.value : '';
             
             filteredTasks = tasks.filter(task => {
                 const matchesSearch = !searchTerm || 
                     (task.title && task.title.toLowerCase().includes(searchTerm)) ||
                     (task.description && task.description.toLowerCase().includes(searchTerm));
                 
-                const matchesStatus = !statusFilter || task.status === statusFilter;
-                const matchesPriority = !priorityFilter || task.priority === priorityFilter;
-                const matchesAssignee = !assigneeFilter || task.assignee_id == assigneeFilter;
+                const matchesStatus = !statusValue || task.status === statusValue;
+                const matchesPriority = !priorityValue || task.priority === priorityValue;
+                const matchesAssignee = !assigneeValue || task.assignee_id == assigneeValue;
                 
                 return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
             });

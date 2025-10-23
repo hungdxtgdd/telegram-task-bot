@@ -924,41 +924,67 @@
             const units = [...new Set(okrs.map(o => o.unit).filter(Boolean))];
             const unitFilter = document.getElementById('unitFilter');
             
-            unitFilter.innerHTML = '<option value="">Tất cả units</option>' + 
-                units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+            if (unitFilter) {
+                unitFilter.innerHTML = '<option value="">Tất cả units</option>' + 
+                    units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+            }
         }
 
         // Setup event listeners
         function setupEventListeners() {
             // Search
-            document.getElementById('searchInput').addEventListener('input', filterOKRs);
-            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterOKRs);
+            }
             
             // Filters
-            document.getElementById('statusFilter').addEventListener('change', filterOKRs);
-            document.getElementById('quarterFilter').addEventListener('change', filterOKRs);
-            document.getElementById('unitFilter').addEventListener('change', filterOKRs);
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterOKRs);
+            }
+            
+            const quarterFilter = document.getElementById('quarterFilter');
+            if (quarterFilter) {
+                quarterFilter.addEventListener('change', filterOKRs);
+            }
+            const unitFilter = document.getElementById('unitFilter');
+            if (unitFilter) {
+                unitFilter.addEventListener('change', filterOKRs);
+            }
             
             // Forms
-            document.getElementById('addOKRForm').addEventListener('submit', handleAddOKR);
-            document.getElementById('editOKRForm').addEventListener('submit', handleEditOKR);
+            const addOKRForm = document.getElementById('addOKRForm');
+            if (addOKRForm) {
+                addOKRForm.addEventListener('submit', handleAddOKR);
+            }
+            
+            const editOKRForm = document.getElementById('editOKRForm');
+            if (editOKRForm) {
+                editOKRForm.addEventListener('submit', handleEditOKR);
+            }
         }
 
         // Filter OKRs
         function filterOKRs() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const quarterFilter = document.getElementById('quarterFilter').value;
-            const unitFilter = document.getElementById('unitFilter').value;
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const quarterFilter = document.getElementById('quarterFilter');
+            const unitFilter = document.getElementById('unitFilter');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const statusValue = statusFilter ? statusFilter.value : '';
+            const quarterValue = quarterFilter ? quarterFilter.value : '';
+            const unitValue = unitFilter ? unitFilter.value : '';
             
             filteredOKRs = okrs.filter(okr => {
                 const matchesSearch = !searchTerm || 
                     (okr.objective && okr.objective.toLowerCase().includes(searchTerm)) ||
                     (okr.description && okr.description.toLowerCase().includes(searchTerm));
                 
-                const matchesStatus = !statusFilter || okr.status === statusFilter;
-                const matchesQuarter = !quarterFilter || okr.quarter === quarterFilter;
-                const matchesUnit = !unitFilter || okr.unit === unitFilter;
+                const matchesStatus = !statusValue || okr.status === statusValue;
+                const matchesQuarter = !quarterValue || okr.quarter === quarterValue;
+                const matchesUnit = !unitValue || okr.unit === unitValue;
                 
                 return matchesSearch && matchesStatus && matchesQuarter && matchesUnit;
             });
