@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý User - Task Management System</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CoreUI CSS -->
+    <link href="/assets/css/coreui.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/design-system.css">
     <style>
         .role-admin { background-color: var(--error-100); color: var(--error-800); }
         .role-manager { background-color: var(--primary-100); color: var(--primary-800); }
@@ -16,38 +16,84 @@
         .status-inactive { background-color: var(--gray-100); color: var(--gray-600); }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Mobile Navigation -->
-    <div id="mobile-nav-container"></div>
-    
-    <!-- Desktop Layout -->
-    <div class="lg:flex">
-        <!-- Desktop Sidebar -->
-        <div id="desktop-sidebar-container"></div>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4 class="text-white">Task Manager</h4>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/okrs">
+                            <i class="nav-icon fas fa-bullseye"></i>
+                            OKRs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects">
+                            <i class="nav-icon fas fa-folder"></i>
+                            Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tasks">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/users">
+                            <i class="nav-icon fas fa-users"></i>
+                            Users
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
         
         <!-- Main Content -->
-        <div class="flex-1 lg:ml-64">
-            <!-- Mobile Header -->
-            <header class="bg-white shadow-sm border-b lg:hidden">
-                <div class="px-4 py-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <h1 class="text-xl font-semibold text-gray-900">
-                                <i class="fas fa-users mr-2 text-primary-600"></i>
-                                Users
-                            </h1>
+        <div class="main">
+            <!-- Header -->
+            <header class="header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="sidebar-toggler">
+                                <i class="fas fa-bars"></i>
+                            </button>
                         </div>
-                        <button id="hamburger-btn" class="btn-icon" onclick="toggleMobileMenu()">
-                            <i class="fas fa-bars text-xl"></i>
-                        </button>
+                        <div class="col-6 text-right">
+                            <span class="text-muted">Welcome, Admin</span>
+                        </div>
                     </div>
                 </div>
             </header>
             
-            <!-- Desktop Header -->
-            <header class="bg-white shadow-sm border-b hidden lg:block">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between items-center py-4">
+            <!-- Content -->
+            <main class="content">
+                <div class="container-fluid">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Users</li>
+                        </ol>
+                    </nav>
+                    
+                    <!-- Page Title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h1>Quản lý Users</h1>
+                        </div>
+                    </div>
                         <div class="flex items-center">
                             <h1 class="text-2xl font-bold text-gray-900">
                                 <i class="fas fa-users mr-2 text-primary-600"></i>
@@ -128,46 +174,43 @@
                     </div>
                 </div>
 
-                <!-- Search and Filters -->
-                <div class="card mb-6">
-                    <div class="card-body">
-                        <div class="flex flex-col lg:flex-row gap-4">
-                            <!-- Search -->
-                            <div class="flex-1">
-                                <div class="relative">
-                                    <input type="search" id="searchInput" class="input pl-10" placeholder="Tìm kiếm users...">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                    <!-- Filter Bar -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control" placeholder="Tìm kiếm users..." id="searchInput">
                                     </div>
-                                    <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
-                                        <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="roleFilter">
+                                        <option value="">Tất cả roles</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="manager">Manager</option>
+                                        <option value="member">Member</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="statusFilter">
+                                        <option value="">Tất cả status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary" onclick="addUser()">
+                                        <i class="fas fa-plus"></i> Thêm User
                                     </button>
                                 </div>
                             </div>
-                            
-                            <!-- Filters -->
-                            <div class="flex gap-2">
-                                <select id="roleFilter" class="select">
-                                    <option value="">Tất cả roles</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="manager">Manager</option>
-                                    <option value="member">Member</option>
-                                </select>
-                                
-                                <select id="statusFilter" class="select">
-                                    <option value="">Tất cả status</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                                
-                                <button onclick="clearFilters()" class="btn btn-ghost">
-                                    <i class="fas fa-times mr-2"></i>
-                                    Clear
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Users Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="usersGrid">
@@ -838,5 +881,8 @@
             // This will be overridden by the mobile nav component
         }
     </script>
+    
+    <!-- CoreUI JS -->
+    <script src="/assets/js/coreui.js"></script>
 </body>
 </html>

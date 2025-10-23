@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý OKRs - Task Management System</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
-    <link rel="stylesheet" href="/assets/css/tailwind.css">
+    <!-- CoreUI CSS -->
+    <link href="/assets/css/coreui.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/design-system.css">
     <style>
         .okr-status-active { border-left: 4px solid var(--primary-500); }
         .okr-status-achieved { border-left: 4px solid var(--success-500); }
@@ -78,9 +78,84 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Mobile Navigation -->
-    <div id="mobile-nav-container"></div>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4 class="text-white">Task Manager</h4>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/okrs">
+                            <i class="nav-icon fas fa-bullseye"></i>
+                            OKRs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects">
+                            <i class="nav-icon fas fa-folder"></i>
+                            Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tasks">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users">
+                            <i class="nav-icon fas fa-users"></i>
+                            Users
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Header -->
+            <header class="header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="sidebar-toggler">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        </div>
+                        <div class="col-6 text-right">
+                            <span class="text-muted">Welcome, Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <main class="content">
+                <div class="container-fluid">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item active">OKRs</li>
+                        </ol>
+                    </nav>
+                    
+                    <!-- Page Title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h1>Quản lý OKRs</h1>
+                        </div>
+                    </div>
     
     <!-- OKR Detail Modal - Slide-in from right -->
     <div id="okrDetailModalOverlay" class="slide-modal-overlay"></div>
@@ -248,60 +323,46 @@
                     </div>
                 </div>
 
-                <!-- Material Design Filter Bar -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                    <div class="flex flex-col lg:flex-row gap-4">
-                        <!-- Search -->
-                        <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                            <input type="search" id="searchInput" class="w-full pl-10 pr-4 py-3 text-sm text-gray-900 placeholder-gray-500 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="Tìm kiếm OKRs...">
-                        </div>
-                        
-                        <!-- Filters -->
-                        <div class="flex flex-wrap gap-3">
-                            <div class="relative">
-                                <select id="statusFilter" class="appearance-none bg-white border border-gray-300 rounded-md px-4 py-3 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400">
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="active">Đang hoạt động</option>
-                                    <option value="achieved">Đã đạt được</option>
-                                    <option value="at-risk">Có rủi ro</option>
-                                    <option value="dropped">Đã hủy</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
+                    <!-- Filter Bar -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control" placeholder="Tìm kiếm OKRs..." id="searchInput">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="statusFilter">
+                                        <option value="">Tất cả trạng thái</option>
+                                        <option value="active">Đang hoạt động</option>
+                                        <option value="achieved">Đã đạt được</option>
+                                        <option value="at-risk">Có rủi ro</option>
+                                        <option value="dropped">Đã hủy</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="quarterFilter">
+                                        <option value="">Tất cả quý</option>
+                                        <option value="Q1">Q1 2024</option>
+                                        <option value="Q2">Q2 2024</option>
+                                        <option value="Q3">Q3 2024</option>
+                                        <option value="Q4">Q4 2024</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary" onclick="addOKR()">
+                                        <i class="fas fa-plus"></i> Thêm OKR
+                                    </button>
                                 </div>
                             </div>
-                            
-                            <div class="relative">
-                                <select id="quarterFilter" class="appearance-none bg-white border border-gray-300 rounded-md px-4 py-3 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400">
-                                    <option value="">Tất cả quý</option>
-                                    <option value="Q1">Q1 2024</option>
-                                    <option value="Q2">Q2 2024</option>
-                                    <option value="Q3">Q3 2024</option>
-                                    <option value="Q4">Q4 2024</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            
-                            <button onclick="clearFilters()" class="inline-flex items-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Xóa bộ lọc
-                            </button>
                         </div>
                     </div>
-                </div>
 
                 <!-- Analytics View -->
                 <div id="analyticsView" class="hidden">
@@ -1458,5 +1519,8 @@
         
         <input type="hidden" id="deleteOkrId" value="">
     </div>
+    
+    <!-- CoreUI JS -->
+    <script src="/assets/js/coreui.js"></script>
 </body>
 </html>
