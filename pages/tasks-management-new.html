@@ -1022,24 +1022,64 @@
 
         // Delete task
         async function deleteTask(taskId) {
-            if (!confirm('Bạn có chắc chắn muốn xóa task này?')) return;
+            // Show delete confirmation modal
+            showDeleteConfirm(taskId);
+        }
+
+        // Show delete confirmation modal
+        function showDeleteConfirm(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task) return;
+            
+            document.getElementById('deleteTaskId').value = taskId;
+            document.getElementById('deleteTaskName').textContent = task.task_name;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        // Hide delete confirmation modal
+        function hideDeleteConfirm() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+        }
+
+        // Confirm delete task
+        async function confirmDelete() {
+            const taskId = document.getElementById('deleteTaskId').value;
+            hideDeleteConfirm();
             
             try {
-                const response = await fetch(`/api/tasks-enhanced/${taskId}`, {
-                    method: 'DELETE'
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(`/api/tasks-enhanced/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
+                if (response.ok) {
+                    const data = await response.json();
                     showSuccess('Xóa task thành công!');
                     loadTasks();
                 } else {
-                    showError('Lỗi khi xóa task: ' + data.message);
+                    const error = await response.json();
+                    if (response.status === 401) {
+                        showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('userInfo');
+                        window.location.href = '/login';
+                    } else {
+                        showError('Lỗi khi xóa task: ' + (error.error || 'Không thể xóa task'));
+                    }
                 }
             } catch (error) {
                 console.error('Error deleting task:', error);
-                showError('Lỗi khi xóa task');
+                showError('Lỗi khi xóa task: ' + error.message);
             }
         }
 
@@ -1322,6 +1362,46 @@
         <div id="taskDetailContent" class="p-6">
             <!-- Content will be populated by JavaScript -->
         </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden">
+        <!-- Overlay -->
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 transition-opacity" onclick="hideDeleteConfirm()"></div>
+        
+        <!-- Modal Content -->
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto transform transition-all">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Xác nhận xóa task</h3>
+                    
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-gray-600 mb-2">
+                            Bạn có chắc chắn muốn xóa task <span id="deleteTaskName" class="font-semibold text-gray-900"></span>?
+                        </p>
+                        <p class="text-sm text-red-600">
+                            <i class="fas fa-warning mr-1"></i>
+                            Hành động này không thể hoàn tác.
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-3 justify-end">
+                        <button onclick="hideDeleteConfirm()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                            <i class="fas fa-times mr-1"></i>Hủy
+                        </button>
+                        <button onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors">
+                            <i class="fas fa-trash mr-1"></i>Xóa task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <input type="hidden" id="deleteTaskId" value="">
     </div>
 </body>
 </html>
