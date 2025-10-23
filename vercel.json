@@ -102,6 +102,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "pages/test-delete.html",
+      "use": "@vercel/static"
+    },
+    {
       "src": "assets/css/design-system.css",
       "use": "@vercel/static"
     },
@@ -182,6 +186,10 @@
     {
       "src": "/test-login",
       "dest": "/pages/test-login.html"
+    },
+    {
+      "src": "/test-delete",
+      "dest": "/pages/test-delete.html"
     },
     {
       "src": "/projects",
