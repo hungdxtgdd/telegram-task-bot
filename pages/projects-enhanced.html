@@ -224,8 +224,17 @@
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, checking auth...');
             checkAuth();
             setupEventListeners();
+            
+            // Test token availability
+            const token = localStorage.getItem('token');
+            console.log('Token check on page load:', {
+                token: token ? token.substring(0, 20) + '...' : 'null',
+                tokenLength: token ? token.length : 0,
+                allKeys: Object.keys(localStorage)
+            });
         });
 
         async function checkAuth() {
@@ -595,23 +604,19 @@
 
         async function deleteProject(projectId) {
             try {
-                const token = localStorage.getItem('token');
+                // Ensure we have a valid token
+                const token = ensureValidToken();
+                if (!token) {
+                    return; // ensureValidToken already handles redirect
+                }
+                
                 console.log('Delete project debug:', {
                     projectId: projectId,
-                    token: token ? token.substring(0, 20) + '...' : 'null',
-                    tokenLength: token ? token.length : 0,
-                    localStorage: {
-                        token: localStorage.getItem('token') ? 'exists' : 'missing',
-                        userInfo: localStorage.getItem('userInfo') ? 'exists' : 'missing'
-                    }
+                    token: token.substring(0, 20) + '...',
+                    tokenLength: token.length,
+                    userInfo: localStorage.getItem('userInfo') ? 'exists' : 'missing',
+                    allLocalStorage: Object.keys(localStorage)
                 });
-
-                if (!token) {
-                    console.error('No token found in localStorage');
-                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                    window.location.href = '/login';
-                    return;
-                }
 
                 console.log('Deleting project:', projectId);
                 console.log('Token:', token);
@@ -683,6 +688,19 @@
 
         function refreshData() {
             loadData();
+        }
+
+        // Function to ensure we have a valid token
+        function ensureValidToken() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found, redirecting to login');
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+                return null;
+            }
+            return token;
         }
 
 
