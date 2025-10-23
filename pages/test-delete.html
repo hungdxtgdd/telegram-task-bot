@@ -16,9 +16,17 @@
         <div class="bg-white p-6 rounded-lg shadow mb-6">
             <h2 class="text-lg font-semibold mb-4">Token Status</h2>
             <div id="tokenStatus" class="text-sm text-gray-600"></div>
-            <button onclick="checkToken()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Check Token
-            </button>
+            <div class="mt-4 space-x-2">
+                <button onclick="checkToken()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Check Token
+                </button>
+                <button onclick="autoLogin()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Auto Login
+                </button>
+                <button onclick="clearToken()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Clear Token
+                </button>
+            </div>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow mb-6">
@@ -54,6 +62,40 @@
 
         function clearLogs() {
             document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        async function autoLogin() {
+            log('=== Auto Login Start ===');
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    log(`Login successful! Token: ${data.token.substring(0, 20)}...`);
+                    checkToken();
+                } else {
+                    const error = await response.json();
+                    log(`Login failed: ${error.error}`);
+                }
+            } catch (error) {
+                log(`Login error: ${error.message}`);
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userInfo');
+            log('Token cleared from localStorage');
+            checkToken();
         }
 
         function checkToken() {
