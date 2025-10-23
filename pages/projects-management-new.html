@@ -1010,24 +1010,64 @@
 
         // Delete project
         async function deleteProject(projectId) {
-            if (!confirm('Bạn có chắc chắn muốn xóa project này?')) return;
+            // Show delete confirmation modal
+            showDeleteConfirm(projectId);
+        }
+
+        // Show delete confirmation modal
+        function showDeleteConfirm(projectId) {
+            const project = projects.find(p => p.id == projectId);
+            if (!project) return;
+            
+            document.getElementById('deleteProjectId').value = projectId;
+            document.getElementById('deleteProjectName').textContent = project.project_name;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        // Hide delete confirmation modal
+        function hideDeleteConfirm() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+        }
+
+        // Confirm delete project
+        async function confirmDelete() {
+            const projectId = document.getElementById('deleteProjectId').value;
+            hideDeleteConfirm();
             
             try {
-                const response = await fetch(`/api/projects-enhanced/${projectId}`, {
-                    method: 'DELETE'
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
+                if (response.ok) {
+                    const data = await response.json();
                     showSuccess('Xóa project thành công!');
                     loadProjects();
                 } else {
-                    showError('Lỗi khi xóa project: ' + data.message);
+                    const error = await response.json();
+                    if (response.status === 401) {
+                        showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('userInfo');
+                        window.location.href = '/login';
+                    } else {
+                        showError('Lỗi khi xóa project: ' + (error.error || 'Không thể xóa project'));
+                    }
                 }
             } catch (error) {
                 console.error('Error deleting project:', error);
-                showError('Lỗi khi xóa project');
+                showError('Lỗi khi xóa project: ' + error.message);
             }
         }
 
@@ -1274,6 +1314,36 @@
         <div id="projectDetailContent" class="p-6">
             <!-- Content will be populated by JavaScript -->
         </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mt-4">Xác nhận xóa dự án</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Bạn có chắc chắn muốn xóa dự án <span id="deleteProjectName" class="font-semibold text-gray-900"></span>?
+                    </p>
+                    <p class="text-sm text-red-600 mt-2">
+                        <i class="fas fa-warning mr-1"></i>
+                        Hành động này không thể hoàn tác và sẽ xóa tất cả tasks liên quan.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 mr-2">
+                        <i class="fas fa-trash mr-1"></i>Xóa dự án
+                    </button>
+                    <button onclick="hideDeleteConfirm()" class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        <i class="fas fa-times mr-1"></i>Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="deleteProjectId" value="">
     </div>
 </body>
 </html>
