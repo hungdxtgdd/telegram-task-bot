@@ -184,39 +184,53 @@
                     </div>
                 </div>
 
-                <!-- Modern Filter Bar -->
-                <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-6">
-                    <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Material Design Filter Bar -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                    <div class="flex flex-col lg:flex-row gap-4">
                         <!-- Search -->
                         <div class="relative flex-1">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
-                            <input type="search" id="searchInput" class="block w-full pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder-slate-500 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Tìm kiếm dự án...">
+                            <input type="search" id="searchInput" class="w-full pl-10 pr-4 py-3 text-sm text-gray-900 placeholder-gray-500 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="Tìm kiếm dự án...">
                         </div>
                         
                         <!-- Filters -->
                         <div class="flex flex-wrap gap-3">
-                            <select id="statusFilter" class="px-3 py-2.5 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="active">Đang hoạt động</option>
-                                <option value="in-progress">Đang thực hiện</option>
-                                <option value="completed">Hoàn thành</option>
-                                <option value="paused">Tạm dừng</option>
-                                <option value="cancelled">Đã hủy</option>
-                            </select>
+                            <div class="relative">
+                                <select id="statusFilter" class="appearance-none bg-white border border-gray-300 rounded-md px-4 py-3 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="active">Đang hoạt động</option>
+                                    <option value="in-progress">Đang thực hiện</option>
+                                    <option value="completed">Hoàn thành</option>
+                                    <option value="paused">Tạm dừng</option>
+                                    <option value="cancelled">Đã hủy</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
                             
-                            <select id="healthFilter" class="px-3 py-2.5 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <option value="">Tất cả tình trạng</option>
-                                <option value="excellent">Xuất sắc</option>
-                                <option value="good">Tốt</option>
-                                <option value="warning">Cảnh báo</option>
-                                <option value="critical">Nghiêm trọng</option>
-                            </select>
+                            <div class="relative">
+                                <select id="healthFilter" class="appearance-none bg-white border border-gray-300 rounded-md px-4 py-3 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400">
+                                    <option value="">Tất cả tình trạng</option>
+                                    <option value="excellent">Xuất sắc</option>
+                                    <option value="good">Tốt</option>
+                                    <option value="warning">Cảnh báo</option>
+                                    <option value="critical">Nghiêm trọng</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
                             
-                            <button onclick="clearFilters()" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                            <button onclick="clearFilters()" class="inline-flex items-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
