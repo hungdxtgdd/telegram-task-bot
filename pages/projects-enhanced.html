@@ -7,6 +7,9 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📁</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
         .priority-high { background-color: #fee2e2; color: #991b1b; }
         .priority-medium { background-color: #fef3c7; color: #92400e; }
@@ -364,7 +367,7 @@
             });
             
             // Add event listener for OKR selection in project form
-            if (projectOKR) {
+            if (projectOKR && typeof projectOKR.addEventListener === 'function') {
                 projectOKR.addEventListener('change', function() {
                     const selectedOKRId = this.value;
                     const selectedOption = this.options[this.selectedIndex];
@@ -593,7 +596,18 @@
         async function deleteProject(projectId) {
             try {
                 const token = localStorage.getItem('token');
+                console.log('Delete project debug:', {
+                    projectId: projectId,
+                    token: token ? token.substring(0, 20) + '...' : 'null',
+                    tokenLength: token ? token.length : 0,
+                    localStorage: {
+                        token: localStorage.getItem('token') ? 'exists' : 'missing',
+                        userInfo: localStorage.getItem('userInfo') ? 'exists' : 'missing'
+                    }
+                });
+
                 if (!token) {
+                    console.error('No token found in localStorage');
                     alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
                     window.location.href = '/login';
                     return;
@@ -603,12 +617,16 @@
                 console.log('Token:', token);
                 console.log('URL:', `/api/projects-enhanced/projects/${projectId}`);
 
+                const headers = { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+                
+                console.log('Request headers:', headers);
+
                 const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
                     method: 'DELETE',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: headers
                 });
 
                 if (response.ok) {
