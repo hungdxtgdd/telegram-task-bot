@@ -25,7 +25,17 @@ const JWT_EXPIRES_IN = '24h';
 function verifyToken(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token;
     
+    console.log('Auth check:', {
+        method: req.method,
+        url: req.url,
+        hasAuthHeader: !!req.headers.authorization,
+        authHeader: req.headers.authorization,
+        token: token ? token.substring(0, 20) + '...' : 'none',
+        queryToken: req.query.token
+    });
+    
     if (!token) {
+        console.log('No token provided for:', req.method, req.url);
         return res.status(401).json({ error: 'Token không được cung cấp' });
     }
     
@@ -38,8 +48,10 @@ function verifyToken(req, res, next) {
             email: 'test@example.com',
             role: 'admin'
         };
+        console.log('Auth successful for user:', req.user);
         next();
     } catch (error) {
+        console.log('Auth error:', error);
         return res.status(401).json({ error: 'Token không hợp lệ' });
     }
 }
