@@ -249,46 +249,46 @@
                 </div>
 
                 <!-- Filters and Search -->
-                <div class="card mb-6">
-                    <div class="card-body">
-                        <div class="flex flex-col lg:flex-row gap-4">
+                <div class="card mb-4">
+                    <div class="card-body py-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
                             <!-- Search -->
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0">
                                 <div class="relative">
-                                    <input type="search" id="searchInput" class="input pl-10" placeholder="Tìm kiếm OKRs...">
+                                    <input type="search" id="searchInput" class="input pl-10 text-sm" placeholder="Tìm kiếm OKRs...">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                                        <i class="fas fa-search text-gray-400 text-sm"></i>
                                     </div>
                                     <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
-                                        <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+                                        <i class="fas fa-times text-gray-400 hover:text-gray-600 text-sm"></i>
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Filters -->
                             <div class="flex gap-2 flex-wrap">
-                                <select id="statusFilter" class="select">
-                                    <option value="">Tất cả status</option>
+                                <select id="statusFilter" class="select text-sm py-2">
+                                    <option value="">Status</option>
                                     <option value="active">Active</option>
                                     <option value="achieved">Achieved</option>
                                     <option value="at-risk">At Risk</option>
                                     <option value="dropped">Dropped</option>
                                 </select>
                                 
-                                <select id="quarterFilter" class="select">
-                                    <option value="">Tất cả quarters</option>
+                                <select id="quarterFilter" class="select text-sm py-2">
+                                    <option value="">Quarter</option>
                                     <option value="Q1">Q1</option>
                                     <option value="Q2">Q2</option>
                                     <option value="Q3">Q3</option>
                                     <option value="Q4">Q4</option>
                                 </select>
                                 
-                                <select id="unitFilter" class="select">
-                                    <option value="">Tất cả units</option>
+                                <select id="unitFilter" class="select text-sm py-2">
+                                    <option value="">Unit</option>
                                 </select>
                                 
-                                <button onclick="clearFilters()" class="btn btn-ghost">
-                                    <i class="fas fa-times mr-2"></i>
+                                <button onclick="clearFilters()" class="btn btn-ghost text-sm py-2 px-3">
+                                    <i class="fas fa-times mr-1"></i>
                                     Clear
                                 </button>
                             </div>
