@@ -150,58 +150,66 @@
                         </div>
                     </div>
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-project-diagram text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Tổng Projects</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="totalProjects">0</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-play text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Active</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="activeProjects">0</p>
+                <div class="row mb-4">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-project-diagram text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Tổng Projects</div>
+                                        <div class="fs-6 fw-semibold" id="totalProjects">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-check-circle text-success-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Completed</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="completedProjects">0</p>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-play text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Active</div>
+                                        <div class="fs-6 fw-semibold" id="activeProjects">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-exclamation-triangle text-warning-600 text-xl"></i>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-info">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-check-circle text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Completed</div>
+                                        <div class="fs-6 fw-semibold" id="completedProjects">0</div>
+                                    </div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">At Risk</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="atRiskProjects">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">At Risk</div>
+                                        <div class="fs-6 fw-semibold" id="atRiskProjects">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -312,7 +320,7 @@
 
                 <!-- List View -->
                 <div id="listView">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+                    <div class="row" id="projectsGrid">
                         <!-- Project cards will be loaded here -->
                     </div>
                 </div>
@@ -640,81 +648,70 @@
             const isOverdue = isProjectOverdue(project);
             
             return `
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 project-card relative ${statusClass} ${healthClass} cursor-pointer p-6" data-project-id="${project.id}" onclick="showProjectDetail(${project.id})">
-                        <div class="flex items-start justify-between mb-3">
-                            <h3 class="text-lg font-semibold text-gray-900 flex-1">${project.project_name || project.name || 'Untitled Project'}</h3>
-                            <div class="flex space-x-1 ml-2">
-                                <button onclick="event.stopPropagation(); editProject(${project.id})" class="inline-flex items-center justify-center w-8 h-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200" title="Chỉnh sửa">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card project-card ${statusClass} ${healthClass}" data-project-id="${project.id}" onclick="showProjectDetail(${project.id})">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">${project.project_name || project.name || 'Untitled Project'}</h5>
+                            <div class="btn-group" role="group">
+                                <button onclick="event.stopPropagation(); editProject(${project.id})" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
                                 </button>
-                                <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="inline-flex items-center justify-center w-8 h-8 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200" title="Xóa">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
+                                <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
+                        <div class="card-body">
                         
-                        ${project.description ? `<p class="text-gray-600 text-sm mb-3">${project.description}</p>` : ''}
-                        
-                        <!-- Progress Bar -->
-                        <div class="mb-3">
-                            <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                <span>Progress</span>
-                                <span>${progress}%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Status:</span>
-                                <span class="badge ${getStatusBadgeClass(project.status)}">${project.status || 'active'}</span>
+                            ${project.description ? `<p class="card-text text-muted">${project.description}</p>` : ''}
+                            
+                            <!-- Progress Bar -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted">${progress}%</small>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: ${progress}%" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
                             </div>
                             
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Health:</span>
-                                <span class="badge ${getHealthBadgeClass(project.health)}">${project.health || 'good'}</span>
-                            </div>
-                            
-                            ${project.unit ? `
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Unit:</span>
-                                <span class="text-sm text-gray-900">${project.unit}</span>
-                            </div>
-                            ` : ''}
-                            
-                            ${project.budget ? `
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Budget:</span>
-                                <span class="text-sm text-gray-900">${formatCurrency(project.budget)}</span>
-                            </div>
-                            ` : ''}
-                            
-                            ${project.start_date ? `
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Start:</span>
-                                <span class="text-sm text-gray-900">${new Date(project.start_date).toLocaleDateString('vi-VN')}</span>
-                            </div>
-                            ` : ''}
-                            
-                            ${project.end_date ? `
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">End:</span>
-                                <span class="text-sm ${isOverdue ? 'text-error-600 font-medium' : 'text-gray-900'}">
-                                    ${new Date(project.end_date).toLocaleDateString('vi-VN')}
-                                    ${isOverdue ? ' (Overdue)' : ''}
-                                </span>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500">Created:</span>
-                                <span class="text-sm text-gray-900">${new Date(project.created_at).toLocaleDateString('vi-VN')}</span>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted">Status:</small><br>
+                                    <span class="badge ${getStatusBadgeClass(project.status)}">${project.status || 'active'}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Health:</small><br>
+                                    <span class="badge ${getHealthBadgeClass(project.health)}">${project.health || 'good'}</span>
+                                </div>
+                                ${project.unit ? `
+                                <div class="col-12">
+                                    <small class="text-muted">Unit:</small><br>
+                                    <span class="small">${project.unit}</span>
+                                </div>
+                                ` : ''}
+                                ${project.budget ? `
+                                <div class="col-12">
+                                    <small class="text-muted">Budget:</small><br>
+                                    <span class="small">${formatCurrency(project.budget)}</span>
+                                </div>
+                                ` : ''}
+                                ${project.start_date ? `
+                                <div class="col-6">
+                                    <small class="text-muted">Start:</small><br>
+                                    <span class="small">${new Date(project.start_date).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                ` : ''}
+                                ${project.end_date ? `
+                                <div class="col-6">
+                                    <small class="text-muted">End:</small><br>
+                                    <span class="small ${isOverdue ? 'text-danger fw-bold' : ''}">
+                                        ${new Date(project.end_date).toLocaleDateString('vi-VN')}
+                                        ${isOverdue ? ' (Overdue)' : ''}
+                                    </span>
+                                </div>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
@@ -745,23 +742,23 @@
         // Get status badge class
         function getStatusBadgeClass(status) {
             switch (status) {
-                case 'active': return 'badge-success';
-                case 'in-progress': return 'badge-primary';
-                case 'completed': return 'badge-success';
-                case 'paused': return 'badge-warning';
-                case 'cancelled': return 'badge-error';
-                default: return 'badge-gray';
+                case 'active': return 'bg-success';
+                case 'in-progress': return 'bg-primary';
+                case 'completed': return 'bg-success';
+                case 'paused': return 'bg-warning';
+                case 'cancelled': return 'bg-danger';
+                default: return 'bg-secondary';
             }
         }
 
         // Get health badge class
         function getHealthBadgeClass(health) {
             switch (health) {
-                case 'excellent': return 'badge-success';
-                case 'good': return 'badge-primary';
-                case 'warning': return 'badge-warning';
-                case 'critical': return 'badge-error';
-                default: return 'badge-gray';
+                case 'excellent': return 'bg-success';
+                case 'good': return 'bg-primary';
+                case 'warning': return 'bg-warning';
+                case 'critical': return 'bg-danger';
+                default: return 'bg-secondary';
             }
         }
 
