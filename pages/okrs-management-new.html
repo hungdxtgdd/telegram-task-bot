@@ -174,58 +174,66 @@
     </div>
     
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-bullseye text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Tổng OKRs</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="totalOKRs">0</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-play text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Active</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="activeOKRs">0</p>
+                <div class="row mb-4">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-bullseye text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Tổng OKRs</div>
+                                        <div class="fs-6 fw-semibold" id="totalOKRs">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-trophy text-success-600 text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Achieved</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="achievedOKRs">0</p>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-play text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Active</div>
+                                        <div class="fs-6 fw-semibold" id="activeOKRs">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-exclamation-triangle text-warning-600 text-xl"></i>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-info">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-trophy text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">Achieved</div>
+                                        <div class="fs-6 fw-semibold" id="achievedOKRs">0</div>
+                                    </div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">At Risk</p>
-                                    <p class="text-2xl font-bold text-gray-900" id="atRiskOKRs">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="text-medium-emphasis">At Risk</div>
+                                        <div class="fs-6 fw-semibold" id="atRiskOKRs">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -233,40 +241,48 @@
                 </div>
 
                 <!-- Quarter Selector -->
-                <div class="card mb-6">
+                <div class="card mb-4">
                     <div class="card-body">
-                        <div class="flex flex-col lg:flex-row gap-4">
-                            <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quarter Performance</h3>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <button onclick="selectQuarter('Q1')" class="quarter-btn quarter-q1" data-quarter="Q1">
-                                        <div class="text-center text-white">
-                                            <div class="text-2xl font-bold">Q1</div>
-                                            <div class="text-sm opacity-90">Jan - Mar</div>
-                                            <div class="text-xs mt-1" id="q1Progress">0%</div>
-                                        </div>
-                                    </button>
-                                    <button onclick="selectQuarter('Q2')" class="quarter-btn quarter-q2" data-quarter="Q2">
-                                        <div class="text-center text-white">
-                                            <div class="text-2xl font-bold">Q2</div>
-                                            <div class="text-sm opacity-90">Apr - Jun</div>
-                                            <div class="text-xs mt-1" id="q2Progress">0%</div>
-                                        </div>
-                                    </button>
-                                    <button onclick="selectQuarter('Q3')" class="quarter-btn quarter-q3" data-quarter="Q3">
-                                        <div class="text-center text-white">
-                                            <div class="text-2xl font-bold">Q3</div>
-                                            <div class="text-sm opacity-90">Jul - Sep</div>
-                                            <div class="text-xs mt-1" id="q3Progress">0%</div>
-                                        </div>
-                                    </button>
-                                    <button onclick="selectQuarter('Q4')" class="quarter-btn quarter-q4" data-quarter="Q4">
-                                        <div class="text-center text-white">
-                                            <div class="text-2xl font-bold">Q4</div>
-                                            <div class="text-sm opacity-90">Oct - Dec</div>
-                                            <div class="text-xs mt-1" id="q4Progress">0%</div>
-                                        </div>
-                                    </button>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="card-title mb-3">Quarter Performance</h5>
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-3">
+                                        <button onclick="selectQuarter('Q1')" class="btn btn-outline-primary w-100 quarter-btn quarter-q1" data-quarter="Q1">
+                                            <div class="text-center">
+                                                <div class="fs-4 fw-bold">Q1</div>
+                                                <div class="small">Jan - Mar</div>
+                                                <div class="small" id="q1Progress">0%</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button onclick="selectQuarter('Q2')" class="btn btn-outline-primary w-100 quarter-btn quarter-q2" data-quarter="Q2">
+                                            <div class="text-center">
+                                                <div class="fs-4 fw-bold">Q2</div>
+                                                <div class="small">Apr - Jun</div>
+                                                <div class="small" id="q2Progress">0%</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button onclick="selectQuarter('Q3')" class="btn btn-outline-primary w-100 quarter-btn quarter-q3" data-quarter="Q3">
+                                            <div class="text-center">
+                                                <div class="fs-4 fw-bold">Q3</div>
+                                                <div class="small">Jul - Sep</div>
+                                                <div class="small" id="q3Progress">0%</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button onclick="selectQuarter('Q4')" class="btn btn-outline-primary w-100 quarter-btn quarter-q4" data-quarter="Q4">
+                                            <div class="text-center">
+                                                <div class="fs-4 fw-bold">Q4</div>
+                                                <div class="small">Oct - Dec</div>
+                                                <div class="small" id="q4Progress">0%</div>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
