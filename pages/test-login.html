@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6">Test Login</h1>
+        
+        <div class="space-y-4">
+            <button onclick="loginAsAdmin()" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                Login as Admin
+            </button>
+            <button onclick="loginAsManager()" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
+                Login as Manager
+            </button>
+            <button onclick="loginAsUser()" class="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700">
+                Login as User
+            </button>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <a href="/" class="text-blue-600 hover:underline">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        function loginAsAdmin() {
+            // Create mock admin user
+            const adminUser = {
+                id: 1,
+                name: 'Administrator',
+                email: 'admin@example.com',
+                role: 'admin'
+            };
+            
+            // Create mock token
+            const token = 'mock-admin-token-' + Date.now();
+            
+            // Store in localStorage
+            localStorage.setItem('token', token);
+            localStorage.setItem('userInfo', JSON.stringify(adminUser));
+            
+            alert('Logged in as Admin! Redirecting...');
+            window.location.href = '/';
+        }
+        
+        function loginAsManager() {
+            const managerUser = {
+                id: 2,
+                name: 'Manager',
+                email: 'manager@example.com',
+                role: 'manager'
+            };
+            
+            const token = 'mock-manager-token-' + Date.now();
+            
+            localStorage.setItem('token', token);
+            localStorage.setItem('userInfo', JSON.stringify(managerUser));
+            
+            alert('Logged in as Manager! Redirecting...');
+            window.location.href = '/';
+        }
+        
+        function loginAsUser() {
+            const user = {
+                id: 3,
+                name: 'User',
+                email: 'user@example.com',
+                role: 'user'
+            };
+            
+            const token = 'mock-user-token-' + Date.now();
+            
+            localStorage.setItem('token', token);
+            localStorage.setItem('userInfo', JSON.stringify(user));
+            
+            alert('Logged in as User! Redirecting...');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

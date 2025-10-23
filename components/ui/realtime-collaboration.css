@@ -1,0 +1,299 @@
+/* ========================================
+   REAL-TIME COLLABORATION STYLES
+   ======================================== */
+
+/* Update Indicators */
+.updated-item {
+    animation: updatePulse 0.5s ease-in-out;
+    border-left: 3px solid var(--primary-600);
+}
+
+@keyframes updatePulse {
+    0% { background-color: var(--primary-50); }
+    50% { background-color: var(--primary-100); }
+    100% { background-color: transparent; }
+}
+
+/* User Presence Indicators */
+.user-presence {
+    position: relative;
+}
+
+.user-presence.online::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: var(--success-500);
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.user-presence.offline::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: var(--gray-400);
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* Collaboration Indicators */
+.collaboration-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 4px 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* Real-time Notifications */
+.realtime-notification {
+    position: fixed;
+    top: 4rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+    max-width: 320px;
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Connection Status */
+.connection-status {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    background: var(--gray-800);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.connection-status.connected {
+    background: var(--success-600);
+}
+
+.connection-status.disconnected {
+    background: var(--error-600);
+}
+
+.connection-status.reconnecting {
+    background: var(--warning-600);
+}
+
+.connection-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Live Cursors */
+.live-cursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+    transition: all 0.1s ease;
+}
+
+.live-cursor::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-600);
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.live-cursor::after {
+    content: attr(data-user-name);
+    position: absolute;
+    top: 25px;
+    left: 0;
+    background: var(--primary-600);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* Typing Indicators */
+.typing-indicator {
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.typing-indicator::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--gray-400);
+    border-radius: 50%;
+    margin-right: 4px;
+    animation: typingDots 1.4s infinite;
+}
+
+@keyframes typingDots {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+}
+
+/* Conflict Resolution */
+.conflict-resolution {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    max-width: 400px;
+    z-index: 2000;
+}
+
+.conflict-resolution h3 {
+    margin: 0 0 1rem 0;
+    color: var(--gray-900);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.conflict-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.conflict-option {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conflict-option:hover {
+    background: var(--gray-50);
+    border-color: var(--primary-300);
+}
+
+.conflict-option.selected {
+    background: var(--primary-50);
+    border-color: var(--primary-500);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+    .realtime-notification {
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+        max-width: none;
+    }
+    
+    .connection-status {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        justify-content: center;
+    }
+    
+    .collaboration-indicator {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .realtime-notification {
+        background: var(--gray-800);
+        border-color: var(--gray-700);
+        color: white;
+    }
+    
+    .collaboration-indicator {
+        background: var(--gray-800);
+        border-color: var(--gray-700);
+        color: white;
+    }
+    
+    .conflict-resolution {
+        background: var(--gray-800);
+        border-color: var(--gray-700);
+        color: white;
+    }
+    
+    .conflict-option {
+        background: var(--gray-700);
+        border-color: var(--gray-600);
+        color: white;
+    }
+    
+    .conflict-option:hover {
+        background: var(--gray-600);
+    }
+    
+    .conflict-option.selected {
+        background: var(--primary-800);
+        border-color: var(--primary-600);
+    }
+}

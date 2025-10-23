@@ -1,0 +1,465 @@
+<!-- ========================================
+     CAMERA INTEGRATION COMPONENT
+     Mobile-first camera capture
+     ======================================== -->
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="fixed inset-0 bg-black z-50 hidden">
+    <div class="relative w-full h-full">
+        <!-- Camera Preview -->
+        <video id="cameraPreview" class="w-full h-full object-cover" autoplay muted playsinline></video>
+        
+        <!-- Camera Controls -->
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
+            <div class="flex items-center justify-between">
+                <!-- Close Button -->
+                <button id="closeCamera" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                
+                <!-- Capture Button -->
+                <button id="capturePhoto" class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-camera text-2xl text-gray-800"></i>
+                </button>
+                
+                <!-- Switch Camera Button -->
+                <button id="switchCamera" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-sync-alt text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Camera Status -->
+        <div class="absolute top-4 left-4 right-4">
+            <div id="cameraStatus" class="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-camera mr-2"></i>
+                <span>Đang khởi tạo camera...</span>
+            </div>
+        </div>
+        
+        <!-- Flash Toggle -->
+        <div class="absolute top-4 right-4">
+            <button id="toggleFlash" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white">
+                <i class="fas fa-flash text-xl"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Preview Modal -->
+<div id="photoPreviewModal" class="fixed inset-0 bg-black z-50 hidden">
+    <div class="relative w-full h-full flex items-center justify-center">
+        <!-- Photo Preview -->
+        <img id="photoPreview" class="max-w-full max-h-full object-contain" alt="Captured photo">
+        
+        <!-- Preview Controls -->
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
+            <div class="flex items-center justify-between">
+                <!-- Retake Button -->
+                <button id="retakePhoto" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-redo text-xl"></i>
+                </button>
+                
+                <!-- Use Photo Button -->
+                <button id="usePhoto" class="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-check text-2xl text-white"></i>
+                </button>
+                
+                <!-- Cancel Button -->
+                <button id="cancelPhoto" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Photo Info -->
+        <div class="absolute top-4 left-4 right-4">
+            <div class="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-image mr-2"></i>
+                <span>Xem trước ảnh</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Upload Modal -->
+<div id="fileUploadModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Đính kèm File</h2>
+                <button id="closeFileUpload" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="space-y-4">
+                    <!-- Camera Option -->
+                    <button id="openCamera" class="w-full flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 transition-colors">
+                        <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-camera text-primary-600 text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-medium text-gray-900">Chụp ảnh</h3>
+                            <p class="text-sm text-gray-500">Sử dụng camera để chụp ảnh mới</p>
+                        </div>
+                    </button>
+                    
+                    <!-- Gallery Option -->
+                    <button id="openGallery" class="w-full flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 transition-colors">
+                        <div class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-images text-secondary-600 text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-medium text-gray-900">Chọn từ thư viện</h3>
+                            <p class="text-sm text-gray-500">Chọn ảnh từ thư viện thiết bị</p>
+                        </div>
+                    </button>
+                    
+                    <!-- Google Drive Option -->
+                    <button id="openGoogleDrive" class="w-full flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 transition-colors">
+                        <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fab fa-google-drive text-success-600 text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-medium text-gray-900">Google Drive</h3>
+                            <p class="text-sm text-gray-500">Chọn file từ Google Drive</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden File Input -->
+<input type="file" id="fileInput" accept="image/*" class="hidden">
+
+<!-- Camera Integration JavaScript -->
+<script>
+class CameraIntegration {
+    constructor() {
+        this.stream = null;
+        this.currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+        this.flashMode = 'off';
+        this.capturedPhoto = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.setupFileInput();
+    }
+
+    setupEventListeners() {
+        // Camera modal events
+        document.getElementById('closeCamera').addEventListener('click', () => this.closeCamera());
+        document.getElementById('capturePhoto').addEventListener('click', () => this.capturePhoto());
+        document.getElementById('switchCamera').addEventListener('click', () => this.switchCamera());
+        document.getElementById('toggleFlash').addEventListener('click', () => this.toggleFlash());
+        
+        // Photo preview events
+        document.getElementById('retakePhoto').addEventListener('click', () => this.retakePhoto());
+        document.getElementById('usePhoto').addEventListener('click', () => this.usePhoto());
+        document.getElementById('cancelPhoto').addEventListener('click', () => this.cancelPhoto());
+        
+        // File upload events
+        document.getElementById('closeFileUpload').addEventListener('click', () => this.closeFileUpload());
+        document.getElementById('openCamera').addEventListener('click', () => this.openCamera());
+        document.getElementById('openGallery').addEventListener('click', () => this.openGallery());
+        document.getElementById('openGoogleDrive').addEventListener('click', () => this.openGoogleDrive());
+        
+        // Close modals when clicking outside
+        document.getElementById('cameraModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closeCamera();
+        });
+        
+        document.getElementById('photoPreviewModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.cancelPhoto();
+        });
+        
+        document.getElementById('fileUploadModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closeFileUpload();
+        });
+    }
+
+    setupFileInput() {
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.handleFileSelect(file);
+            }
+        });
+    }
+
+    async openCamera() {
+        try {
+            this.closeFileUpload();
+            document.getElementById('cameraModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            await this.startCamera();
+        } catch (error) {
+            console.error('Error opening camera:', error);
+            this.showError('Không thể mở camera. Vui lòng kiểm tra quyền truy cập.');
+        }
+    }
+
+    async startCamera() {
+        try {
+            this.updateStatus('Đang khởi tạo camera...');
+            
+            const constraints = {
+                video: {
+                    facingMode: this.currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+            
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const video = document.getElementById('cameraPreview');
+            video.srcObject = this.stream;
+            
+            this.updateStatus('Camera sẵn sàng');
+        } catch (error) {
+            console.error('Error starting camera:', error);
+            this.updateStatus('Lỗi khởi tạo camera');
+            throw error;
+        }
+    }
+
+    async switchCamera() {
+        try {
+            this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
+            
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+            }
+            
+            await this.startCamera();
+        } catch (error) {
+            console.error('Error switching camera:', error);
+            this.showError('Không thể chuyển đổi camera');
+        }
+    }
+
+    toggleFlash() {
+        // Flash control is limited on web browsers
+        this.flashMode = this.flashMode === 'off' ? 'on' : 'off';
+        const flashButton = document.getElementById('toggleFlash');
+        const icon = flashButton.querySelector('i');
+        
+        if (this.flashMode === 'on') {
+            icon.className = 'fas fa-flash text-yellow-400 text-xl';
+        } else {
+            icon.className = 'fas fa-flash text-xl';
+        }
+    }
+
+    capturePhoto() {
+        try {
+            const video = document.getElementById('cameraPreview');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            this.capturedPhoto = canvas.toDataURL('image/jpeg', 0.8);
+            this.showPhotoPreview();
+        } catch (error) {
+            console.error('Error capturing photo:', error);
+            this.showError('Không thể chụp ảnh');
+        }
+    }
+
+    showPhotoPreview() {
+        this.closeCamera();
+        document.getElementById('photoPreview').src = this.capturedPhoto;
+        document.getElementById('photoPreviewModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    retakePhoto() {
+        document.getElementById('photoPreviewModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        this.openCamera();
+    }
+
+    usePhoto() {
+        if (this.capturedPhoto) {
+            // Call callback with captured photo
+            if (this.onPhotoCaptured) {
+                this.onPhotoCaptured(this.capturedPhoto);
+            }
+            
+            this.cancelPhoto();
+        }
+    }
+
+    cancelPhoto() {
+        this.capturedPhoto = null;
+        document.getElementById('photoPreviewModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    closeCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+        
+        document.getElementById('cameraModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    openGallery() {
+        document.getElementById('fileInput').click();
+    }
+
+    openGoogleDrive() {
+        // Open Google Drive picker
+        if (typeof gapi !== 'undefined' && gapi.picker) {
+            this.openGoogleDrivePicker();
+        } else {
+            // Fallback: open Google Drive in new tab
+            window.open('https://drive.google.com', '_blank');
+        }
+    }
+
+    openGoogleDrivePicker() {
+        // Google Drive Picker implementation
+        const picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.DOCS_IMAGES)
+            .setCallback((data) => {
+                if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
+                    const file = data[google.picker.Response.DOCUMENTS][0];
+                    this.handleGoogleDriveFile(file);
+                }
+            })
+            .build();
+        
+        picker.setVisible(true);
+    }
+
+    handleFileSelect(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.capturedPhoto = e.target.result;
+                this.showPhotoPreview();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            this.showError('Vui lòng chọn file ảnh hợp lệ');
+        }
+    }
+
+    handleGoogleDriveFile(file) {
+        // Handle Google Drive file selection
+        console.log('Google Drive file selected:', file);
+        // Implement Google Drive file handling
+    }
+
+    closeFileUpload() {
+        document.getElementById('fileUploadModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    updateStatus(message) {
+        const statusElement = document.getElementById('cameraStatus');
+        if (statusElement) {
+            statusElement.innerHTML = `<i class="fas fa-camera mr-2"></i><span>${message}</span>`;
+        }
+    }
+
+    showError(message) {
+        // Show error notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-error-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Public methods
+    showFileUpload(callback) {
+        this.onPhotoCaptured = callback;
+        document.getElementById('fileUploadModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    showCamera(callback) {
+        this.onPhotoCaptured = callback;
+        this.openCamera();
+    }
+}
+
+// Initialize camera integration
+document.addEventListener('DOMContentLoaded', () => {
+    window.cameraIntegration = new CameraIntegration();
+});
+
+// Export for use in other modules
+window.CameraIntegration = CameraIntegration;
+</script>
+
+<!-- Camera Integration CSS -->
+<style>
+#cameraModal,
+#photoPreviewModal {
+    backdrop-filter: blur(10px);
+}
+
+#cameraPreview {
+    transform: scaleX(-1); /* Mirror effect for front camera */
+}
+
+#capturePhoto:active {
+    transform: scale(0.95);
+}
+
+#switchCamera:active,
+#toggleFlash:active {
+    transform: scale(0.9);
+}
+
+/* Animation for photo capture */
+@keyframes captureFlash {
+    0% { background-color: transparent; }
+    50% { background-color: white; }
+    100% { background-color: transparent; }
+}
+
+.capture-flash {
+    animation: captureFlash 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    #cameraModal .absolute.bottom-0 {
+        padding: 1rem;
+    }
+    
+    #capturePhoto {
+        width: 4rem;
+        height: 4rem;
+    }
+    
+    #closeCamera,
+    #switchCamera,
+    #toggleFlash {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+</style>

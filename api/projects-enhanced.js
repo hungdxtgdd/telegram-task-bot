@@ -84,7 +84,7 @@ async function handleProjectRequest(req, res) {
         break;
         
       case 'DELETE':
-        console.log('DELETE request:', { projectId, endpoint, isNaN: isNaN(projectId) });
+        console.log('DELETE request:', { projectId, endpoint, isNaN: isNaN(projectId), url, urlParts });
         if (projectId && !isNaN(projectId)) {
           if (endpoint === 'members') {
             requireAdminOrManager(req, res, () => removeProjectMember(req, res, projectId));
@@ -94,7 +94,7 @@ async function handleProjectRequest(req, res) {
             requireAdminOrManager(req, res, () => deleteProject(req, res, projectId));
           }
         } else {
-          console.log('DELETE failed - Project ID required:', { projectId, endpoint });
+          console.log('DELETE failed - Project ID required:', { projectId, endpoint, url, urlParts });
           res.status(404).json({ error: 'Project ID required' });
         }
         break;

@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Projects - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📁</text></svg>">
+    <link rel="stylesheet" href="/assets/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/design-system.css">
+    <style>
+        .project-status-active { border-left: 4px solid var(--success-500); }
+        .project-status-in-progress { border-left: 4px solid var(--primary-500); }
+        .project-status-completed { border-left: 4px solid var(--success-600); }
+        .project-status-paused { border-left: 4px solid var(--warning-500); }
+        .project-status-cancelled { border-left: 4px solid var(--error-500); }
+        .project-health-excellent { background-color: var(--success-50); }
+        .project-health-good { background-color: var(--primary-50); }
+        .project-health-warning { background-color: var(--warning-50); }
+        .project-health-critical { background-color: var(--error-50); }
+        
+        /* Slide-in Modal Styles */
+        .slide-modal {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: right 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+        
+        .slide-modal.show {
+            right: 0;
+        }
+        
+        .slide-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        
+        .slide-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .slide-modal {
+                max-width: 100%;
+            }
+        }
+        
+        /* Desktop responsive */
+        @media (min-width: 1024px) {
+            .slide-modal {
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Mobile Navigation -->
+    <div id="mobile-nav-container"></div>
+    
+    <!-- Desktop Layout -->
+    <div class="lg:flex">
+        <!-- Desktop Sidebar -->
+        <div id="desktop-sidebar-container"></div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 lg:ml-64">
+            <!-- Mobile Header -->
+            <header class="bg-white shadow-sm border-b lg:hidden">
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <h1 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-project-diagram mr-2 text-primary-600"></i>
+                                Projects
+                            </h1>
+                        </div>
+                        <button id="hamburger-btn" class="btn-icon" onclick="toggleMobileMenu()">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Desktop Header -->
+            <header class="bg-white shadow-sm border-b hidden lg:block">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center py-4">
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                <i class="fas fa-project-diagram mr-2 text-primary-600"></i>
+                                Quản lý Projects
+                            </h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="showAddProjectModal()" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i>
+                                Thêm Project
+                            </button>
+                            <button onclick="toggleViewMode()" class="btn btn-ghost" id="viewModeBtn">
+                                <i class="fas fa-th-large mr-2"></i>
+                                Kanban
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-4 lg:p-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-project-diagram text-primary-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Tổng Projects</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="totalProjects">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-play text-primary-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Active</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="activeProjects">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-success-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Completed</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="completedProjects">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-warning-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">At Risk</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="atRiskProjects">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-6">
+                    <div class="card-body">
+                        <div class="flex flex-col lg:flex-row gap-4">
+                            <!-- Search -->
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input type="search" id="searchInput" class="input pl-10" placeholder="Tìm kiếm projects...">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                    <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                                        <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="flex gap-2 flex-wrap">
+                                <select id="statusFilter" class="select">
+                                    <option value="">Tất cả status</option>
+                                    <option value="active">Active</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="paused">Paused</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                
+                                <select id="healthFilter" class="select">
+                                    <option value="">Tất cả health</option>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Good</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                                
+                                <select id="unitFilter" class="select">
+                                    <option value="">Tất cả units</option>
+                                </select>
+                                
+                                <button onclick="clearFilters()" class="btn btn-ghost">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kanban Board View -->
+                <div id="kanbanView" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <!-- Active Column -->
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Active</h3>
+                                <span class="badge badge-success" id="activeCount">0</span>
+                            </div>
+                            <div id="activeProjects" class="space-y-3 min-h-96">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- In Progress Column -->
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">In Progress</h3>
+                                <span class="badge badge-primary" id="inProgressCount">0</span>
+                            </div>
+                            <div id="inProgressProjects" class="space-y-3 min-h-96">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Completed Column -->
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Completed</h3>
+                                <span class="badge badge-success" id="completedCount">0</span>
+                            </div>
+                            <div id="completedProjects" class="space-y-3 min-h-96">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Paused Column -->
+                        <div class="bg-yellow-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Paused</h3>
+                                <span class="badge badge-warning" id="pausedCount">0</span>
+                            </div>
+                            <div id="pausedProjects" class="space-y-3 min-h-96">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Cancelled Column -->
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Cancelled</h3>
+                                <span class="badge badge-error" id="cancelledCount">0</span>
+                            </div>
+                            <div id="cancelledProjects" class="space-y-3 min-h-96">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div id="listView">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+                        <!-- Project cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-12">
+                    <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-gray-500 bg-white transition ease-in-out duration-150 cursor-not-allowed">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Đang tải projects...
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center py-12 hidden">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-project-diagram text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Không có projects nào</h3>
+                    <p class="text-gray-500 mb-6">Bắt đầu bằng cách thêm project đầu tiên.</p>
+                    <button onclick="showAddProjectModal()" class="btn btn-primary">
+                        <i class="fas fa-plus mr-2"></i>
+                        Thêm Project
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProjectModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">Thêm Project Mới</h2>
+                    <button onclick="closeAddProjectModal()" class="btn-icon">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="addProjectForm" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên Project</label>
+                        <input type="text" id="projectName" class="input" placeholder="Nhập tên project" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <textarea id="projectDescription" class="textarea" placeholder="Nhập mô tả project" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="projectStatus" class="select" required>
+                                <option value="active" selected>Active</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="paused">Paused</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                            <input type="text" id="projectUnit" class="input" placeholder="Nhập unit">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" id="projectStartDate" class="input">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" id="projectEndDate" class="input">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                        <input type="number" id="projectBudget" class="input" placeholder="Nhập budget" step="0.01">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeAddProjectModal()" class="btn btn-ghost">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Thêm Project
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Project Modal -->
+    <div id="editProjectModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa Project</h2>
+                    <button onclick="closeEditProjectModal()" class="btn-icon">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="editProjectForm" class="p-6 space-y-4">
+                    <input type="hidden" id="editProjectId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên Project</label>
+                        <input type="text" id="editProjectName" class="input" placeholder="Nhập tên project" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <textarea id="editProjectDescription" class="textarea" placeholder="Nhập mô tả project" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="editProjectStatus" class="select" required>
+                                <option value="active">Active</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="paused">Paused</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                            <input type="text" id="editProjectUnit" class="input" placeholder="Nhập unit">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" id="editProjectStartDate" class="input">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" id="editProjectEndDate" class="input">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                        <input type="number" id="editProjectBudget" class="input" placeholder="Nhập budget" step="0.01">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeEditProjectModal()" class="btn btn-ghost">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-2"></i>
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Components -->
+    <script>
+        // Load mobile navigation
+        fetch('/components/mobile-nav.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('mobile-nav-container').innerHTML = html;
+            });
+
+        // Load desktop sidebar
+        fetch('/components/mobile-nav.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('desktop-sidebar-container').innerHTML = html;
+            });
+
+        // Load keyboard shortcuts
+        fetch('/components/ui/keyboard-shortcuts.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+
+        // Load camera integration
+        fetch('/components/ui/camera-integration.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+
+        // Load voice notes
+        fetch('/components/ui/voice-notes.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+    </script>
+
+    <!-- Load Mobile Gestures -->
+    <script src="/components/ui/swipe-gestures.js"></script>
+    <script src="/components/ui/pull-to-refresh.js"></script>
+    <script src="/components/ui/infinite-scroll.js"></script>
+    <script src="/components/ui/realtime-collaboration.js"></script>
+
+    <!-- Main JavaScript -->
+    <script>
+        let projects = [];
+        let filteredProjects = [];
+        let currentView = 'list'; // 'list' or 'kanban'
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+            initializeInfiniteScroll();
+        });
+
+        async function checkAuth() {
+            try {
+                // BYPASS authentication for testing - set mock user
+                currentUser = {
+                    id: 1,
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    role: 'admin'
+                };
+                
+                // Setup role-based UI
+                setupRoleBasedUI();
+                
+                loadProjects();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                loadProjects(); // Load data anyway
+            }
+        }
+
+        function setupRoleBasedUI() {
+            // Hide project management buttons for regular users
+            if (currentUser.role === 'user') {
+                const addProjectBtn = document.querySelector('button[onclick="showAddProjectModal()"]');
+                if (addProjectBtn) {
+                    addProjectBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // Load projects from API
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                
+                if (response.ok) {
+                    projects = await response.json();
+                    filteredProjects = [...projects];
+                    renderProjects();
+                    updateStats();
+                    updateUnitFilter();
+                } else {
+                    showError('Không thể tải danh sách projects');
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showError('Lỗi khi tải danh sách projects');
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        // Render projects based on current view
+        function renderProjects() {
+            if (currentView === 'kanban') {
+                renderKanbanView();
+            } else {
+                renderListView();
+            }
+        }
+
+        // Render list view
+        function renderListView() {
+            const grid = document.getElementById('projectsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredProjects.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = filteredProjects.map(project => createProjectCard(project)).join('');
+        }
+
+        // Render kanban view
+        function renderKanbanView() {
+            const columns = {
+                'active': document.getElementById('activeProjects'),
+                'in-progress': document.getElementById('inProgressProjects'),
+                'completed': document.getElementById('completedProjects'),
+                'paused': document.getElementById('pausedProjects'),
+                'cancelled': document.getElementById('cancelledProjects')
+            };
+            
+            const counts = {
+                'active': 0,
+                'in-progress': 0,
+                'completed': 0,
+                'paused': 0,
+                'cancelled': 0
+            };
+            
+            // Clear all columns
+            Object.values(columns).forEach(column => {
+                column.innerHTML = '';
+            });
+            
+            // Group projects by status
+            filteredProjects.forEach(project => {
+                const status = project.status || 'active';
+                if (columns[status]) {
+                    columns[status].innerHTML += createProjectCard(project, true);
+                    counts[status]++;
+                }
+            });
+            
+            // Update counts
+            Object.keys(counts).forEach(status => {
+                const countElement = document.getElementById(`${status}Count`);
+                if (countElement) {
+                    countElement.textContent = counts[status];
+                }
+            });
+        }
+
+        // Create project card
+        function createProjectCard(project, isKanban = false) {
+            const statusClass = `project-status-${project.status || 'active'}`;
+            const healthClass = `project-health-${project.health || 'good'}`;
+            const progress = calculateProgress(project);
+            const isOverdue = isProjectOverdue(project);
+            
+            return `
+                <div class="card hover:shadow-lg transition-all duration-300 project-card relative ${statusClass} ${healthClass} cursor-pointer" data-project-id="${project.id}" onclick="showProjectDetail(${project.id})">
+                    <div class="card-body">
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 class="text-lg font-semibold text-gray-900 flex-1">${project.project_name || project.name || 'Untitled Project'}</h3>
+                            <div class="flex space-x-1 ml-2">
+                                <button onclick="event.stopPropagation(); editProject(${project.id})" class="btn-icon" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="btn-icon text-error-600 hover:text-error-700" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${project.description ? `<p class="text-gray-600 text-sm mb-3">${project.description}</p>` : ''}
+                        
+                        <!-- Progress Bar -->
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Progress</span>
+                                <span>${progress}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Status:</span>
+                                <span class="badge ${getStatusBadgeClass(project.status)}">${project.status || 'active'}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Health:</span>
+                                <span class="badge ${getHealthBadgeClass(project.health)}">${project.health || 'good'}</span>
+                            </div>
+                            
+                            ${project.unit ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Unit:</span>
+                                <span class="text-sm text-gray-900">${project.unit}</span>
+                            </div>
+                            ` : ''}
+                            
+                            ${project.budget ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Budget:</span>
+                                <span class="text-sm text-gray-900">${formatCurrency(project.budget)}</span>
+                            </div>
+                            ` : ''}
+                            
+                            ${project.start_date ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Start:</span>
+                                <span class="text-sm text-gray-900">${new Date(project.start_date).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                            ` : ''}
+                            
+                            ${project.end_date ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">End:</span>
+                                <span class="text-sm ${isOverdue ? 'text-error-600 font-medium' : 'text-gray-900'}">
+                                    ${new Date(project.end_date).toLocaleDateString('vi-VN')}
+                                    ${isOverdue ? ' (Overdue)' : ''}
+                                </span>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Created:</span>
+                                <span class="text-sm text-gray-900">${new Date(project.created_at).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Calculate project progress
+        function calculateProgress(project) {
+            // Simple progress calculation based on status
+            switch (project.status) {
+                case 'completed': return 100;
+                case 'in-progress': return 50;
+                case 'paused': return 25;
+                case 'cancelled': return 0;
+                default: return 0;
+            }
+        }
+
+        // Check if project is overdue
+        function isProjectOverdue(project) {
+            if (!project.end_date || project.status === 'completed' || project.status === 'cancelled') {
+                return false;
+            }
+            return new Date(project.end_date) < new Date();
+        }
+
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'active': return 'badge-success';
+                case 'in-progress': return 'badge-primary';
+                case 'completed': return 'badge-success';
+                case 'paused': return 'badge-warning';
+                case 'cancelled': return 'badge-error';
+                default: return 'badge-gray';
+            }
+        }
+
+        // Get health badge class
+        function getHealthBadgeClass(health) {
+            switch (health) {
+                case 'excellent': return 'badge-success';
+                case 'good': return 'badge-primary';
+                case 'warning': return 'badge-warning';
+                case 'critical': return 'badge-error';
+                default: return 'badge-gray';
+            }
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalProjects = projects.length;
+            const activeProjects = projects.filter(p => p.status === 'active').length;
+            const completedProjects = projects.filter(p => p.status === 'completed').length;
+            const atRiskProjects = projects.filter(p => p.health === 'critical' || p.health === 'warning').length;
+            
+            document.getElementById('totalProjects').textContent = totalProjects;
+            document.getElementById('activeProjects').textContent = activeProjects;
+            document.getElementById('completedProjects').textContent = completedProjects;
+            document.getElementById('atRiskProjects').textContent = atRiskProjects;
+        }
+
+        // Update unit filter
+        function updateUnitFilter() {
+            const units = [...new Set(projects.map(p => p.unit).filter(Boolean))];
+            const unitFilter = document.getElementById('unitFilter');
+            
+            unitFilter.innerHTML = '<option value="">Tất cả units</option>' + 
+                units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', filterProjects);
+            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+            
+            // Filters
+            document.getElementById('statusFilter').addEventListener('change', filterProjects);
+            document.getElementById('healthFilter').addEventListener('change', filterProjects);
+            document.getElementById('unitFilter').addEventListener('change', filterProjects);
+            
+            // Forms
+            document.getElementById('addProjectForm').addEventListener('submit', handleAddProject);
+            document.getElementById('editProjectForm').addEventListener('submit', handleEditProject);
+        }
+
+        // Filter projects
+        function filterProjects() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const healthFilter = document.getElementById('healthFilter').value;
+            const unitFilter = document.getElementById('unitFilter').value;
+            
+            filteredProjects = projects.filter(project => {
+                const matchesSearch = !searchTerm || 
+                    (project.name && project.name.toLowerCase().includes(searchTerm)) ||
+                    (project.description && project.description.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || project.status === statusFilter;
+                const matchesHealth = !healthFilter || project.health === healthFilter;
+                const matchesUnit = !unitFilter || project.unit === unitFilter;
+                
+                return matchesSearch && matchesStatus && matchesHealth && matchesUnit;
+            });
+            
+            renderProjects();
+            updateClearButton();
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterProjects();
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('healthFilter').value = '';
+            document.getElementById('unitFilter').value = '';
+            filterProjects();
+        }
+
+        // Update clear button visibility
+        function updateClearButton() {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            
+            if (searchInput.value) {
+                clearButton.classList.remove('hidden');
+            } else {
+                clearButton.classList.add('hidden');
+            }
+        }
+
+        // Toggle view mode
+        function toggleViewMode() {
+            currentView = currentView === 'list' ? 'kanban' : 'list';
+            const viewModeBtn = document.getElementById('viewModeBtn');
+            const kanbanView = document.getElementById('kanbanView');
+            const listView = document.getElementById('listView');
+            
+            if (currentView === 'kanban') {
+                viewModeBtn.innerHTML = '<i class="fas fa-list mr-2"></i>List';
+                kanbanView.classList.remove('hidden');
+                listView.classList.add('hidden');
+            } else {
+                viewModeBtn.innerHTML = '<i class="fas fa-th-large mr-2"></i>Kanban';
+                kanbanView.classList.add('hidden');
+                listView.classList.remove('hidden');
+            }
+            
+            renderProjects();
+        }
+
+        // Show add project modal
+        function showAddProjectModal() {
+            document.getElementById('addProjectModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // Close add project modal
+        function closeAddProjectModal() {
+            document.getElementById('addProjectModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('addProjectForm').reset();
+        }
+
+        // Show edit project modal
+        function editProject(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            document.getElementById('editProjectId').value = project.id;
+            document.getElementById('editProjectName').value = project.project_name || project.name || '';
+            document.getElementById('editProjectDescription').value = project.description || '';
+            document.getElementById('editProjectStatus').value = project.status || 'active';
+            document.getElementById('editProjectUnit').value = project.unit || '';
+            document.getElementById('editProjectStartDate').value = project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '';
+            document.getElementById('editProjectEndDate').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
+            document.getElementById('editProjectBudget').value = project.budget || '';
+            
+            document.getElementById('editProjectModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // Close edit project modal
+        function closeEditProjectModal() {
+            document.getElementById('editProjectModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Handle add project
+        async function handleAddProject(e) {
+            e.preventDefault();
+            
+            const formData = {
+                project_name: document.getElementById('projectName').value,
+                description: document.getElementById('projectDescription').value,
+                status: document.getElementById('projectStatus').value,
+                unit: document.getElementById('projectUnit').value,
+                start_date: document.getElementById('projectStartDate').value,
+                end_date: document.getElementById('projectEndDate').value,
+                budget: document.getElementById('projectBudget').value ? parseFloat(document.getElementById('projectBudget').value) : null
+            };
+            
+            try {
+                const response = await fetch('/api/projects-enhanced', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Thêm project thành công!');
+                    closeAddProjectModal();
+                    loadProjects();
+                } else {
+                    showError('Lỗi khi thêm project: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error adding project:', error);
+                showError('Lỗi khi thêm project');
+            }
+        }
+
+        // Handle edit project
+        async function handleEditProject(e) {
+            e.preventDefault();
+            
+            const projectId = document.getElementById('editProjectId').value;
+            const formData = {
+                project_name: document.getElementById('editProjectName').value,
+                description: document.getElementById('editProjectDescription').value,
+                status: document.getElementById('editProjectStatus').value,
+                unit: document.getElementById('editProjectUnit').value,
+                start_date: document.getElementById('editProjectStartDate').value,
+                end_date: document.getElementById('editProjectEndDate').value,
+                budget: document.getElementById('editProjectBudget').value ? parseFloat(document.getElementById('editProjectBudget').value) : null
+            };
+            
+            try {
+                const response = await fetch(`/api/projects-enhanced/${projectId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Cập nhật project thành công!');
+                    closeEditProjectModal();
+                    loadProjects();
+                } else {
+                    showError('Lỗi khi cập nhật project: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error updating project:', error);
+                showError('Lỗi khi cập nhật project');
+            }
+        }
+
+        // Delete project
+        async function deleteProject(projectId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa project này?')) return;
+            
+            try {
+                const response = await fetch(`/api/projects-enhanced/${projectId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Xóa project thành công!');
+                    loadProjects();
+                } else {
+                    showError('Lỗi khi xóa project: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                showError('Lỗi khi xóa project');
+            }
+        }
+
+        // Initialize infinite scroll
+        function initializeInfiniteScroll() {
+            // Implementation for infinite scroll if needed
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-success-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-error-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Mobile menu functions (will be loaded from component)
+        function toggleMobileMenu() {
+            // This will be overridden by the mobile nav component
+        }
+        
+        // Placeholder functions for mobile navigation buttons
+        function showAddTaskModal() {
+            // Redirect to tasks page
+            window.location.href = '/tasks';
+        }
+        
+        function showAddOKRModal() {
+            // Redirect to OKRs page
+            window.location.href = '/okrs';
+        }
+        
+        function showAddUserModal() {
+            // Redirect to users page
+            window.location.href = '/users';
+        }
+        
+        function showSettings() {
+            // Show settings modal or redirect to settings page
+            alert('Settings feature coming soon!');
+        }
+        
+        function refreshData() {
+            // Refresh current page data
+            location.reload();
+        }
+        
+        function showKeyboardShortcuts() {
+            // Show keyboard shortcuts modal
+            alert('Keyboard shortcuts:\n\nCtrl+N - New item\nCtrl+S - Save\nCtrl+F - Search\nEsc - Close modal');
+        }
+        
+        function logout() {
+            // Logout user
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+        
+        function closeMobileMenu() {
+            // Close mobile menu
+            const mobileMenu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+            if (overlay) overlay.classList.add('hidden');
+        }
+        
+        // Show Project detail modal
+        function showProjectDetail(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            const progress = calculateProgress(project);
+            const statusText = getStatusText(project.status);
+            const healthText = getHealthText(project.health);
+            
+            document.getElementById('projectDetailTitle').textContent = project.project_name || project.name || 'Untitled Project';
+            document.getElementById('projectDetailContent').innerHTML = `
+                <div class="space-y-6">
+                    <!-- Basic Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Mô tả</h4>
+                            <p class="text-gray-900">${project.description || 'Không có mô tả'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Trạng thái</h4>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(project.status)}">
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Tiến độ</h4>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative inline-block">
+                                <svg class="progress-ring w-16 h-16" viewBox="0 0 100 100">
+                                    <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="6" fill="transparent" r="40" cx="50" cy="50"/>
+                                    <circle class="progress-ring-circle" stroke="#3b82f6" stroke-width="6" fill="transparent" r="40" cx="50" cy="50" style="stroke-dashoffset: ${283 - (283 * progress / 100)}"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-sm font-bold text-gray-900">${Math.round(progress)}%</span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Mục tiêu</h4>
+                            <p class="text-gray-900">${project.target_value || 0} ${project.unit || ''}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Hiện tại</h4>
+                            <p class="text-gray-900">${project.current_value || 0} ${project.unit || ''}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Health</h4>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getHealthBadgeClass(project.health)}">
+                                ${healthText}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Ngày bắt đầu</h4>
+                            <p class="text-gray-900">${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Ngày kết thúc</h4>
+                            <p class="text-gray-900">${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget (if available) -->
+                    ${project.budget ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Ngân sách</h4>
+                        <p class="text-gray-900">${project.budget.toLocaleString('vi-VN')} VND</p>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button onclick="closeProjectDetailModal()" class="btn btn-secondary">
+                            <i class="fas fa-times mr-2"></i>Đóng
+                        </button>
+                        <button onclick="editProject(${project.id}); closeProjectDetailModal();" class="btn btn-primary">
+                            <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Show slide-in modal
+            document.getElementById('projectDetailModalOverlay').classList.add('show');
+            document.getElementById('projectDetailModal').classList.add('show');
+            document.body.classList.add('overflow-hidden');
+        }
+        
+        // Close Project detail modal
+        function closeProjectDetailModal() {
+            document.getElementById('projectDetailModalOverlay').classList.remove('show');
+            document.getElementById('projectDetailModal').classList.remove('show');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Close Project modal when clicking overlay
+        document.getElementById('projectDetailModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProjectDetailModal();
+            }
+        });
+        
+        // Close Project modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('projectDetailModal').classList.contains('show')) {
+                closeProjectDetailModal();
+            }
+        });
+        
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'active': 'Hoạt động',
+                'completed': 'Hoàn thành',
+                'paused': 'Tạm dừng',
+                'cancelled': 'Đã hủy'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // Get health text
+        function getHealthText(health) {
+            const healthMap = {
+                'excellent': 'Xuất sắc',
+                'good': 'Tốt',
+                'warning': 'Cảnh báo',
+                'critical': 'Nghiêm trọng'
+            };
+            return healthMap[health] || health;
+        }
+    </script>
+    
+    <!-- Project Detail Modal - Slide-in from right -->
+    <div id="projectDetailModalOverlay" class="slide-modal-overlay"></div>
+    <div id="projectDetailModal" class="slide-modal">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900" id="projectDetailTitle">Chi tiết Project</h3>
+                <button onclick="closeProjectDetailModal()" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="projectDetailContent" class="p-6">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</body>
+</html>

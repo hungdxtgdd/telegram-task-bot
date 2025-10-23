@@ -205,6 +205,26 @@ npm run test:coverage
 - [ ] **Real-time Updates**: WebSocket live collaboration
 - [ ] **Performance**: < 2s page load, smooth animations
 
+### Detail Cards Testing (NEW - Phase 4.2)
+- [ ] **OKR Detail Modal**: Modal opens, displays correct data, closes properly
+- [ ] **Project Detail Modal**: Modal opens, displays correct data, closes properly
+- [ ] **Task Detail Modal**: Modal opens, displays correct data, closes properly
+- [ ] **Modal Responsiveness**: Works on mobile, tablet, desktop
+- [ ] **Data Loading**: Modal loads data quickly (< 1 second)
+- [ ] **Error Handling**: Graceful handling of missing data
+- [ ] **Navigation**: Easy navigation between detail views
+- [ ] **Edit Functionality**: Edit buttons work from detail modals
+- [ ] **Related Data**: Related projects, tasks, team members display correctly
+- [ ] **Progress Tracking**: Progress bars and metrics display accurately
+- [ ] **Team Members**: Team member information displays correctly
+- [ ] **Dependencies**: Task and project dependencies show properly
+- [ ] **Comments System**: Comments display and can be added
+- [ ] **File Attachments**: Files display and can be accessed
+- [ ] **Time Tracking**: Time tracking data displays correctly
+- [ ] **Activity Log**: Activity history shows properly
+- [ ] **Risk Indicators**: Warning systems work correctly
+- [ ] **Budget Analytics**: Financial data displays accurately
+
 ### Browser/Device Compatibility
 - [ ] **Desktop**: Chrome, Firefox, Safari, Edge
 - [ ] **Mobile**: iOS Safari, Android Chrome

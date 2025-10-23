@@ -1,0 +1,314 @@
+<!-- ========================================
+     MOBILE NAVIGATION - HAMBURGER MENU
+     ======================================== -->
+
+<!-- Mobile Header -->
+<header class="bg-white shadow-sm border-b border-gray-200 lg:hidden">
+  <div class="px-4 py-3">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <h1 class="text-xl font-semibold text-gray-900">
+          <i class="fas fa-tachometer-alt mr-2 text-primary-600"></i>
+          Task Manager
+        </h1>
+      </div>
+      
+      <!-- Hamburger Button -->
+      <button id="hamburger-btn" class="btn-icon" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Menu -->
+<nav id="mobile-menu" class="fixed top-0 left-0 w-80 h-full bg-white shadow-xl z-50 transform -translate-x-full transition-transform duration-300">
+  <!-- Menu Header -->
+  <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
+    <button onclick="closeMobileMenu()" class="btn-icon">
+      <i class="fas fa-times text-xl"></i>
+    </button>
+  </div>
+  
+  <!-- User Info -->
+  <div class="p-4 border-b border-gray-200">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-user text-primary-600"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-gray-900" id="mobile-user-name">Loading...</p>
+        <p class="text-xs text-gray-500" id="mobile-user-role">User</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Navigation Links -->
+  <div class="py-4">
+    <div class="space-y-1">
+      <!-- Dashboard -->
+      <a href="/dashboard" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
+        <span>Dashboard</span>
+      </a>
+      
+      <!-- Users Management (Admin only) -->
+      <a href="/users" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors hidden" id="mobile-users-link">
+        <i class="fas fa-users w-5 h-5 mr-3"></i>
+        <span>Users</span>
+        <span class="ml-auto badge badge-primary" id="mobile-users-badge">0</span>
+      </a>
+      
+      <!-- OKRs Management -->
+      <a href="/okrs" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-bullseye w-5 h-5 mr-3"></i>
+        <span>OKRs</span>
+        <span class="ml-auto badge badge-warning" id="mobile-okrs-badge">0</span>
+      </a>
+      
+      <!-- Projects Management -->
+      <a href="/projects" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-project-diagram w-5 h-5 mr-3"></i>
+        <span>Projects</span>
+        <span class="ml-auto badge badge-primary" id="mobile-projects-badge">0</span>
+      </a>
+      
+      <!-- Tasks Management -->
+      <a href="/tasks" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-tasks w-5 h-5 mr-3"></i>
+        <span>Tasks</span>
+        <span class="ml-auto badge badge-success" id="mobile-tasks-badge">0</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="p-4 border-t border-gray-200">
+    <h3 class="text-sm font-medium text-gray-500 mb-3">Quick Actions</h3>
+    <div class="space-y-2">
+      <button onclick="showAddTaskModal()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-plus w-4 h-4 mr-2"></i>
+        Add Task
+      </button>
+      <button onclick="showAddProjectModal()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-plus w-4 h-4 mr-2"></i>
+        Add Project
+      </button>
+      <button onclick="refreshData()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-sync-alt w-4 h-4 mr-2"></i>
+        Refresh Data
+      </button>
+    </div>
+  </div>
+  
+  <!-- Settings & Logout -->
+  <div class="mt-auto p-4 border-t border-gray-200">
+    <div class="space-y-1">
+      <button onclick="showSettings()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-cog w-4 h-4 mr-2"></i>
+        Settings
+      </button>
+      <button onclick="showKeyboardShortcuts()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-keyboard w-4 h-4 mr-2"></i>
+        Shortcuts
+      </button>
+      <button onclick="logout()" class="w-full flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+        <i class="fas fa-sign-out-alt w-4 h-4 mr-2"></i>
+        Logout
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Desktop Sidebar (Hidden on mobile) -->
+<aside class="hidden lg:block w-64 bg-white shadow-sm border-r border-gray-200 h-screen sticky top-0">
+  <!-- Sidebar Header -->
+  <div class="p-6 border-b border-gray-200">
+    <h1 class="text-xl font-semibold text-gray-900">
+      <i class="fas fa-tachometer-alt mr-2 text-primary-600"></i>
+      Task Manager
+    </h1>
+  </div>
+  
+  <!-- User Info -->
+  <div class="p-4 border-b border-gray-200">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-user text-primary-600"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-gray-900" id="desktop-user-name">Loading...</p>
+        <p class="text-xs text-gray-500" id="desktop-user-role">User</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Navigation Links -->
+  <nav class="py-4">
+    <div class="space-y-1">
+      <!-- Dashboard -->
+      <a href="/dashboard" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
+        <span>Dashboard</span>
+      </a>
+      
+      <!-- Users Management (Admin only) -->
+      <a href="/users" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors hidden" id="desktop-users-link">
+        <i class="fas fa-users w-5 h-5 mr-3"></i>
+        <span>Users</span>
+        <span class="ml-auto badge badge-primary" id="desktop-users-badge">0</span>
+      </a>
+      
+      <!-- OKRs Management -->
+      <a href="/okrs" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-bullseye w-5 h-5 mr-3"></i>
+        <span>OKRs</span>
+        <span class="ml-auto badge badge-warning" id="desktop-okrs-badge">0</span>
+      </a>
+      
+      <!-- Projects Management -->
+      <a href="/projects" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-project-diagram w-5 h-5 mr-3"></i>
+        <span>Projects</span>
+        <span class="ml-auto badge badge-primary" id="desktop-projects-badge">0</span>
+      </a>
+      
+      <!-- Tasks Management -->
+      <a href="/tasks" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors">
+        <i class="fas fa-tasks w-5 h-5 mr-3"></i>
+        <span>Tasks</span>
+        <span class="ml-auto badge badge-success" id="desktop-tasks-badge">0</span>
+      </a>
+    </div>
+  </nav>
+  
+  <!-- Quick Actions -->
+  <div class="p-4 border-t border-gray-200">
+    <h3 class="text-sm font-medium text-gray-500 mb-3">Quick Actions</h3>
+    <div class="space-y-2">
+      <button onclick="showAddTaskModal()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-plus w-4 h-4 mr-2"></i>
+        Add Task
+      </button>
+      <button onclick="showAddProjectModal()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-plus w-4 h-4 mr-2"></i>
+        Add Project
+      </button>
+    </div>
+  </div>
+  
+  <!-- Settings & Logout -->
+  <div class="mt-auto p-4 border-t border-gray-200">
+    <div class="space-y-1">
+      <button onclick="showSettings()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-cog w-4 h-4 mr-2"></i>
+        Settings
+      </button>
+      <button onclick="showKeyboardShortcuts()" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <i class="fas fa-keyboard w-4 h-4 mr-2"></i>
+        Shortcuts
+      </button>
+      <button onclick="logout()" class="w-full flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+        <i class="fas fa-sign-out-alt w-4 h-4 mr-2"></i>
+        Logout
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- JavaScript for Mobile Menu -->
+<script>
+// Mobile menu functions
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const overlay = document.getElementById('mobile-menu-overlay');
+  
+  if (menu.classList.contains('-translate-x-full')) {
+    menu.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  } else {
+    closeMobileMenu();
+  }
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const overlay = document.getElementById('mobile-menu-overlay');
+  
+  menu.classList.add('-translate-x-full');
+  overlay.classList.add('hidden');
+  document.body.classList.remove('overflow-hidden');
+}
+
+// Update user info
+function updateUserInfo(user) {
+  const mobileName = document.getElementById('mobile-user-name');
+  const mobileRole = document.getElementById('mobile-user-role');
+  const desktopName = document.getElementById('desktop-user-name');
+  const desktopRole = document.getElementById('desktop-user-role');
+  
+  if (mobileName) mobileName.textContent = user.name || user.full_name || 'User';
+  if (mobileRole) mobileRole.textContent = user.role || 'User';
+  if (desktopName) desktopName.textContent = user.name || user.full_name || 'User';
+  if (desktopRole) desktopRole.textContent = user.role || 'User';
+  
+  // Show/hide admin links
+  const usersLinks = document.querySelectorAll('#mobile-users-link, #desktop-users-link');
+  usersLinks.forEach(link => {
+    if (user.role === 'admin') {
+      link.classList.remove('hidden');
+    } else {
+      link.classList.add('hidden');
+    }
+  });
+}
+
+// Update badge counts
+function updateBadgeCounts(counts) {
+  const badges = {
+    'mobile-users-badge': counts.users || 0,
+    'mobile-okrs-badge': counts.okrs || 0,
+    'mobile-projects-badge': counts.projects || 0,
+    'mobile-tasks-badge': counts.tasks || 0,
+    'desktop-users-badge': counts.users || 0,
+    'desktop-okrs-badge': counts.okrs || 0,
+    'desktop-projects-badge': counts.projects || 0,
+    'desktop-tasks-badge': counts.tasks || 0
+  };
+  
+  Object.entries(badges).forEach(([id, count]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = count;
+      element.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+  });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  // Ctrl/Cmd + M to toggle mobile menu
+  if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+    e.preventDefault();
+    toggleMobileMenu();
+  }
+  
+  // Escape to close mobile menu
+  if (e.key === 'Escape') {
+    closeMobileMenu();
+  }
+});
+
+// Close mobile menu when clicking on links
+document.addEventListener('click', function(e) {
+  if (e.target.closest('a[href]')) {
+    closeMobileMenu();
+  }
+});
+</script>

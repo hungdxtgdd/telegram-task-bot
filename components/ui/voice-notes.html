@@ -1,0 +1,562 @@
+<!-- ========================================
+     VOICE NOTES COMPONENT
+     Mobile-first audio recording
+     ======================================== -->
+
+<!-- Voice Notes Modal -->
+<div id="voiceNotesModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-microphone mr-2 text-primary-600"></i>
+                    Ghi âm ghi chú
+                </h2>
+                <button id="closeVoiceNotes" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Recording Status -->
+                <div id="recordingStatus" class="text-center mb-6">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-microphone text-3xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-600">Nhấn nút để bắt đầu ghi âm</p>
+                </div>
+                
+                <!-- Waveform Visualization -->
+                <div id="waveformContainer" class="mb-6 hidden">
+                    <canvas id="waveformCanvas" class="w-full h-16 bg-gray-50 rounded-lg"></canvas>
+                </div>
+                
+                <!-- Recording Controls -->
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <!-- Record Button -->
+                    <button id="recordButton" class="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-primary-700 transition-colors">
+                        <i class="fas fa-microphone text-2xl"></i>
+                    </button>
+                    
+                    <!-- Stop Button -->
+                    <button id="stopButton" class="w-16 h-16 bg-error-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-error-700 transition-colors hidden">
+                        <i class="fas fa-stop text-2xl"></i>
+                    </button>
+                    
+                    <!-- Play Button -->
+                    <button id="playButton" class="w-16 h-16 bg-success-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-success-700 transition-colors hidden">
+                        <i class="fas fa-play text-2xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Recording Info -->
+                <div id="recordingInfo" class="text-center mb-6 hidden">
+                    <div class="flex items-center justify-center space-x-4">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-error-600 rounded-full animate-pulse mr-2"></div>
+                            <span class="text-sm text-gray-600">Đang ghi âm</span>
+                        </div>
+                        <div class="text-sm text-gray-500" id="recordingTime">00:00</div>
+                    </div>
+                </div>
+                
+                <!-- Audio Player -->
+                <div id="audioPlayer" class="mb-6 hidden">
+                    <audio id="audioElement" controls class="w-full"></audio>
+                </div>
+                
+                <!-- Note Title -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề ghi chú</label>
+                    <input type="text" id="noteTitle" class="input" placeholder="Nhập tiêu đề ghi chú">
+                </div>
+                
+                <!-- Note Description -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <textarea id="noteDescription" class="textarea" placeholder="Nhập mô tả ghi chú" rows="3"></textarea>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button id="cancelRecording" class="btn btn-ghost">
+                        Hủy
+                    </button>
+                    <button id="saveRecording" class="btn btn-primary hidden">
+                        <i class="fas fa-save mr-2"></i>
+                        Lưu ghi chú
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Voice Notes List -->
+<div id="voiceNotesList" class="space-y-4 hidden">
+    <!-- Voice notes will be displayed here -->
+</div>
+
+<!-- Voice Notes JavaScript -->
+<script>
+class VoiceNotes {
+    constructor() {
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.audioBlob = null;
+        this.audioUrl = null;
+        this.isRecording = false;
+        this.isPlaying = false;
+        this.recordingStartTime = null;
+        this.recordingTimer = null;
+        this.audioContext = null;
+        this.analyser = null;
+        this.dataArray = null;
+        this.animationId = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.setupAudioContext();
+    }
+
+    setupEventListeners() {
+        // Modal events
+        document.getElementById('closeVoiceNotes').addEventListener('click', () => this.closeModal());
+        document.getElementById('cancelRecording').addEventListener('click', () => this.cancelRecording());
+        document.getElementById('saveRecording').addEventListener('click', () => this.saveRecording());
+        
+        // Recording events
+        document.getElementById('recordButton').addEventListener('click', () => this.startRecording());
+        document.getElementById('stopButton').addEventListener('click', () => this.stopRecording());
+        document.getElementById('playButton').addEventListener('click', () => this.togglePlayback());
+        
+        // Close modal when clicking outside
+        document.getElementById('voiceNotesModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closeModal();
+        });
+    }
+
+    setupAudioContext() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (error) {
+            console.error('Error setting up audio context:', error);
+        }
+    }
+
+    async startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.audioChunks = [];
+            
+            this.mediaRecorder.ondataavailable = (event) => {
+                this.audioChunks.push(event.data);
+            };
+            
+            this.mediaRecorder.onstop = () => {
+                this.audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                this.audioUrl = URL.createObjectURL(this.audioBlob);
+                this.setupAudioPlayer();
+                this.showRecordingComplete();
+            };
+            
+            this.mediaRecorder.start();
+            this.isRecording = true;
+            this.recordingStartTime = Date.now();
+            
+            this.updateRecordingUI();
+            this.startRecordingTimer();
+            this.startWaveformVisualization(stream);
+            
+        } catch (error) {
+            console.error('Error starting recording:', error);
+            this.showError('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.');
+        }
+    }
+
+    stopRecording() {
+        if (this.mediaRecorder && this.isRecording) {
+            this.mediaRecorder.stop();
+            this.isRecording = false;
+            
+            this.stopRecordingTimer();
+            this.stopWaveformVisualization();
+            
+            // Stop all tracks
+            this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    startRecordingTimer() {
+        this.recordingTimer = setInterval(() => {
+            const elapsed = Date.now() - this.recordingStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            document.getElementById('recordingTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    stopRecordingTimer() {
+        if (this.recordingTimer) {
+            clearInterval(this.recordingTimer);
+            this.recordingTimer = null;
+        }
+    }
+
+    startWaveformVisualization(stream) {
+        if (!this.audioContext) return;
+        
+        const source = this.audioContext.createMediaStreamSource(stream);
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 256;
+        
+        source.connect(this.analyser);
+        
+        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+        this.animateWaveform();
+    }
+
+    animateWaveform() {
+        if (!this.isRecording) return;
+        
+        this.analyser.getByteFrequencyData(this.dataArray);
+        this.drawWaveform();
+        
+        this.animationId = requestAnimationFrame(() => this.animateWaveform());
+    }
+
+    drawWaveform() {
+        const canvas = document.getElementById('waveformCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        ctx.fillStyle = '#f3f4f6';
+        ctx.fillRect(0, 0, width, height);
+        
+        const barWidth = width / this.dataArray.length;
+        
+        for (let i = 0; i < this.dataArray.length; i++) {
+            const barHeight = (this.dataArray[i] / 255) * height;
+            const x = i * barWidth;
+            const y = height - barHeight;
+            
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(x, y, barWidth - 1, barHeight);
+        }
+    }
+
+    stopWaveformVisualization() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
+    setupAudioPlayer() {
+        const audioElement = document.getElementById('audioElement');
+        audioElement.src = this.audioUrl;
+        
+        audioElement.addEventListener('ended', () => {
+            this.isPlaying = false;
+            this.updatePlayButton();
+        });
+    }
+
+    togglePlayback() {
+        const audioElement = document.getElementById('audioElement');
+        
+        if (this.isPlaying) {
+            audioElement.pause();
+            this.isPlaying = false;
+        } else {
+            audioElement.play();
+            this.isPlaying = true;
+        }
+        
+        this.updatePlayButton();
+    }
+
+    updatePlayButton() {
+        const playButton = document.getElementById('playButton');
+        const icon = playButton.querySelector('i');
+        
+        if (this.isPlaying) {
+            icon.className = 'fas fa-pause text-2xl';
+        } else {
+            icon.className = 'fas fa-play text-2xl';
+        }
+    }
+
+    updateRecordingUI() {
+        // Show recording state
+        document.getElementById('recordingStatus').classList.add('hidden');
+        document.getElementById('recordingInfo').classList.remove('hidden');
+        document.getElementById('waveformContainer').classList.remove('hidden');
+        
+        // Update buttons
+        document.getElementById('recordButton').classList.add('hidden');
+        document.getElementById('stopButton').classList.remove('hidden');
+    }
+
+    showRecordingComplete() {
+        // Show playback controls
+        document.getElementById('recordingInfo').classList.add('hidden');
+        document.getElementById('audioPlayer').classList.remove('hidden');
+        document.getElementById('playButton').classList.remove('hidden');
+        document.getElementById('saveRecording').classList.remove('hidden');
+        
+        // Hide stop button
+        document.getElementById('stopButton').classList.add('hidden');
+    }
+
+    resetRecordingUI() {
+        // Reset to initial state
+        document.getElementById('recordingStatus').classList.remove('hidden');
+        document.getElementById('recordingInfo').classList.add('hidden');
+        document.getElementById('waveformContainer').classList.add('hidden');
+        document.getElementById('audioPlayer').classList.add('hidden');
+        
+        // Reset buttons
+        document.getElementById('recordButton').classList.remove('hidden');
+        document.getElementById('stopButton').classList.add('hidden');
+        document.getElementById('playButton').classList.add('hidden');
+        document.getElementById('saveRecording').classList.add('hidden');
+        
+        // Clear form
+        document.getElementById('noteTitle').value = '';
+        document.getElementById('noteDescription').value = '';
+    }
+
+    async saveRecording() {
+        try {
+            const title = document.getElementById('noteTitle').value || 'Ghi chú âm thanh';
+            const description = document.getElementById('noteDescription').value || '';
+            
+            if (!this.audioBlob) {
+                this.showError('Không có bản ghi âm để lưu');
+                return;
+            }
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('audio', this.audioBlob, 'voice-note.wav');
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('duration', this.getRecordingDuration());
+            
+            // Save to server
+            const response = await fetch('/api/voice-notes', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSuccess('Đã lưu ghi chú âm thanh thành công!');
+                this.closeModal();
+                
+                // Call callback if provided
+                if (this.onNoteSaved) {
+                    this.onNoteSaved(result.note);
+                }
+            } else {
+                throw new Error(result.message || 'Lỗi khi lưu ghi chú');
+            }
+            
+        } catch (error) {
+            console.error('Error saving recording:', error);
+            this.showError('Lỗi khi lưu ghi chú âm thanh');
+        }
+    }
+
+    getRecordingDuration() {
+        if (this.recordingStartTime) {
+            return Date.now() - this.recordingStartTime;
+        }
+        return 0;
+    }
+
+    cancelRecording() {
+        if (this.isRecording) {
+            this.stopRecording();
+        }
+        
+        this.resetRecordingUI();
+        this.closeModal();
+    }
+
+    closeModal() {
+        if (this.isRecording) {
+            this.stopRecording();
+        }
+        
+        this.resetRecordingUI();
+        document.getElementById('voiceNotesModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    showError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-error-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    showSuccess(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-success-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Public methods
+    showModal(callback) {
+        this.onNoteSaved = callback;
+        document.getElementById('voiceNotesModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    loadVoiceNotes(notes) {
+        const container = document.getElementById('voiceNotesList');
+        if (!container) return;
+        
+        if (notes.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center">Chưa có ghi chú âm thanh nào</p>';
+            return;
+        }
+        
+        container.innerHTML = notes.map(note => `
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900 mb-2">${note.title}</h3>
+                            <p class="text-sm text-gray-600 mb-3">${note.description || 'Không có mô tả'}</p>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    ${this.formatDuration(note.duration)}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    ${new Date(note.created_at).toLocaleDateString('vi-VN')}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <audio controls class="w-32">
+                                <source src="${note.audio_url}" type="audio/wav">
+                            </audio>
+                            <button onclick="voiceNotes.deleteNote(${note.id})" class="btn-icon text-error-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        container.classList.remove('hidden');
+    }
+
+    formatDuration(milliseconds) {
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    async deleteNote(noteId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa ghi chú này?')) return;
+        
+        try {
+            const response = await fetch(`/api/voice-notes/${noteId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSuccess('Đã xóa ghi chú thành công!');
+                // Reload notes
+                if (this.onNoteDeleted) {
+                    this.onNoteDeleted(noteId);
+                }
+            } else {
+                throw new Error(result.message || 'Lỗi khi xóa ghi chú');
+            }
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            this.showError('Lỗi khi xóa ghi chú');
+        }
+    }
+}
+
+// Initialize voice notes
+document.addEventListener('DOMContentLoaded', () => {
+    window.voiceNotes = new VoiceNotes();
+});
+
+// Export for use in other modules
+window.VoiceNotes = VoiceNotes;
+</script>
+
+<!-- Voice Notes CSS -->
+<style>
+#voiceNotesModal {
+    backdrop-filter: blur(10px);
+}
+
+#recordButton:active,
+#stopButton:active,
+#playButton:active {
+    transform: scale(0.95);
+}
+
+#waveformCanvas {
+    border: 1px solid var(--gray-200);
+}
+
+/* Animation for recording button */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.recording-pulse {
+    animation: pulse 1s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    #voiceNotesModal .max-w-md {
+        max-width: 95%;
+    }
+    
+    #recordButton,
+    #stopButton,
+    #playButton {
+        width: 3rem;
+        height: 3rem;
+    }
+}
+</style>

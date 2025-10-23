@@ -393,6 +393,10 @@ DELETE /api/okrs-enhanced/okrs/{id}
 - **Quarterly View** (`components/okrs/quarterly-view.html`): Timeline view
 - **OKR Analytics** (`components/okrs/okr-analytics.html`): Performance charts
 - **Project Links** (`components/okrs/project-links.html`): Visual project connections
+- **OKR Detail Modal** (`components/okrs/okr-detail-modal.html`): Comprehensive OKR details
+- **Related Projects** (`components/okrs/related-projects.html`): Linked projects display
+- **Team Members** (`components/okrs/team-members.html`): OKR team overview
+- **Risk Indicators** (`components/okrs/risk-indicators.html`): Warning system
 
 #### 📁 Projects Management Components
 - **Project Kanban** (`components/projects/project-kanban.html`): Drag & drop board
@@ -401,6 +405,11 @@ DELETE /api/okrs-enhanced/okrs/{id}
 - **Health Metrics** (`components/projects/health-metrics.html`): Project health indicators
 - **Team Assignment** (`components/projects/team-assignment.html`): Visual team assignment
 - **Budget Tracking** (`components/projects/budget-tracking.html`): Budget progress bars
+- **Project Detail Modal** (`components/projects/project-detail-modal.html`): Comprehensive project details
+- **Related Tasks** (`components/projects/related-tasks.html`): Project tasks overview
+- **Team Members** (`components/projects/team-members.html`): Project team with roles
+- **Dependencies** (`components/projects/dependencies.html`): Project dependencies
+- **Budget Analytics** (`components/projects/budget-analytics.html`): Financial tracking
 
 #### ✅ Tasks Management Components
 - **Task Kanban** (`components/tasks/task-kanban.html`): Multi-column task board
@@ -409,6 +418,12 @@ DELETE /api/okrs-enhanced/okrs/{id}
 - **Assignee Avatar** (`components/tasks/assignee-avatar.html`): User avatar assignments
 - **Deadline Alert** (`components/tasks/deadline-alert.html`): Deadline warnings
 - **Time Tracker** (`components/tasks/time-tracker.html`): Built-in time tracking
+- **Task Detail Modal** (`components/tasks/task-detail-modal.html`): Comprehensive task details
+- **Dependencies** (`components/tasks/dependencies.html`): Task dependencies
+- **Comments System** (`components/tasks/comments.html`): Task comments and notes
+- **File Attachments** (`components/tasks/file-attachments.html`): File management
+- **Time Tracking** (`components/tasks/time-tracking.html`): Hours tracking
+- **Activity Log** (`components/tasks/activity-log.html`): Task history
 
 ### Backend Services/Modules
 - **Auth Service** (`api/auth-endpoint.js`): Login, verify, password change

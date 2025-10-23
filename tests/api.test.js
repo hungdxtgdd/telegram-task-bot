@@ -61,7 +61,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       // Mock bcrypt
@@ -100,7 +101,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const authEndpoint = require('../api/auth-endpoint');
@@ -137,7 +139,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const projectsEndpoint = require('../api/projects-enhanced');
@@ -174,7 +177,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const projectsEndpoint = require('../api/projects-enhanced');
@@ -209,7 +213,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const tasksEndpoint = require('../api/tasks-enhanced');
@@ -247,7 +252,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const tasksEndpoint = require('../api/tasks-enhanced');
@@ -282,7 +288,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const okrsEndpoint = require('../api/okrs-enhanced');
@@ -318,7 +325,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const usersEndpoint = require('../api/users-enhanced');
@@ -357,7 +365,8 @@ describe('API Tests', () => {
 
       const res = {
         status: jest.fn().mockReturnThis(),
-        json: jest.fn()
+        json: jest.fn(),
+        setHeader: jest.fn()
       };
 
       const usersEndpoint = require('../api/users-enhanced');

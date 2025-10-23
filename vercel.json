@@ -34,6 +34,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/mock-data.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/auth-endpoint.js",
       "use": "@vercel/node"
     },
@@ -58,6 +62,26 @@
       "use": "@vercel/static"
     },
     {
+      "src": "pages/users-management-new.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/tasks-management-new.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/projects-management-new.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/okrs-management-new.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/dashboard-enhanced.html",
+      "use": "@vercel/static"
+    },
+    {
       "src": "pages/monitoring.html",
       "use": "@vercel/static"
     },
@@ -71,6 +95,66 @@
     },
     {
       "src": "pages/test-simple-dashboard.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/test-login.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/css/design-system.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/css/tailwind.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/mobile-nav.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/buttons.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/cards.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/forms.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/keyboard-shortcuts.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/camera-integration.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/voice-notes.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/swipe-gestures.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/pull-to-refresh.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/infinite-scroll.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/realtime-collaboration.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/realtime-collaboration.css",
       "use": "@vercel/static"
     }
   ],
@@ -96,20 +180,48 @@
       "dest": "/pages/test-simple-dashboard.html"
     },
     {
+      "src": "/test-login",
+      "dest": "/pages/test-login.html"
+    },
+    {
       "src": "/projects",
-      "dest": "/pages/projects-enhanced.html"
+      "dest": "/pages/projects-management-new.html"
     },
     {
       "src": "/tasks",
-      "dest": "/pages/tasks-enhanced.html"
+      "dest": "/pages/tasks-management-new.html"
     },
     {
       "src": "/okrs",
-      "dest": "/pages/okrs-enhanced.html"
+      "dest": "/pages/okrs-management-new.html"
     },
     {
       "src": "/admin-users",
       "dest": "/pages/users-management.html"
+    },
+    {
+      "src": "/admin-users-new",
+      "dest": "/pages/users-management-new.html"
+    },
+    {
+      "src": "/users",
+      "dest": "/pages/users-management-new.html"
+    },
+    {
+      "src": "/tasks-new",
+      "dest": "/pages/tasks-management-new.html"
+    },
+    {
+      "src": "/projects-new",
+      "dest": "/pages/projects-management-new.html"
+    },
+    {
+      "src": "/okrs-new",
+      "dest": "/pages/okrs-management-new.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/pages/dashboard-enhanced.html"
     },
     {
       "src": "/test-user",
@@ -198,6 +310,62 @@
     {
       "src": "/webhook",
       "dest": "/api/bot.js"
+    },
+    {
+      "src": "/assets/css/design-system.css",
+      "dest": "/assets/css/design-system.css"
+    },
+    {
+      "src": "/assets/css/tailwind.css",
+      "dest": "/assets/css/tailwind.css"
+    },
+    {
+      "src": "/components/mobile-nav.html",
+      "dest": "/components/mobile-nav.html"
+    },
+    {
+      "src": "/components/ui/buttons.html",
+      "dest": "/components/ui/buttons.html"
+    },
+    {
+      "src": "/components/ui/cards.html",
+      "dest": "/components/ui/cards.html"
+    },
+    {
+      "src": "/components/ui/forms.html",
+      "dest": "/components/ui/forms.html"
+    },
+    {
+      "src": "/components/ui/keyboard-shortcuts.html",
+      "dest": "/components/ui/keyboard-shortcuts.html"
+    },
+    {
+      "src": "/components/ui/camera-integration.html",
+      "dest": "/components/ui/camera-integration.html"
+    },
+    {
+      "src": "/components/ui/voice-notes.html",
+      "dest": "/components/ui/voice-notes.html"
+    },
+    {
+      "src": "/components/ui/swipe-gestures.js",
+      "dest": "/components/ui/swipe-gestures.js"
+    },
+    {
+      "src": "/components/ui/pull-to-refresh.js",
+      "dest": "/components/ui/pull-to-refresh.js"
+    },
+    {
+      "src": "/components/ui/infinite-scroll.js",
+      "dest": "/components/ui/infinite-scroll.js"
+    },
+    {
+      "src": "/components/ui/realtime-collaboration.js",
+      "dest": "/components/ui/realtime-collaboration.js"
+    },
+    {
+      "src": "/components/ui/realtime-collaboration.css",
+      "dest": "/components/ui/realtime-collaboration.css"
     }
   ],
   "env": {

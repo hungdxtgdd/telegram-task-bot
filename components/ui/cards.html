@@ -1,0 +1,119 @@
+<!-- ========================================
+     CARD COMPONENTS LIBRARY
+     ======================================== -->
+
+<!-- Basic Card -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="text-lg font-semibold text-gray-900">Card Title</h3>
+    <p class="text-sm text-gray-500">Card subtitle</p>
+  </div>
+  <div class="card-body">
+    <p class="text-gray-700">Card content goes here. This is a basic card with header, body, and footer.</p>
+  </div>
+  <div class="card-footer">
+    <button class="btn btn-primary btn-sm">Action</button>
+  </div>
+</div>
+
+<!-- Simple Card (No Header/Footer) -->
+<div class="card">
+  <div class="card-body">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Simple Card</h3>
+    <p class="text-gray-700">This is a simple card with just body content.</p>
+  </div>
+</div>
+
+<!-- Card with Image -->
+<div class="card">
+  <div class="aspect-w-16 aspect-h-9">
+    <img src="https://via.placeholder.com/400x200" alt="Card image" class="w-full h-48 object-cover">
+  </div>
+  <div class="card-body">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Card with Image</h3>
+    <p class="text-gray-700">This card includes an image at the top.</p>
+  </div>
+</div>
+
+<!-- Card with Badges -->
+<div class="card">
+  <div class="card-body">
+    <div class="flex justify-between items-start mb-4">
+      <h3 class="text-lg font-semibold text-gray-900">Card with Badges</h3>
+      <div class="flex gap-2">
+        <span class="badge badge-primary">New</span>
+        <span class="badge badge-success">Active</span>
+      </div>
+    </div>
+    <p class="text-gray-700">This card shows how to use badges for status indicators.</p>
+  </div>
+</div>
+
+<!-- Card with Progress -->
+<div class="card">
+  <div class="card-body">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Card with Progress</h3>
+    <div class="mb-2">
+      <div class="flex justify-between text-sm text-gray-600 mb-1">
+        <span>Progress</span>
+        <span>75%</span>
+      </div>
+      <div class="progress">
+        <div class="progress-bar" style="width: 75%"></div>
+      </div>
+    </div>
+    <p class="text-gray-700">This card includes a progress bar.</p>
+  </div>
+</div>
+
+<!-- Card with Actions -->
+<div class="card">
+  <div class="card-body">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Card with Actions</h3>
+    <p class="text-gray-700 mb-4">This card has multiple action buttons.</p>
+    <div class="flex gap-2">
+      <button class="btn btn-primary btn-sm">
+        <i class="fas fa-edit mr-1"></i>
+        Edit
+      </button>
+      <button class="btn btn-ghost btn-sm">
+        <i class="fas fa-eye mr-1"></i>
+        View
+      </button>
+      <button class="btn btn-error btn-sm">
+        <i class="fas fa-trash mr-1"></i>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Card Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="card">
+    <div class="card-body">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Card 1</h3>
+      <p class="text-gray-700">First card in the grid.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Card 2</h3>
+      <p class="text-gray-700">Second card in the grid.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Card 3</h3>
+      <p class="text-gray-700">Third card in the grid.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Hover Card -->
+<div class="card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+  <div class="card-body">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Hover Card</h3>
+    <p class="text-gray-700">This card has hover effects. Hover over it to see the animation.</p>
+  </div>
+</div>

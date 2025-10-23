@@ -1,0 +1,173 @@
+<!-- ========================================
+     FORM COMPONENTS LIBRARY
+     ======================================== -->
+
+<!-- Basic Form -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+    <input type="text" class="input" placeholder="Enter your full name">
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+    <input type="email" class="input" placeholder="Enter your email">
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+    <textarea class="textarea" placeholder="Enter your message" rows="4"></textarea>
+  </div>
+  
+  <div class="flex gap-3">
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-ghost">Cancel</button>
+  </div>
+</form>
+
+<!-- Form with Select -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+    <select class="select">
+      <option value="">Select a category</option>
+      <option value="work">Work</option>
+      <option value="personal">Personal</option>
+      <option value="urgent">Urgent</option>
+    </select>
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+    <select class="select">
+      <option value="">Select priority</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+  </div>
+</form>
+
+<!-- Form with Checkboxes -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-3">Notifications</label>
+    <div class="space-y-2">
+      <label class="flex items-center">
+        <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">Email notifications</span>
+      </label>
+      <label class="flex items-center">
+        <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">SMS notifications</span>
+      </label>
+      <label class="flex items-center">
+        <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">Push notifications</span>
+      </label>
+    </div>
+  </div>
+</form>
+
+<!-- Form with Radio Buttons -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-3">Status</label>
+    <div class="space-y-2">
+      <label class="flex items-center">
+        <input type="radio" name="status" value="active" class="text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">Active</span>
+      </label>
+      <label class="flex items-center">
+        <input type="radio" name="status" value="inactive" class="text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">Inactive</span>
+      </label>
+      <label class="flex items-center">
+        <input type="radio" name="status" value="pending" class="text-primary-600 focus:ring-primary-500">
+        <span class="ml-2 text-sm text-gray-700">Pending</span>
+      </label>
+    </div>
+  </div>
+</form>
+
+<!-- Form with File Upload -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Upload File</label>
+    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+      <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+      <p class="text-sm text-gray-600">Drag and drop files here, or click to select</p>
+      <input type="file" class="hidden" id="file-upload">
+      <button type="button" class="btn btn-ghost btn-sm mt-2" onclick="document.getElementById('file-upload').click()">
+        Choose Files
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Form with Validation States -->
+<form class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Valid Input</label>
+    <input type="text" class="input" value="Valid input" style="border-color: var(--success-500);">
+    <p class="text-sm text-success-600 mt-1">This field is valid</p>
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Invalid Input</label>
+    <input type="text" class="input" value="Invalid input" style="border-color: var(--error-500);">
+    <p class="text-sm text-error-600 mt-1">This field has an error</p>
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Disabled Input</label>
+    <input type="text" class="input" value="Disabled input" disabled>
+  </div>
+</form>
+
+<!-- Search Form -->
+<form class="relative">
+  <div class="relative">
+    <input type="search" class="input pl-10" placeholder="Search...">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <i class="fas fa-search text-gray-400"></i>
+    </div>
+    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+      <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+    </button>
+  </div>
+</form>
+
+<!-- Form Grid -->
+<form class="space-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+      <input type="text" class="input" placeholder="First name">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+      <input type="text" class="input" placeholder="Last name">
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+      <input type="text" class="input" placeholder="City">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+      <select class="select">
+        <option value="">Select state</option>
+        <option value="CA">California</option>
+        <option value="NY">New York</option>
+        <option value="TX">Texas</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+      <input type="text" class="input" placeholder="ZIP code">
+    </div>
+  </div>
+</form>

@@ -110,7 +110,8 @@ async function checkAPIEndpoints() {
   for (const endpoint of endpoints) {
     try {
       const startTime = Date.now();
-      const response = await fetch(`https://taskm.creatorui.com${endpoint.url}`, {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://your-app.vercel.app';
+      const response = await fetch(`${baseUrl}${endpoint.url}`, {
         method: 'GET',
         headers: {
           'Authorization': 'Bearer test-token' // This will fail but we just want to check if endpoint exists

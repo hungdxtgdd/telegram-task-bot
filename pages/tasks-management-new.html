@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tasks - Task Management System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+    <link rel="stylesheet" href="/assets/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/design-system.css">
+    <style>
+        .task-priority-high { border-left: 4px solid var(--error-500); }
+        .task-priority-medium { border-left: 4px solid var(--warning-500); }
+        .task-priority-low { border-left: 4px solid var(--success-500); }
+        .task-status-todo { background-color: var(--gray-50); }
+        .task-status-in-progress { background-color: var(--primary-50); }
+        .task-status-done { background-color: var(--success-50); }
+        .task-status-blocked { background-color: var(--error-50); }
+        
+        /* Slide-in Modal Styles */
+        .slide-modal {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: right 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+        
+        .slide-modal.show {
+            right: 0;
+        }
+        
+        .slide-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        
+        .slide-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .slide-modal {
+                max-width: 100%;
+            }
+        }
+        
+        /* Desktop responsive */
+        @media (min-width: 1024px) {
+            .slide-modal {
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Mobile Navigation -->
+    <div id="mobile-nav-container"></div>
+    
+    <!-- Desktop Layout -->
+    <div class="lg:flex">
+        <!-- Desktop Sidebar -->
+        <div id="desktop-sidebar-container"></div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 lg:ml-64">
+            <!-- Mobile Header -->
+            <header class="bg-white shadow-sm border-b lg:hidden">
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <h1 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-tasks mr-2 text-primary-600"></i>
+                                Tasks
+                            </h1>
+                        </div>
+                        <button id="hamburger-btn" class="btn-icon" onclick="toggleMobileMenu()">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Desktop Header -->
+            <header class="bg-white shadow-sm border-b hidden lg:block">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center py-4">
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                <i class="fas fa-tasks mr-2 text-primary-600"></i>
+                                Quản lý Tasks
+                            </h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="showAddTaskModal()" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i>
+                                Thêm Task
+                            </button>
+                            <button onclick="toggleViewMode()" class="btn btn-ghost" id="viewModeBtn">
+                                <i class="fas fa-th-large mr-2"></i>
+                                Kanban
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-4 lg:p-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-tasks text-primary-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Tổng Tasks</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="totalTasks">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-warning-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">In Progress</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="inProgressTasks">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-success-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Completed</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="completedTasks">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-error-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-error-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Overdue</p>
+                                    <p class="text-2xl font-bold text-gray-900" id="overdueTasks">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-6">
+                    <div class="card-body">
+                        <div class="flex flex-col lg:flex-row gap-4">
+                            <!-- Search -->
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input type="search" id="searchInput" class="input pl-10" placeholder="Tìm kiếm tasks...">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                    <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                                        <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="flex gap-2 flex-wrap">
+                                <select id="statusFilter" class="select">
+                                    <option value="">Tất cả status</option>
+                                    <option value="todo">To Do</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="done">Done</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                                
+                                <select id="priorityFilter" class="select">
+                                    <option value="">Tất cả priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                
+                                <select id="assigneeFilter" class="select">
+                                    <option value="">Tất cả assignee</option>
+                                </select>
+                                
+                                <button onclick="clearFilters()" class="btn btn-ghost">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kanban Board View -->
+                <div id="kanbanView" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- To Do Column -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">To Do</h3>
+                                <span class="badge badge-gray" id="todoCount">0</span>
+                            </div>
+                            <div id="todoTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- In Progress Column -->
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">In Progress</h3>
+                                <span class="badge badge-primary" id="inProgressCount">0</span>
+                            </div>
+                            <div id="inProgressTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Done Column -->
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Done</h3>
+                                <span class="badge badge-success" id="doneCount">0</span>
+                            </div>
+                            <div id="doneTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Blocked Column -->
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Blocked</h3>
+                                <span class="badge badge-error" id="blockedCount">0</span>
+                            </div>
+                            <div id="blockedTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div id="listView">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tasksGrid">
+                        <!-- Task cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-12">
+                    <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-gray-500 bg-white transition ease-in-out duration-150 cursor-not-allowed">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Đang tải tasks...
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center py-12 hidden">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tasks text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Không có tasks nào</h3>
+                    <p class="text-gray-500 mb-6">Bắt đầu bằng cách thêm task đầu tiên.</p>
+                    <button onclick="showAddTaskModal()" class="btn btn-primary">
+                        <i class="fas fa-plus mr-2"></i>
+                        Thêm Task
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Task Modal - Slide-in from right -->
+    <div id="addTaskModalOverlay" class="slide-modal-overlay"></div>
+    <div id="addTaskModal" class="slide-modal">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Thêm Task Mới</h2>
+                <button onclick="closeAddTaskModal()" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+                
+                <form id="addTaskForm" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề Task</label>
+                        <input type="text" id="taskTitle" class="input" placeholder="Nhập tiêu đề task" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <textarea id="taskDescription" class="textarea" placeholder="Nhập mô tả task" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <select id="taskPriority" class="select" required>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="taskStatus" class="select" required>
+                                <option value="todo" selected>To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="done">Done</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                        <select id="taskAssignee" class="select">
+                            <option value="">Chọn assignee</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="datetime-local" id="taskDueDate" class="input">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeAddTaskModal()" class="btn btn-ghost">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Thêm Task
+                        </button>
+                    </div>
+                </form>
+    </div>
+
+    <!-- Edit Task Modal - Slide-in from right -->
+    <div id="editTaskModalOverlay" class="slide-modal-overlay"></div>
+    <div id="editTaskModal" class="slide-modal">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa Task</h2>
+                <button onclick="closeEditTaskModal()" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+                
+                <form id="editTaskForm" class="p-6 space-y-4">
+                    <input type="hidden" id="editTaskId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề Task</label>
+                        <input type="text" id="editTaskTitle" class="input" placeholder="Nhập tiêu đề task" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <textarea id="editTaskDescription" class="textarea" placeholder="Nhập mô tả task" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <select id="editTaskPriority" class="select" required>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="editTaskStatus" class="select" required>
+                                <option value="todo">To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="done">Done</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                        <select id="editTaskAssignee" class="select">
+                            <option value="">Chọn assignee</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="datetime-local" id="editTaskDueDate" class="input">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeEditTaskModal()" class="btn btn-ghost">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-2"></i>
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+    </div>
+
+    <!-- Include Components -->
+    <script>
+        // Load mobile navigation
+        fetch('/components/mobile-nav.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('mobile-nav-container').innerHTML = html;
+            });
+
+        // Load desktop sidebar
+        fetch('/components/mobile-nav.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('desktop-sidebar-container').innerHTML = html;
+            });
+
+        // Load keyboard shortcuts
+        fetch('/components/ui/keyboard-shortcuts.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+
+        // Load camera integration
+        fetch('/components/ui/camera-integration.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+
+        // Load voice notes
+        fetch('/components/ui/voice-notes.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+            });
+    </script>
+
+    <!-- Load Mobile Gestures -->
+    <script src="/components/ui/swipe-gestures.js"></script>
+    <script src="/components/ui/pull-to-refresh.js"></script>
+    <script src="/components/ui/infinite-scroll.js"></script>
+    <script src="/components/ui/realtime-collaboration.js"></script>
+
+    <!-- Main JavaScript -->
+    <script>
+        let tasks = [];
+        let filteredTasks = [];
+        let users = [];
+        let currentView = 'list'; // 'list' or 'kanban'
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+            initializeInfiniteScroll();
+        });
+
+        async function checkAuth() {
+            try {
+                // BYPASS authentication for testing - set mock user
+                currentUser = {
+                    id: 1,
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    role: 'admin'
+                };
+                
+                // Setup role-based UI
+                setupRoleBasedUI();
+                
+                loadUsers();
+                loadTasks();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                loadUsers();
+                loadTasks(); // Load data anyway
+            }
+        }
+
+        function setupRoleBasedUI() {
+            // Hide task management buttons for regular users
+            if (currentUser.role === 'user') {
+                const addTaskBtn = document.querySelector('button[onclick="showAddTaskModal()"]');
+                if (addTaskBtn) {
+                    addTaskBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // Load users for assignee dropdown
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users-enhanced', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    users = data.users || [];
+                    updateAssigneeDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Load tasks from API
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/tasks-enhanced/tasks', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                
+                if (response.ok) {
+                    tasks = await response.json();
+                    filteredTasks = [...tasks];
+                    renderTasks();
+                    updateStats();
+                } else {
+                    showError('Không thể tải danh sách tasks');
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                showError('Lỗi khi tải danh sách tasks');
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        // Render tasks based on current view
+        function renderTasks() {
+            if (currentView === 'kanban') {
+                renderKanbanView();
+            } else {
+                renderListView();
+            }
+        }
+
+        // Render list view
+        function renderListView() {
+            const grid = document.getElementById('tasksGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredTasks.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = filteredTasks.map(task => createTaskCard(task)).join('');
+        }
+
+        // Render kanban view
+        function renderKanbanView() {
+            const columns = {
+                'todo': document.getElementById('todoTasks'),
+                'in-progress': document.getElementById('inProgressTasks'),
+                'done': document.getElementById('doneTasks'),
+                'blocked': document.getElementById('blockedTasks')
+            };
+            
+            const counts = {
+                'todo': 0,
+                'in-progress': 0,
+                'done': 0,
+                'blocked': 0
+            };
+            
+            // Clear all columns
+            Object.values(columns).forEach(column => {
+                column.innerHTML = '';
+            });
+            
+            // Group tasks by status
+            filteredTasks.forEach(task => {
+                const status = task.status || 'todo';
+                if (columns[status]) {
+                    columns[status].innerHTML += createTaskCard(task, true);
+                    counts[status]++;
+                }
+            });
+            
+            // Update counts
+            Object.keys(counts).forEach(status => {
+                const countElement = document.getElementById(`${status}Count`);
+                if (countElement) {
+                    countElement.textContent = counts[status];
+                }
+            });
+        }
+
+        // Create task card
+        function createTaskCard(task, isKanban = false) {
+            const priorityClass = `task-priority-${(task.priority || 'medium').toLowerCase()}`;
+            const statusClass = `task-status-${(task.status || 'todo').toLowerCase().replace(' ', '-')}`;
+            const dueDate = task.deadline ? new Date(task.deadline) : null;
+            const isOverdue = dueDate && dueDate < new Date() && task.status !== 'Done';
+            
+            return `
+                <div class="card hover:shadow-lg transition-all duration-300 task-card relative ${priorityClass} ${statusClass} cursor-pointer" data-task-id="${task.id}" onclick="showTaskDetail(${task.id})">
+                    <div class="card-body">
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 class="text-lg font-semibold text-gray-900 flex-1">${task.task_name || 'Untitled Task'}</h3>
+                            <div class="flex space-x-1 ml-2">
+                                <button onclick="event.stopPropagation(); editTask(${task.id})" class="btn-icon" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteTask(${task.id})" class="btn-icon text-error-600 hover:text-error-700" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${task.description && task.description.trim() ? 
+                            (task.description.startsWith('http') ? 
+                                `<p class="text-gray-600 text-sm mb-3">Link: <a href="${task.description}" target="_blank" class="text-blue-600 hover:underline break-all">${task.description}</a></p>` :
+                                `<p class="text-gray-600 text-sm mb-3">${task.description}</p>`) : 
+                            ''
+                        }
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Priority:</span>
+                                <span class="badge ${getPriorityBadgeClass(task.priority)}">${task.priority || 'Medium'}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Status:</span>
+                                <span class="badge ${getStatusBadgeClass(task.status)}">${task.status || 'Pending'}</span>
+                            </div>
+                            
+                            ${task.assignee ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Assignee:</span>
+                                <span class="text-sm text-gray-900">${task.assignee}</span>
+                            </div>
+                            ` : ''}
+                            
+                            ${dueDate ? `
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Due:</span>
+                                <span class="text-sm ${isOverdue ? 'text-error-600 font-medium' : 'text-gray-900'}">
+                                    ${dueDate.toLocaleDateString('vi-VN')}
+                                    ${isOverdue ? ' (Overdue)' : ''}
+                                </span>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Created:</span>
+                                <span class="text-sm text-gray-900">${new Date(task.created_at).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get priority badge class
+        function getPriorityBadgeClass(priority) {
+            switch ((priority || '').toLowerCase()) {
+                case 'high': return 'badge-error';
+                case 'medium': return 'badge-warning';
+                case 'low': return 'badge-success';
+                default: return 'badge-gray';
+            }
+        }
+
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            switch ((status || '').toLowerCase()) {
+                case 'pending': return 'badge-gray';
+                case 'in progress': return 'badge-primary';
+                case 'done': return 'badge-success';
+                case 'cancelled': return 'badge-error';
+                case 'blocked': return 'badge-error';
+                default: return 'badge-gray';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalTasks = tasks.length;
+            const inProgressTasks = tasks.filter(t => t.status === 'in-progress').length;
+            const completedTasks = tasks.filter(t => t.status === 'done').length;
+            const overdueTasks = tasks.filter(t => {
+                if (!t.due_date || t.status === 'done') return false;
+                return new Date(t.due_date) < new Date();
+            }).length;
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('inProgressTasks').textContent = inProgressTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('overdueTasks').textContent = overdueTasks;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', filterTasks);
+            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+            
+            // Filters
+            document.getElementById('statusFilter').addEventListener('change', filterTasks);
+            document.getElementById('priorityFilter').addEventListener('change', filterTasks);
+            document.getElementById('assigneeFilter').addEventListener('change', filterTasks);
+            
+            // Forms
+            document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
+            document.getElementById('editTaskForm').addEventListener('submit', handleEditTask);
+        }
+
+        // Filter tasks
+        function filterTasks() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const assigneeFilter = document.getElementById('assigneeFilter').value;
+            
+            filteredTasks = tasks.filter(task => {
+                const matchesSearch = !searchTerm || 
+                    (task.title && task.title.toLowerCase().includes(searchTerm)) ||
+                    (task.description && task.description.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || task.status === statusFilter;
+                const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+                const matchesAssignee = !assigneeFilter || task.assignee_id == assigneeFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
+            });
+            
+            renderTasks();
+            updateClearButton();
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterTasks();
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            document.getElementById('assigneeFilter').value = '';
+            filterTasks();
+        }
+
+        // Update clear button visibility
+        function updateClearButton() {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            
+            if (searchInput.value) {
+                clearButton.classList.remove('hidden');
+            } else {
+                clearButton.classList.add('hidden');
+            }
+        }
+
+        // Toggle view mode
+        function toggleViewMode() {
+            currentView = currentView === 'list' ? 'kanban' : 'list';
+            const viewModeBtn = document.getElementById('viewModeBtn');
+            const kanbanView = document.getElementById('kanbanView');
+            const listView = document.getElementById('listView');
+            
+            if (currentView === 'kanban') {
+                viewModeBtn.innerHTML = '<i class="fas fa-list mr-2"></i>List';
+                kanbanView.classList.remove('hidden');
+                listView.classList.add('hidden');
+            } else {
+                viewModeBtn.innerHTML = '<i class="fas fa-th-large mr-2"></i>Kanban';
+                kanbanView.classList.add('hidden');
+                listView.classList.remove('hidden');
+            }
+            
+            renderTasks();
+        }
+
+        // Update assignee dropdowns
+        function updateAssigneeDropdowns() {
+            const addAssignee = document.getElementById('taskAssignee');
+            const editAssignee = document.getElementById('editTaskAssignee');
+            const filterAssignee = document.getElementById('assigneeFilter');
+            
+            const options = users.map(user => 
+                `<option value="${user.id}">${user.full_name || user.name}</option>`
+            ).join('');
+            
+            if (addAssignee) addAssignee.innerHTML = '<option value="">Chọn assignee</option>' + options;
+            if (editAssignee) editAssignee.innerHTML = '<option value="">Chọn assignee</option>' + options;
+            if (filterAssignee) filterAssignee.innerHTML = '<option value="">Tất cả assignee</option>' + options;
+        }
+
+        // Show add task modal
+        function showAddTaskModal() {
+            // Show slide-in modal
+            document.getElementById('addTaskModalOverlay').classList.add('show');
+            document.getElementById('addTaskModal').classList.add('show');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // Close add task modal
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModalOverlay').classList.remove('show');
+            document.getElementById('addTaskModal').classList.remove('show');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('addTaskForm').reset();
+        }
+        
+        // Close add modal when clicking overlay
+        document.getElementById('addTaskModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddTaskModal();
+            }
+        });
+        
+        // Close add modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('addTaskModal').classList.contains('show')) {
+                closeAddTaskModal();
+            }
+        });
+
+        // Show edit task modal
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('editTaskTitle').value = task.task_name || '';
+            document.getElementById('editTaskDescription').value = task.description || '';
+            document.getElementById('editTaskPriority').value = (task.priority || 'Medium').toLowerCase();
+            // Map database status to form values
+            const statusMap = {
+                'Pending': 'todo',
+                'In Progress': 'in-progress', 
+                'Done': 'done',
+                'Cancelled': 'blocked',
+                'Blocked': 'blocked'
+            };
+            document.getElementById('editTaskStatus').value = statusMap[task.status] || 'todo';
+            document.getElementById('editTaskAssignee').value = task.assignee_id || '';
+            document.getElementById('editTaskDueDate').value = task.deadline ? new Date(task.deadline).toISOString().slice(0, 16) : '';
+            
+            // Show slide-in modal
+            document.getElementById('editTaskModalOverlay').classList.add('show');
+            document.getElementById('editTaskModal').classList.add('show');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // Close edit task modal
+        function closeEditTaskModal() {
+            document.getElementById('editTaskModalOverlay').classList.remove('show');
+            document.getElementById('editTaskModal').classList.remove('show');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Close edit modal when clicking overlay
+        document.getElementById('editTaskModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditTaskModal();
+            }
+        });
+        
+        // Close edit modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('editTaskModal').classList.contains('show')) {
+                closeEditTaskModal();
+            }
+        });
+
+        // Handle add task
+        async function handleAddTask(e) {
+            e.preventDefault();
+            
+            // Map form status to database values
+            const statusMap = {
+                'todo': 'Pending',
+                'in-progress': 'In Progress',
+                'done': 'Done', 
+                'blocked': 'Blocked'
+            };
+            
+            const formData = {
+                task_name: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                priority: document.getElementById('taskPriority').value,
+                status: statusMap[document.getElementById('taskStatus').value] || 'Pending',
+                assignee_id: document.getElementById('taskAssignee').value || null,
+                deadline: document.getElementById('taskDueDate').value || null
+            };
+            
+            try {
+                const response = await fetch('/api/tasks-enhanced', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Thêm task thành công!');
+                    closeAddTaskModal();
+                    loadTasks();
+                } else {
+                    showError('Lỗi khi thêm task: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error adding task:', error);
+                showError('Lỗi khi thêm task');
+            }
+        }
+
+        // Handle edit task
+        async function handleEditTask(e) {
+            e.preventDefault();
+            
+            const taskId = document.getElementById('editTaskId').value;
+            
+            // Map form status back to database values
+            const statusMap = {
+                'todo': 'Pending',
+                'in-progress': 'In Progress',
+                'done': 'Done', 
+                'blocked': 'Blocked'
+            };
+            
+            const formData = {
+                task_name: document.getElementById('editTaskTitle').value,
+                description: document.getElementById('editTaskDescription').value,
+                priority: document.getElementById('editTaskPriority').value,
+                status: statusMap[document.getElementById('editTaskStatus').value] || 'Pending',
+                assignee_id: document.getElementById('editTaskAssignee').value || null,
+                deadline: document.getElementById('editTaskDueDate').value || null
+            };
+            
+            try {
+                const response = await fetch(`/api/tasks-enhanced/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Cập nhật task thành công!');
+                    closeEditTaskModal();
+                    loadTasks();
+                } else {
+                    showError('Lỗi khi cập nhật task: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error updating task:', error);
+                showError('Lỗi khi cập nhật task');
+            }
+        }
+
+        // Delete task
+        async function deleteTask(taskId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa task này?')) return;
+            
+            try {
+                const response = await fetch(`/api/tasks-enhanced/${taskId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Xóa task thành công!');
+                    loadTasks();
+                } else {
+                    showError('Lỗi khi xóa task: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                showError('Lỗi khi xóa task');
+            }
+        }
+
+        // Initialize infinite scroll
+        function initializeInfiniteScroll() {
+            // Implementation for infinite scroll if needed
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-success-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-error-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Mobile menu functions (will be loaded from component)
+        function toggleMobileMenu() {
+            // This will be overridden by the mobile nav component
+        }
+
+        // Fix for missing function error
+        function showAddProjectModal() {
+            // Redirect to projects page
+            window.location.href = '/projects';
+        }
+        
+        // Placeholder functions for mobile navigation buttons
+        function showAddOKRModal() {
+            // Redirect to OKRs page
+            window.location.href = '/okrs';
+        }
+        
+        function showAddUserModal() {
+            // Redirect to users page
+            window.location.href = '/users';
+        }
+        
+        function showSettings() {
+            // Show settings modal or redirect to settings page
+            alert('Settings feature coming soon!');
+        }
+        
+        function refreshData() {
+            // Refresh current page data
+            location.reload();
+        }
+        
+        function showKeyboardShortcuts() {
+            // Show keyboard shortcuts modal
+            alert('Keyboard shortcuts:\n\nCtrl+N - New item\nCtrl+S - Save\nCtrl+F - Search\nEsc - Close modal');
+        }
+        
+        function logout() {
+            // Logout user
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            }
+        }
+        
+        function closeMobileMenu() {
+            // Close mobile menu
+            const mobileMenu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+            if (overlay) overlay.classList.add('hidden');
+        }
+        
+        // Show Task detail modal
+        function showTaskDetail(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // Debug: Log task data to console
+            console.log('Task data:', task);
+            
+            const dueDate = task.deadline ? new Date(task.deadline) : null;
+            const isOverdue = dueDate && dueDate < new Date() && task.status !== 'Done';
+            const priorityText = getPriorityText(task.priority);
+            const statusText = getStatusText(task.status);
+            
+            document.getElementById('taskDetailTitle').textContent = task.task_name || task.name || 'Untitled Task';
+            document.getElementById('taskDetailContent').innerHTML = `
+                <div class="space-y-6">
+                    <!-- Basic Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Mô tả</h4>
+                            ${task.description && task.description.trim() ? 
+                                (task.description.startsWith('http') ? 
+                                    `<p class="text-gray-900">Link: <a href="${task.description}" target="_blank" class="text-blue-600 hover:underline break-all">${task.description}</a></p>` :
+                                    `<p class="text-gray-900">${task.description}</p>`) :
+                                '<p class="text-gray-900">Không có mô tả</p>'
+                            }
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Trạng thái</h4>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(task.status)}">
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Task Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Độ ưu tiên</h4>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getPriorityBadgeClass(task.priority)}">
+                                ${priorityText}
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Người thực hiện</h4>
+                            <p class="text-gray-900">${task.assignee || task.assignee_name || 'Chưa được giao'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Hạn chót</h4>
+                            <p class="text-gray-900 ${isOverdue ? 'text-error-600 font-medium' : ''}">
+                                ${dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không có hạn chót'}
+                                ${isOverdue ? ' (Quá hạn)' : ''}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Tracking -->
+                    ${task.estimated_hours || task.actual_hours ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-3">Thời gian</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-sm text-gray-600">Ước tính:</span>
+                                <span class="text-sm text-gray-900 ml-2">${task.estimated_hours || 0} giờ</span>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">Thực tế:</span>
+                                <span class="text-sm text-gray-900 ml-2">${task.actual_hours || 0} giờ</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Progress -->
+                    ${task.progress_percentage !== undefined && task.progress_percentage !== null ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Tiến độ</h4>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative inline-block">
+                                <svg class="progress-ring w-16 h-16" viewBox="0 0 100 100">
+                                    <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="6" fill="transparent" r="40" cx="50" cy="50"/>
+                                    <circle class="progress-ring-circle" stroke="#3b82f6" stroke-width="6" fill="transparent" r="40" cx="50" cy="50" style="stroke-dashoffset: ${283 - (283 * task.progress_percentage / 100)}"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-sm font-bold text-gray-900">${task.progress_percentage}%</span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${task.progress_percentage}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Related Project/OKR -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Dự án liên quan</h4>
+                            <p class="text-gray-900">${task.project_name || task.project_code || 'Không có dự án'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">OKR liên quan</h4>
+                            <p class="text-gray-900">${task.okr_objective || 'Không có OKR'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Ngày tạo</h4>
+                            <p class="text-gray-900">${task.created_at ? new Date(task.created_at).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Cập nhật cuối</h4>
+                            <p class="text-gray-900">${task.updated_at ? new Date(task.updated_at).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button onclick="closeTaskDetailModal()" class="btn btn-secondary">
+                            <i class="fas fa-times mr-2"></i>Đóng
+                        </button>
+                        <button onclick="editTask(${task.id}); closeTaskDetailModal();" class="btn btn-primary">
+                            <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Show slide-in modal
+        document.getElementById('taskDetailModalOverlay').classList.add('show');
+        document.getElementById('taskDetailModal').classList.add('show');
+        document.body.classList.add('overflow-hidden');
+        }
+        
+        // Close Task detail modal
+        function closeTaskDetailModal() {
+            document.getElementById('taskDetailModalOverlay').classList.remove('show');
+            document.getElementById('taskDetailModal').classList.remove('show');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Close modal when clicking overlay
+        document.getElementById('taskDetailModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTaskDetailModal();
+            }
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('taskDetailModal').classList.contains('show')) {
+                closeTaskDetailModal();
+            }
+        });
+        
+        // Get priority text
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'High': 'Cao',
+                'Medium': 'Trung bình',
+                'Low': 'Thấp'
+            };
+            return priorityMap[priority] || priority;
+        }
+        
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'Pending': 'Cần làm',
+                'In Progress': 'Đang thực hiện',
+                'Done': 'Hoàn thành',
+                'Cancelled': 'Đã hủy',
+                'Blocked': 'Bị chặn'
+            };
+            return statusMap[status] || status;
+        }
+    </script>
+    
+    <!-- Task Detail Modal - Slide-in from right -->
+    <div id="taskDetailModalOverlay" class="slide-modal-overlay"></div>
+    <div id="taskDetailModal" class="slide-modal">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900" id="taskDetailTitle">Chi tiết Task</h3>
+                <button onclick="closeTaskDetailModal()" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="taskDetailContent" class="p-6">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</body>
+</html>
