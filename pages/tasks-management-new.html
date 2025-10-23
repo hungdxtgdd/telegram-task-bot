@@ -72,81 +72,80 @@
 <body>
     <div class="wrapper">
         <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h4 class="text-white">Task Manager</h4>
+        <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
+            <div class="c-sidebar-brand">
+                <h4 class="c-sidebar-brand-full">Task Manager</h4>
+                <h4 class="c-sidebar-brand-minimized">TM</h4>
             </div>
-            <nav class="sidebar-nav">
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/okrs">
-                            <i class="nav-icon fas fa-bullseye"></i>
-                            OKRs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/projects">
-                            <i class="nav-icon fas fa-folder"></i>
-                            Projects
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/tasks">
-                            <i class="nav-icon fas fa-tasks"></i>
-                            Tasks
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/users">
-                            <i class="nav-icon fas fa-users"></i>
-                            Users
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <ul class="c-sidebar-nav">
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link" href="/dashboard">
+                        <i class="c-sidebar-nav-icon fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link" href="/okrs">
+                        <i class="c-sidebar-nav-icon fas fa-bullseye"></i>
+                        OKRs
+                    </a>
+                </li>
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link" href="/projects">
+                        <i class="c-sidebar-nav-icon fas fa-folder"></i>
+                        Projects
+                    </a>
+                </li>
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link c-active" href="/tasks">
+                        <i class="c-sidebar-nav-icon fas fa-tasks"></i>
+                        Tasks
+                    </a>
+                </li>
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link" href="/users">
+                        <i class="c-sidebar-nav-icon fas fa-users"></i>
+                        Users
+                    </a>
+                </li>
+            </ul>
         </div>
         
         <!-- Main Content -->
-        <div class="main">
+        <div class="c-wrapper">
             <!-- Header -->
-            <header class="header">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-6">
-                            <button class="sidebar-toggler">
-                                <i class="fas fa-bars"></i>
-                            </button>
-                        </div>
-                        <div class="col-6 text-right">
+            <header class="c-header c-header-light c-header-fixed c-header-with-subheader">
+                <button class="c-header-toggler c-class-toggler d-lg-none" type="button" data-target="#sidebar" data-class="c-sidebar-show">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="c-header-toggler c-class-toggler d-md-down-none" type="button" data-target="#sidebar" data-class="c-sidebar-lg-show">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <ul class="c-header-nav ml-auto">
+                    <li class="c-header-nav-item dropdown">
+                        <a class="c-header-nav-link" href="#" data-toggle="dropdown">
                             <span class="text-muted">Welcome, Admin</span>
-                        </div>
-                    </div>
-                </div>
+                        </a>
+                    </li>
+                </ul>
             </header>
             
             <!-- Content -->
-            <main class="content">
-                <div class="container-fluid">
-                    <!-- Breadcrumb -->
-                    <nav aria-label="breadcrumb">
+            <div class="c-body">
+                <main class="c-main">
+                    <div class="container-fluid">
+                        <!-- Breadcrumb -->
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
                             <li class="breadcrumb-item active">Tasks</li>
                         </ol>
-                    </nav>
-                    
-                    <!-- Page Title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <h1>Quản lý Tasks</h1>
+                        
+                        <!-- Page Title -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h1>Quản lý Tasks</h1>
+                            </div>
                         </div>
-                    </div>
     
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -330,8 +329,9 @@
                         <i class="fas fa-plus mr-2"></i>
                         Thêm Task
                     </button>
-                </div>
-            </main>
+                    </div>
+                </main>
+            </div>
         </div>
     </div>
 
