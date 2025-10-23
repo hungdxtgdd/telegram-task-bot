@@ -1470,11 +1470,14 @@
         }
         
         // Close OKR modal when clicking overlay
-        document.getElementById('okrDetailModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeOKRDetailModal();
-            }
-        });
+        const okrDetailModalOverlay = document.getElementById('okrDetailModalOverlay');
+        if (okrDetailModalOverlay) {
+            okrDetailModalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeOKRDetailModal();
+                }
+            });
+        }
         
         // Close OKR modal with ESC key
         document.addEventListener('keydown', function(e) {

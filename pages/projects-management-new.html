@@ -864,8 +864,10 @@
             const units = [...new Set(projects.map(p => p.unit).filter(Boolean))];
             const unitFilter = document.getElementById('unitFilter');
             
-            unitFilter.innerHTML = '<option value="">Tất cả units</option>' + 
-                units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+            if (unitFilter) {
+                unitFilter.innerHTML = '<option value="">Tất cả units</option>' + 
+                    units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+            }
         }
 
         // Setup event listeners
@@ -1348,11 +1350,14 @@
         }
         
         // Close Project modal when clicking overlay
-        document.getElementById('projectDetailModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeProjectDetailModal();
-            }
-        });
+        const projectDetailModalOverlay = document.getElementById('projectDetailModalOverlay');
+        if (projectDetailModalOverlay) {
+            projectDetailModalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeProjectDetailModal();
+                }
+            });
+        }
         
         // Close Project modal with ESC key
         document.addEventListener('keydown', function(e) {

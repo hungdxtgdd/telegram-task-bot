@@ -957,11 +957,14 @@
         }
         
         // Close add modal when clicking overlay
-        document.getElementById('addTaskModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAddTaskModal();
-            }
-        });
+        const addTaskModalOverlay = document.getElementById('addTaskModalOverlay');
+        if (addTaskModalOverlay) {
+            addTaskModalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAddTaskModal();
+                }
+            });
+        }
         
         // Close add modal with ESC key
         document.addEventListener('keydown', function(e) {
@@ -1005,11 +1008,14 @@
         }
         
         // Close edit modal when clicking overlay
-        document.getElementById('editTaskModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditTaskModal();
-            }
-        });
+        const editTaskModalOverlay = document.getElementById('editTaskModalOverlay');
+        if (editTaskModalOverlay) {
+            editTaskModalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeEditTaskModal();
+                }
+            });
+        }
         
         // Close edit modal with ESC key
         document.addEventListener('keydown', function(e) {
@@ -1402,11 +1408,14 @@
         }
         
         // Close modal when clicking overlay
-        document.getElementById('taskDetailModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeTaskDetailModal();
-            }
-        });
+        const taskDetailModalOverlay = document.getElementById('taskDetailModalOverlay');
+        if (taskDetailModalOverlay) {
+            taskDetailModalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTaskDetailModal();
+                }
+            });
+        }
         
         // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
