@@ -184,47 +184,45 @@
 
                 <!-- Filters and Search -->
                 <div class="card mb-4">
-                    <div class="card-body py-4">
-                        <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="card-body py-3">
+                        <div class="flex flex-wrap items-center gap-2">
                             <!-- Search -->
-                            <div class="flex-1 min-w-0">
+                            <div class="flex-1 min-w-48">
                                 <div class="relative">
-                                    <input type="search" id="searchInput" class="input pl-10 text-sm" placeholder="Tìm kiếm tasks...">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400 text-sm"></i>
+                                    <input type="search" id="searchInput" class="input pl-8 text-sm h-9" placeholder="Tìm kiếm tasks...">
+                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400 text-xs"></i>
                                     </div>
-                                    <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
-                                        <i class="fas fa-times text-gray-400 hover:text-gray-600 text-sm"></i>
+                                    <button type="button" id="clearSearch" class="absolute inset-y-0 right-0 pr-2 flex items-center hidden">
+                                        <i class="fas fa-times text-gray-400 hover:text-gray-600 text-xs"></i>
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Filters -->
-                            <div class="flex gap-2 flex-wrap">
-                                <select id="statusFilter" class="select text-sm py-2">
-                                    <option value="">Status</option>
-                                    <option value="todo">To Do</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="done">Done</option>
-                                    <option value="blocked">Blocked</option>
-                                </select>
-                                
-                                <select id="priorityFilter" class="select text-sm py-2">
-                                    <option value="">Priority</option>
-                                    <option value="high">High</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="low">Low</option>
-                                </select>
-                                
-                                <select id="assigneeFilter" class="select text-sm py-2">
-                                    <option value="">Assignee</option>
-                                </select>
-                                
-                                <button onclick="clearFilters()" class="btn btn-ghost text-sm py-2 px-3">
-                                    <i class="fas fa-times mr-1"></i>
-                                    Clear
-                                </button>
-                            </div>
+                            <select id="statusFilter" class="select text-xs h-9 px-2 min-w-20">
+                                <option value="">Status</option>
+                                <option value="todo">To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="done">Done</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                            
+                            <select id="priorityFilter" class="select text-xs h-9 px-2 min-w-20">
+                                <option value="">Priority</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            
+                            <select id="assigneeFilter" class="select text-xs h-9 px-2 min-w-20">
+                                <option value="">Assignee</option>
+                            </select>
+                            
+                            <button onclick="clearFilters()" class="btn btn-ghost text-xs h-9 px-2">
+                                <i class="fas fa-times mr-1"></i>
+                                Clear
+                            </button>
                         </div>
                     </div>
                 </div>
