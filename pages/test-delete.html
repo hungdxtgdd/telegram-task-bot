@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Delete Project - Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Test Delete Project - Debug</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-semibold mb-4">Token Status</h2>
+            <div id="tokenStatus" class="text-sm text-gray-600"></div>
+            <button onclick="checkToken()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Check Token
+            </button>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-semibold mb-4">Test Delete Project</h2>
+            <div class="space-y-4">
+                <input type="number" id="projectId" placeholder="Project ID" value="37" class="border rounded px-3 py-2 w-full">
+                <button onclick="testDeleteProject()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test Delete Project
+                </button>
+                <button onclick="testDeleteProjectWithToken()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Test Delete with Manual Token
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4">Debug Logs</h2>
+            <div id="debugLogs" class="bg-gray-100 p-4 rounded text-sm font-mono max-h-96 overflow-y-auto"></div>
+            <button onclick="clearLogs()" class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                Clear Logs
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const debugLogs = document.getElementById('debugLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogs.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            const userInfo = localStorage.getItem('userInfo');
+            
+            const status = document.getElementById('tokenStatus');
+            status.innerHTML = `
+                <div><strong>Token:</strong> ${token ? token.substring(0, 20) + '...' : 'null'}</div>
+                <div><strong>Token Length:</strong> ${token ? token.length : 0}</div>
+                <div><strong>User Info:</strong> ${userInfo ? 'exists' : 'missing'}</div>
+                <div><strong>All Keys:</strong> ${Object.keys(localStorage).join(', ')}</div>
+            `;
+            
+            log(`Token check: ${token ? 'exists' : 'missing'}, length: ${token ? token.length : 0}`);
+        }
+
+        async function testDeleteProject() {
+            const projectId = document.getElementById('projectId').value;
+            log(`=== Testing DELETE project ${projectId} ===`);
+            
+            const token = localStorage.getItem('token');
+            log(`Token: ${token ? token.substring(0, 20) + '...' : 'null'}`);
+            log(`Token length: ${token ? token.length : 0}`);
+            
+            if (!token) {
+                log('ERROR: No token found');
+                return;
+            }
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            log(`Headers: ${JSON.stringify(headers)}`);
+            log(`URL: /api/projects-enhanced/projects/${projectId}`);
+            
+            try {
+                const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+                
+                log(`Response status: ${response.status}`);
+                log(`Response ok: ${response.ok}`);
+                log(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`Success: ${JSON.stringify(result)}`);
+                } else {
+                    const error = await response.json();
+                    log(`Error: ${JSON.stringify(error)}`);
+                }
+            } catch (error) {
+                log(`Exception: ${error.message}`);
+            }
+        }
+
+        async function testDeleteProjectWithToken() {
+            const projectId = document.getElementById('projectId').value;
+            log(`=== Testing DELETE with manual token ===`);
+            
+            // Use a test token
+            const testToken = 'test-token-12345';
+            log(`Using test token: ${testToken}`);
+            
+            const headers = {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            };
+            
+            log(`Headers: ${JSON.stringify(headers)}`);
+            log(`URL: /api/projects-enhanced/projects/${projectId}`);
+            
+            try {
+                const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+                
+                log(`Response status: ${response.status}`);
+                log(`Response ok: ${response.ok}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`Success: ${JSON.stringify(result)}`);
+                } else {
+                    const error = await response.json();
+                    log(`Error: ${JSON.stringify(error)}`);
+                }
+            } catch (error) {
+                log(`Exception: ${error.message}`);
+            }
+        }
+
+        // Auto-check token on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded');
+            checkToken();
+        });
+    </script>
+</body>
+</html>
