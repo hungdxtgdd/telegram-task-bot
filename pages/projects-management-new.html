@@ -541,19 +541,8 @@
 
     <!-- Include Components -->
     <script>
-        // Load mobile navigation
-        fetch('/components/mobile-nav.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('mobile-nav-container').innerHTML = html;
-            });
-
-        // Load desktop sidebar
-        fetch('/components/mobile-nav.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('desktop-sidebar-container').innerHTML = html;
-            });
+        // Mobile navigation and sidebar are now handled by CoreUI layout
+        // No need to fetch external components
 
         // Load keyboard shortcuts
         fetch('/components/ui/keyboard-shortcuts.html')
