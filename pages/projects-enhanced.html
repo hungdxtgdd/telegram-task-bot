@@ -10,6 +10,12 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <script>
+        // Force cache busting
+        if (window.location.search.indexOf('v=') === -1) {
+            window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'v=' + Date.now();
+        }
+    </script>
     <style>
         .priority-high { background-color: #fee2e2; color: #991b1b; }
         .priority-medium { background-color: #fef3c7; color: #92400e; }
@@ -692,14 +698,34 @@
 
         // Function to ensure we have a valid token
         function ensureValidToken() {
+            // Force refresh from localStorage
             const token = localStorage.getItem('token');
+            const userInfo = localStorage.getItem('userInfo');
+            
+            console.log('ensureValidToken debug:', {
+                token: token ? token.substring(0, 20) + '...' : 'null',
+                tokenLength: token ? token.length : 0,
+                userInfo: userInfo ? 'exists' : 'missing',
+                timestamp: new Date().toISOString(),
+                localStorageKeys: Object.keys(localStorage),
+                localStorageSize: localStorage.length
+            });
+            
             if (!token) {
                 console.error('No token found, redirecting to login');
-                localStorage.removeItem('token');
-                localStorage.removeItem('userInfo');
+                localStorage.clear();
                 window.location.href = '/login';
                 return null;
             }
+            
+            // Validate token format (basic check)
+            if (token.length < 10) {
+                console.error('Invalid token format, redirecting to login');
+                localStorage.clear();
+                window.location.href = '/login';
+                return null;
+            }
+            
             return token;
         }
 
@@ -714,6 +740,15 @@
 
         // Delete confirmation modal functions
         function showDeleteConfirm(projectId, projectName) {
+            // Test token before showing modal
+            console.log('showDeleteConfirm called:', { projectId, projectName });
+            const token = localStorage.getItem('token');
+            console.log('Token check before modal:', {
+                token: token ? token.substring(0, 20) + '...' : 'null',
+                tokenLength: token ? token.length : 0,
+                timestamp: new Date().toISOString()
+            });
+            
             document.getElementById('deleteProjectId').value = projectId;
             document.getElementById('deleteProjectName').textContent = projectName;
             document.getElementById('deleteConfirmModal').classList.remove('hidden');
@@ -725,6 +760,18 @@
 
         function confirmDelete() {
             const projectId = document.getElementById('deleteProjectId').value;
+            
+            // Test token right before delete
+            console.log('confirmDelete called for project:', projectId);
+            const token = localStorage.getItem('token');
+            console.log('Token check before delete:', {
+                projectId: projectId,
+                token: token ? token.substring(0, 20) + '...' : 'null',
+                tokenLength: token ? token.length : 0,
+                timestamp: new Date().toISOString(),
+                localStorageKeys: Object.keys(localStorage)
+            });
+            
             hideDeleteConfirm();
             deleteProject(projectId);
         }
