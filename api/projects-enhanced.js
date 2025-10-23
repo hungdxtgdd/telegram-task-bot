@@ -439,9 +439,9 @@ async function deleteProject(req, res, projectId) {
     try {
       await client.query('BEGIN');
       
-      // First, delete related tasks
-      await client.query('DELETE FROM tasks WHERE project_id = $1', [projectId]);
-      console.log('Deleted related tasks for project:', projectId);
+      // First, unlink related tasks (set project_id to NULL instead of deleting)
+      await client.query('UPDATE tasks SET project_id = NULL WHERE project_id = $1', [projectId]);
+      console.log('Unlinked related tasks for project:', projectId);
       
       // Then delete the project
       const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';

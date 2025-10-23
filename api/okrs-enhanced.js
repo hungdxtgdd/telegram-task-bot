@@ -433,17 +433,27 @@ async function deleteOKR(req, res, okrId) {
   const client = await pool.connect();
   
   try {
+    await client.query('BEGIN');
+    
+    // First, unlink related projects (set okr_id to NULL instead of deleting)
+    await client.query('UPDATE projects SET okr_id = NULL WHERE okr_id = $1', [okrId]);
+    console.log('Unlinked related projects for OKR:', okrId);
+    
+    // Then delete the OKR
     const query = 'DELETE FROM okrs WHERE id = $1 RETURNING *';
     const result = await client.query(query, [okrId]);
 
     if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
       res.status(404).json({ error: 'OKR not found' });
       return;
     }
 
+    await client.query('COMMIT');
     res.status(200).json({ message: 'OKR deleted successfully', okr: result.rows[0] });
   } catch (error) {
     console.error('Error deleting OKR:', error);
+    await client.query('ROLLBACK');
     res.status(500).json({ error: 'Failed to delete OKR' });
   } finally {
     client.release();
