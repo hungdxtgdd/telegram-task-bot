@@ -483,6 +483,88 @@
         .space-y-2 > * + * { margin-top: 0.5rem; }
         .space-y-3 > * + * { margin-top: 0.75rem; }
         .space-y-6 > * + * { margin-top: 1.5rem; }
+        
+        /* OKR Card specific styles */
+        .okr-card {
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .okr-status-active { border-left-color: #0d6efd; }
+        .okr-status-achieved { border-left-color: #198754; }
+        .okr-status-at-risk { border-left-color: #ffc107; }
+        .okr-status-dropped { border-left-color: #dc3545; }
+        
+        .okr-quarter-Q1,
+        .okr-quarter-Q2,
+        .okr-quarter-Q3,
+        .okr-quarter-Q4 {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .okr-quarter-Q1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .okr-quarter-Q2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .okr-quarter-Q3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .okr-quarter-Q4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        
+        /* Flexbox utilities */
+        .flex { display: flex; }
+        .items-start { align-items: flex-start; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .ml-2 { margin-left: 0.5rem; }
+        .space-x-1 > * + * { margin-left: 0.25rem; }
+        
+        /* Typography */
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        
+        /* Colors */
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        
+        /* Spacing */
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-4 { margin-top: 1rem; }
+        .pt-4 { padding-top: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        
+        /* Sizing */
+        .w-4 { width: 1rem; }
+        .h-4 { height: 1rem; }
+        .w-8 { width: 2rem; }
+        .h-8 { height: 2rem; }
+        .w-20 { width: 5rem; }
+        .h-20 { height: 5rem; }
+        
+        /* Border utilities */
+        .border-t { border-top-width: 1px; border-top-style: solid; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        
+        /* Buttons in cards */
+        .hover\:text-blue-600:hover { color: #2563eb; }
+        .hover\:text-red-600:hover { color: #dc2626; }
+        .hover\:bg-blue-50:hover { background-color: #eff6ff; }
+        .hover\:bg-red-50:hover { background-color: #fef2f2; }
+        
+        /* Additional utilities */
+        .cursor-pointer { cursor: pointer; }
+        .rounded-md { border-radius: 0.375rem; }
+        .text-white { color: white; }
+        .transition-all { transition-property: all; }
+        .duration-200 { transition-duration: 200ms; }
+        .border-left { border-left-width: 1px; border-left-style: solid; }
     </style>
 </head>
 <body>
