@@ -1623,13 +1623,17 @@
             const actual = getActualValue(okr);
             const target = getTargetValue(okr);
             const progress = target > 0 ? Math.min(Math.round((actual / target) * 100), 100) : 0;
-            console.log('OKR Progress:', {
+            console.log('OKR Full Data:', {
                 id: okr.id,
                 objective: okr.objective,
                 actual: actual,
                 target: target,
                 progress: progress + '%',
-                key_results: okr.key_results
+                key_results: okr.key_results,
+                projects: okr.projects,
+                project_ids: okr.project_ids,
+                hasProjects: !!(okr.projects && okr.projects.length),
+                fullOkr: okr
             });
             
             return `
