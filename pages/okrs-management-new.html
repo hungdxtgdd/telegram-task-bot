@@ -229,15 +229,15 @@
         .row {
             display: flex;
             flex-wrap: wrap;
-            margin-right: -0.75rem;
-            margin-left: -0.75rem;
+            margin-right: 0;
+            margin-left: 0;
         }
         
-        .col-12, .col-md-2, .col-md-3, .col-md-4, .col-lg-8, .col-sm-6, .col-6, .col-md-3 {
+        .col-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-lg-8, .col-sm-6, .col-6, .col-md-3 {
             position: relative;
             width: 100%;
-            padding-right: 0.75rem;
-            padding-left: 0.75rem;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
         }
         
         @media (min-width: 576px) {
@@ -280,6 +280,7 @@
         @media (min-width: 1024px) {
             .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
+        .gap-4 { gap: 1rem; }
         .gap-6 { gap: 1.5rem; }
         
         /* Card styles */
@@ -1367,7 +1368,7 @@
 
                         <!-- List View -->
                         <div id="listView">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="okrsGrid">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="okrsGrid">
                                 <!-- OKR cards will be loaded here -->
                             </div>
                         </div>
