@@ -1726,7 +1726,7 @@
                                 ${okr.projects.map(project => `
                                     <a href="/projects/${project.id}" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">
                                         <i class="fas fa-folder-open mr-1.5"></i>
-                                        ${project.name || 'Untitled Project'}
+                                        ${project.project_name || project.project_code || 'Untitled Project'}
                                     </a>
                                 `).join('')}
                             </div>
