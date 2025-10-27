@@ -484,30 +484,65 @@
         .space-y-3 > * + * { margin-top: 0.75rem; }
         .space-y-6 > * + * { margin-top: 1.5rem; }
         
-        /* OKR Card specific styles */
+        /* OKR Card specific styles - Modern Design */
         .okr-card {
-            border-left: 4px solid #0d6efd;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+            overflow: hidden;
         }
         
-        .okr-status-active { border-left-color: #0d6efd; }
-        .okr-status-achieved { border-left-color: #198754; }
-        .okr-status-at-risk { border-left-color: #ffc107; }
-        .okr-status-dropped { border-left-color: #dc3545; }
+        .okr-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .okr-status-active { 
+            border-left-color: #0d6efd; 
+            background: linear-gradient(to right, rgba(13, 110, 253, 0.03) 0%, transparent 100%);
+        }
+        .okr-status-achieved { 
+            border-left-color: #198754;
+            background: linear-gradient(to right, rgba(25, 135, 84, 0.03) 0%, transparent 100%);
+        }
+        .okr-status-at-risk { 
+            border-left-color: #ffc107;
+            background: linear-gradient(to right, rgba(255, 193, 7, 0.03) 0%, transparent 100%);
+        }
+        .okr-status-dropped { 
+            border-left-color: #dc3545;
+            background: linear-gradient(to right, rgba(220, 53, 69, 0.03) 0%, transparent 100%);
+        }
         
         .okr-quarter-Q1,
         .okr-quarter-Q2,
         .okr-quarter-Q3,
         .okr-quarter-Q4 {
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
             font-weight: 600;
+            font-size: 0.75rem;
             color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        .okr-quarter-Q1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .okr-quarter-Q2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .okr-quarter-Q3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .okr-quarter-Q4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .okr-quarter-Q1 { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .okr-quarter-Q2 { 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .okr-quarter-Q3 { 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .okr-quarter-Q4 { 
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
         
         /* Flexbox utilities */
         .flex { display: flex; }
@@ -552,11 +587,66 @@
         .border-t { border-top-width: 1px; border-top-style: solid; }
         .border-gray-200 { border-color: #e5e7eb; }
         
-        /* Buttons in cards */
+        /* Buttons in cards - Modern Design */
         .hover\:text-blue-600:hover { color: #2563eb; }
         .hover\:text-red-600:hover { color: #dc2626; }
-        .hover\:bg-blue-50:hover { background-color: #eff6ff; }
-        .hover\:bg-red-50:hover { background-color: #fef2f2; }
+        .hover\:bg-blue-50:hover { 
+            background-color: #eff6ff;
+            transform: scale(1.05);
+        }
+        .hover\:bg-red-50:hover { 
+            background-color: #fef2f2;
+            transform: scale(1.05);
+        }
+        
+        /* Progress Ring - Modern Design */
+        .progress-ring {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+        }
+        
+        /* Card Title and Description */
+        h3.text-lg {
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Info Sections */
+        .space-y-2 > div {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .space-y-2 > div:last-child {
+            border-bottom: none;
+        }
+        
+        /* Key Results Section */
+        .border-t {
+            border-top: 2px solid #e5e7eb;
+            margin-top: 1rem;
+        }
+        
+        /* Modern typography */
+        .text-gray-500 {
+            font-weight: 500;
+            color: #6b7280;
+            letter-spacing: 0.025em;
+        }
+        
+        .text-gray-900 {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        /* Action buttons container */
+        .flex.space-x-1 {
+            gap: 0.5rem;
+        }
         
         /* Additional utilities */
         .cursor-pointer { cursor: pointer; }
@@ -565,6 +655,16 @@
         .transition-all { transition-property: all; }
         .duration-200 { transition-duration: 200ms; }
         .border-left { border-left-width: 1px; border-left-style: solid; }
+        
+        /* Subtle animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .okr-card {
+            animation: fadeIn 0.3s ease-out;
+        }
     </style>
 </head>
 <body>
