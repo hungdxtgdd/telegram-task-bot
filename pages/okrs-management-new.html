@@ -1765,17 +1765,31 @@
 
         // Get actual value from key results
         function getActualValue(okr) {
-            if (!okr.key_results || okr.key_results.length === 0) return 0;
-            const total = okr.key_results.reduce((sum, kr) => sum + (kr.current_value || 0), 0);
-            console.log('OKR ID:', okr.id, 'Actual:', total, 'Key Results:', okr.key_results);
+            if (!okr.key_results || okr.key_results.length === 0) {
+                console.log('OKR ID:', okr.id, 'No key results');
+                return 0;
+            }
+            console.log('OKR ID:', okr.id, 'Key Results Array:', JSON.stringify(okr.key_results, null, 2));
+            const total = okr.key_results.reduce((sum, kr) => {
+                const value = kr.current_value || kr.currentValue || 0;
+                console.log('  - Key Result:', kr.description || kr.name, 'current_value:', value);
+                return sum + value;
+            }, 0);
+            console.log('OKR ID:', okr.id, 'Total Actual:', total);
             return total;
         }
         
         // Get target value from key results
         function getTargetValue(okr) {
-            if (!okr.key_results || okr.key_results.length === 0) return 0;
-            const total = okr.key_results.reduce((sum, kr) => sum + (kr.target_value || 0), 0);
-            console.log('OKR ID:', okr.id, 'Target:', total, 'Key Results:', okr.key_results);
+            if (!okr.key_results || okr.key_results.length === 0) {
+                return 0;
+            }
+            const total = okr.key_results.reduce((sum, kr) => {
+                const value = kr.target_value || kr.targetValue || 0;
+                console.log('  - Key Result:', kr.description || kr.name, 'target_value:', value);
+                return sum + value;
+            }, 0);
+            console.log('OKR ID:', okr.id, 'Total Target:', total);
             return total;
         }
 
