@@ -934,16 +934,46 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Edit Button Hover */
+        /* Edit Button - Override fixed width */
+        .action-btn-edit {
+            width: auto !important;
+            height: auto !important;
+            min-width: auto !important;
+            max-width: none !important;
+        }
+        
         .action-btn-edit:hover {
             background-color: #2563eb !important;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
         }
         
-        /* Delete Button Hover */
+        .action-btn-edit svg {
+            transform: none !important;
+        }
+        
+        .action-btn-edit:hover svg {
+            transform: none !important;
+        }
+        
+        /* Delete Button - Override fixed width */
+        .action-btn-delete {
+            width: auto !important;
+            height: auto !important;
+            min-width: auto !important;
+            max-width: none !important;
+        }
+        
         .action-btn-delete:hover {
             background-color: #dc2626 !important;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+        }
+        
+        .action-btn-delete svg {
+            transform: none !important;
+        }
+        
+        .action-btn-delete:hover svg {
+            transform: none !important;
         }
         
         /* Stats Cards Enhancement */
