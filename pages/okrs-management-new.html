@@ -1737,12 +1737,16 @@
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <h4 class="text-sm font-medium text-gray-700 mb-2">Key Results:</h4>
                             <div class="space-y-2">
-                                ${okr.key_results.map(kr => `
+                                ${okr.key_results.map(kr => {
+                                    const current = kr.current || kr.current_value || 0;
+                                    const target = kr.target || kr.target_value || 0;
+                                    return `
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs text-gray-600">${kr.description}</span>
-                                        <span class="text-xs font-medium">${kr.current_value || 0}/${kr.target_value || 100}</span>
+                                        <span class="text-xs font-medium">${current}/${target}</span>
                                     </div>
-                                `).join('')}
+                                `;
+                                }).join('')}
                             </div>
                         </div>
                         ` : ''}
@@ -1765,31 +1769,23 @@
 
         // Get actual value from key results
         function getActualValue(okr) {
-            if (!okr.key_results || okr.key_results.length === 0) {
-                console.log('OKR ID:', okr.id, 'No key results');
-                return 0;
-            }
-            console.log('OKR ID:', okr.id, 'Key Results Array:', JSON.stringify(okr.key_results, null, 2));
+            if (!okr.key_results || okr.key_results.length === 0) return 0;
             const total = okr.key_results.reduce((sum, kr) => {
-                const value = kr.current_value || kr.currentValue || 0;
-                console.log('  - Key Result:', kr.description || kr.name, 'current_value:', value);
+                // Support both snake_case and camelCase field names
+                const value = kr.current || kr.current_value || kr.currentValue || 0;
                 return sum + value;
             }, 0);
-            console.log('OKR ID:', okr.id, 'Total Actual:', total);
             return total;
         }
         
         // Get target value from key results
         function getTargetValue(okr) {
-            if (!okr.key_results || okr.key_results.length === 0) {
-                return 0;
-            }
+            if (!okr.key_results || okr.key_results.length === 0) return 0;
             const total = okr.key_results.reduce((sum, kr) => {
-                const value = kr.target_value || kr.targetValue || 0;
-                console.log('  - Key Result:', kr.description || kr.name, 'target_value:', value);
+                // Support both snake_case and camelCase field names
+                const value = kr.target || kr.target_value || kr.targetValue || 0;
                 return sum + value;
             }, 0);
-            console.log('OKR ID:', okr.id, 'Total Target:', total);
             return total;
         }
 
