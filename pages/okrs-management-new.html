@@ -934,6 +934,18 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
+        /* Edit Button Hover */
+        .action-btn-edit:hover {
+            background-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+        }
+        
+        /* Delete Button Hover */
+        .action-btn-delete:hover {
+            background-color: #dc2626 !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+        }
+        
         /* Stats Cards Enhancement */
         .card.text-white {
             border-radius: 12px;
@@ -1637,13 +1649,13 @@
                         <div class="flex items-start justify-between mb-3">
                             <h3 class="text-lg font-semibold text-gray-900 flex-1">${okr.objective || 'Untitled OKR'}</h3>
                             <div class="flex space-x-2 ml-3">
-                                <button onclick="event.stopPropagation(); editOKR(${okr.id})" class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:shadow-md transition-all duration-200">
+                                <button onclick="event.stopPropagation(); editOKR(${okr.id})" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm transition-all duration-200 action-btn-edit" style="background-color: #3b82f6 !important; color: white !important;">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                     Sửa
                                 </button>
-                                <button onclick="event.stopPropagation(); deleteOKR(${okr.id})" class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:shadow-md transition-all duration-200">
+                                <button onclick="event.stopPropagation(); deleteOKR(${okr.id})" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm transition-all duration-200 action-btn-delete" style="background-color: #ef4444 !important; color: white !important;">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
