@@ -557,6 +557,19 @@
             padding: 1rem;
         }
         
+        /* Slide-in Panel Styles */
+        #addOKRPanel, #editOKRPanel {
+            transform: translateX(100%) !important;
+        }
+        
+        #addOKRPanel.translate-x-0, #editOKRPanel.translate-x-0 {
+            transform: translateX(0) !important;
+        }
+        
+        #addOKRPanel.translate-x-full, #editOKRPanel.translate-x-full {
+            transform: translateX(100%) !important;
+        }
+        
         /* OKR Card specific styles - Modern Design */
         .okr-card {
             background: #ffffff;
