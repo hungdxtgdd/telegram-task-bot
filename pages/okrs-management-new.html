@@ -233,11 +233,19 @@
             margin-left: 0;
         }
         
-        .col-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-lg-8, .col-sm-6, .col-6, .col-md-3 {
+        .col-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            position: relative;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        
+        .col-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-lg-8, .col-sm-6, .col-6 {
             position: relative;
             width: 100%;
-            padding-right: 0;
-            padding-left: 0;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
         }
         
         @media (min-width: 576px) {
