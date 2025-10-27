@@ -303,24 +303,8 @@
                                 <h1>Quản lý OKRs</h1>
                             </div>
                         </div>
-    
-    <!-- OKR Detail Modal - Slide-in from right -->
-    <div id="okrDetailModalOverlay" class="slide-modal-overlay"></div>
-    <div id="okrDetailModal" class="slide-modal">
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-900" id="okrDetailTitle">Chi tiết OKR</h3>
-                <button onclick="closeOKRDetailModal()" class="btn-icon">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-        </div>
-        <div id="okrDetailContent" class="p-6">
-            <!-- Content will be populated by JavaScript -->
-        </div>
-    </div>
-    
-                <!-- Stats Cards -->
+                        
+                        <!-- Stats Cards -->
                 <div class="row mb-4">
                     <div class="col-sm-6 col-lg-3">
                         <div class="card text-white bg-primary">
@@ -1628,6 +1612,22 @@
         </div>
         
         <input type="hidden" id="deleteOkrId" value="">
+    </div>
+    
+    <!-- OKR Detail Modal - Slide-in from right -->
+    <div id="okrDetailModalOverlay" class="slide-modal-overlay"></div>
+    <div id="okrDetailModal" class="slide-modal">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900" id="okrDetailTitle">Chi tiết OKR</h3>
+                <button onclick="closeOKRDetailModal()" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="okrDetailContent" class="p-6">
+            <!-- Content will be populated by JavaScript -->
+        </div>
     </div>
     
     <!-- CoreUI JS -->
