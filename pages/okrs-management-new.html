@@ -667,13 +667,17 @@
         }
         
         /* Card Content Styling */
-        /* Title */
+        /* Title - Gradient Text */
         .okr-card h3 {
             font-size: 1.125rem;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             line-height: 1.5;
             margin: 0;
+            letter-spacing: -0.01em;
         }
         
         /* Description */
@@ -687,6 +691,15 @@
         /* Progress Ring Container */
         .okr-card .flex.items-center.justify-center {
             margin: 1.5rem 0;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
         }
         
         .okr-card .progress-ring {
@@ -698,81 +711,126 @@
         .okr-card .text-lg.font-bold {
             font-size: 1.125rem;
             font-weight: 700;
-            color: #111827;
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        /* Info Items */
+        /* Info Items - Colored Backgrounds */
         .okr-card .space-y-2 > div {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.625rem 0;
-            transition: background-color 0.2s;
-            border-radius: 0.375rem;
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
+            padding: 0.75rem 0.875rem;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            border: 1px solid #e5e7eb;
         }
         
         .okr-card .space-y-2 > div:hover {
-            background-color: #f9fafb;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-color: #3b82f6;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);
         }
         
         .okr-card .space-y-2 > div .text-sm.text-gray-500 {
-            font-weight: 500;
+            font-weight: 600;
             letter-spacing: 0.025em;
+            color: #4b5563;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
         }
         
         .okr-card .space-y-2 > div .text-sm.text-gray-900 {
-            font-weight: 600;
+            font-weight: 700;
+            color: #111827;
+            font-size: 0.875rem;
         }
         
-        /* Badge styling */
+        /* Badge styling - Enhanced Colors */
         .okr-card .badge {
             font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
+            padding: 0.375rem 0.875rem;
             border-radius: 9999px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.075em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
-        /* Key Results Section */
+        .okr-card .badge.badge-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+        }
+        
+        .okr-card .badge.badge-success {
+            background: linear-gradient(135deg, #198754 0%, #0f5132 100%);
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+        }
+        
+        .okr-card .badge.badge-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+        }
+        
+        .okr-card .badge.badge-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Key Results Section - Colorful Design */
         .okr-card .border-t {
-            padding-top: 1rem;
-            margin-top: 1rem;
+            padding-top: 1.25rem;
+            margin-top: 1.25rem;
+            border-image: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) 1;
         }
         
         .okr-card .text-sm.font-medium {
             font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
         }
         
-        /* Key Result Items */
+        /* Key Result Items - Gradient Backgrounds */
         .okr-card .space-y-2 > div.text-xs {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0.75rem;
-            background: #f9fafb;
-            border-radius: 0.375rem;
-            transition: all 0.2s;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.3s;
+            margin-bottom: 0.5rem;
         }
         
         .okr-card .space-y-2 > div.text-xs:hover {
-            background: #f3f4f6;
-            transform: translateX(4px);
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-color: #3b82f6;
+            transform: translateX(6px) translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
         
         .okr-card .space-y-2 > div .text-xs.text-gray-600 {
-            font-weight: 500;
-            color: #4b5563;
+            font-weight: 600;
+            color: #475569;
+            letter-spacing: 0.025em;
         }
         
         .okr-card .space-y-2 > div .text-xs.font-medium {
-            font-weight: 600;
-            color: #111827;
+            font-weight: 700;
+            color: #0ea5e9;
+            font-size: 0.8125rem;
         }
         
         /* Action Buttons */
@@ -884,15 +942,126 @@
         /* Stats labels */
         .text-medium-emphasis {
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            opacity: 0.9;
+            letter-spacing: 0.1em;
+            opacity: 1;
         }
         
         /* Card padding */
         .okr-card.p-6 {
             padding: 1.5rem;
+        }
+        
+        /* Stats Cards - Vibrant Colors */
+        .card.bg-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        }
+        
+        .card.bg-success {
+            background: linear-gradient(135deg, #198754 0%, #0f5132 100%);
+        }
+        
+        .card.bg-info {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+        }
+        
+        .card.bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+        
+        .card.bg-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+        }
+        
+        /* Stats Icons - Enhanced */
+        .card.bg-primary i.fas {
+            color: rgba(255, 255, 255, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .card.bg-success i.fas {
+            color: rgba(255, 255, 255, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .card.bg-info i.fas {
+            color: rgba(255, 255, 255, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .card.bg-warning i.fas {
+            color: #000;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        /* Stats Numbers */
+        .card.text-white .fs-6.fw-semibold {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+        }
+        
+        /* Colored text for stats numbers */
+        .card.bg-primary .fs-6.fw-semibold {
+            color: #ffffff;
+        }
+        
+        .card.bg-success .fs-6.fw-semibold {
+            color: #ffffff;
+        }
+        
+        .card.bg-info .fs-6.fw-semibold {
+            color: #ffffff;
+        }
+        
+        .card.bg-warning .fs-6.fw-semibold {
+            color: #000;
+            font-weight: 700;
+        }
+        
+        /* Description text */
+        .okr-card p.text-gray-600 {
+            color: #64748b;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+        
+        /* Info section labels with colors */
+        .okr-card .space-y-2 > div:nth-child(1) .text-sm.text-gray-500::before {
+            content: '📅';
+            margin-right: 0.5rem;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(2) .text-sm.text-gray-500::before {
+            content: '📊';
+            margin-right: 0.5rem;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(3) .text-sm.text-gray-500::before {
+            content: '📏';
+            margin-right: 0.5rem;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(4) .text-sm.text-gray-500::before {
+            content: '📅';
+            margin-right: 0.5rem;
+        }
+        
+        /* Border colors for info items */
+        .okr-card .space-y-2 > div:nth-child(1) {
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(2) {
+            border-left: 3px solid #10b981;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(3) {
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .okr-card .space-y-2 > div:nth-child(4) {
+            border-left: 3px solid #f59e0b;
         }
         
         /* Action Buttons Enhancement */
