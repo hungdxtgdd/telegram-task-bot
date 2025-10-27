@@ -1401,10 +1401,10 @@
         </div>
     </div>
 
-    <!-- Add OKR Modal -->
-    <div id="addOKRModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+    <!-- Add OKR Slide-in Panel -->
+    <div id="addOKRModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeAddOKRModal()"></div>
+        <div class="absolute right-0 top-0 bottom-0 bg-white w-full max-w-2xl shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out" id="addOKRPanel">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Thêm OKR Mới</h2>
                             <button onclick="closeAddOKRModal()" class="btn-icon">
@@ -1477,10 +1477,10 @@
         </div>
     </div>
 
-    <!-- Edit OKR Modal -->
-    <div id="editOKRModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+    <!-- Edit OKR Slide-in Panel -->
+    <div id="editOKRModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeEditOKRModal()"></div>
+        <div class="absolute right-0 top-0 bottom-0 bg-white w-full max-w-2xl shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out" id="editOKRPanel">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa OKR</h2>
                             <button onclick="closeEditOKRModal()" class="btn-icon">
@@ -2032,30 +2032,41 @@
             button.parentElement.remove();
         }
 
-        // Show add OKR modal
+        // Show add OKR slide-in panel
         function showAddOKRModal() {
             document.getElementById('addOKRModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
+            // Trigger slide-in animation
+            setTimeout(() => {
+                document.getElementById('addOKRPanel').classList.remove('translate-x-full');
+                document.getElementById('addOKRPanel').classList.add('translate-x-0');
+            }, 10);
         }
 
-        // Close add OKR modal
+        // Close add OKR slide-in panel
         function closeAddOKRModal() {
-            document.getElementById('addOKRModal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-            document.getElementById('addOKRForm').reset();
-            // Reset key results container
-            document.getElementById('keyResultsContainer').innerHTML = `
-                <div class="flex gap-2">
-                    <input type="text" class="input flex-1" placeholder="Key Result 1" name="keyResult">
-                    <input type="number" class="input w-20" placeholder="Target" name="keyResultTarget" min="0" max="100">
-                    <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
+            const panel = document.getElementById('addOKRPanel');
+            panel.classList.remove('translate-x-0');
+            panel.classList.add('translate-x-full');
+            
+            setTimeout(() => {
+                document.getElementById('addOKRModal').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                document.getElementById('addOKRForm').reset();
+                // Reset key results container
+                document.getElementById('keyResultsContainer').innerHTML = `
+                    <div class="flex gap-2">
+                        <input type="text" class="input flex-1" placeholder="Key Result 1" name="keyResult">
+                        <input type="number" class="input w-20" placeholder="Target" name="keyResultTarget" min="0" max="100">
+                        <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }, 300);
         }
 
-        // Show edit OKR modal
+        // Show edit OKR slide-in panel
         function editOKR(okrId) {
             const okr = okrs.find(o => o.id === okrId);
             if (!okr) return;
@@ -2070,12 +2081,52 @@
             
             document.getElementById('editOKRModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
+            
+            // Trigger slide-in animation
+            setTimeout(() => {
+                document.getElementById('editOKRPanel').classList.remove('translate-x-full');
+                document.getElementById('editOKRPanel').classList.add('translate-x-0');
+            }, 10);
         }
 
-        // Close edit OKR modal
+        // Close edit OKR slide-in panel
         function closeEditOKRModal() {
-            document.getElementById('editOKRModal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
+            const panel = document.getElementById('editOKRPanel');
+            panel.classList.remove('translate-x-0');
+            panel.classList.add('translate-x-full');
+            
+            setTimeout(() => {
+                document.getElementById('editOKRModal').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        }
+
+        // Show success notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.classList.add('translate-x-0');
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
         }
 
         // Handle add OKR
@@ -2116,16 +2167,16 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showSuccess('Thêm OKR thành công!');
+                if (response.ok) {
+                    showNotification('✅ Thêm OKR thành công!', 'success');
                     closeAddOKRModal();
                     loadOKRs();
                 } else {
-                    showError('Lỗi khi thêm OKR: ' + data.message);
+                    showNotification('❌ Lỗi khi thêm OKR', 'error');
                 }
             } catch (error) {
                 console.error('Error adding OKR:', error);
-                showError('Lỗi khi thêm OKR');
+                showNotification('❌ Lỗi khi thêm OKR', 'error');
             }
         }
 
@@ -2154,16 +2205,16 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showSuccess('Cập nhật OKR thành công!');
+                if (response.ok) {
+                    showNotification('✅ Cập nhật OKR thành công!', 'success');
                     closeEditOKRModal();
                     loadOKRs();
                 } else {
-                    showError('Lỗi khi cập nhật OKR: ' + data.message);
+                    showNotification('❌ Lỗi khi cập nhật OKR', 'error');
                 }
             } catch (error) {
                 console.error('Error updating OKR:', error);
-                showError('Lỗi khi cập nhật OKR');
+                showNotification('❌ Lỗi khi cập nhật OKR', 'error');
             }
         }
 
@@ -2211,22 +2262,22 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    showSuccess('Xóa OKR thành công!');
+                    showNotification('✅ Xóa OKR thành công!', 'success');
                     loadOKRs();
                 } else {
                     const error = await response.json();
                     if (response.status === 401) {
-                        showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        showNotification('❌ Phiên đăng nhập đã hết hạn', 'error');
                         localStorage.removeItem('token');
                         localStorage.removeItem('userInfo');
                         window.location.href = '/login';
                     } else {
-                        showError('Lỗi khi xóa OKR: ' + (error.error || 'Không thể xóa OKR'));
+                        showNotification('❌ Lỗi khi xóa OKR', 'error');
                     }
                 }
             } catch (error) {
                 console.error('Error deleting OKR:', error);
-                showError('Lỗi khi xóa OKR: ' + error.message);
+                showNotification('❌ Lỗi khi xóa OKR', 'error');
             }
         }
 
