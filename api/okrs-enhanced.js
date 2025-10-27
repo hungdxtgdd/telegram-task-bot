@@ -115,7 +115,8 @@ async function getAllOKRs(req, res) {
   const client = await pool.connect();
   
   try {
-    const query = `
+    // First get all OKRs
+    const okrsQuery = `
       SELECT 
         o.*,
         u.username as owner_username
@@ -124,8 +125,39 @@ async function getAllOKRs(req, res) {
       ORDER BY o.created_at DESC
     `;
     
-    const result = await client.query(query);
-    res.status(200).json(result.rows);
+    const okrsResult = await client.query(okrsQuery);
+    
+    // Get all projects with their OKR associations
+    const projectsQuery = `
+      SELECT 
+        p.id, p.project_name, p.project_code, p.status, p.okr_id
+      FROM projects p
+      WHERE p.okr_id IS NOT NULL
+    `;
+    
+    const projectsResult = await client.query(projectsQuery);
+    
+    // Group projects by okr_id
+    const projectsByOkr = {};
+    projectsResult.rows.forEach(project => {
+      if (!projectsByOkr[project.okr_id]) {
+        projectsByOkr[project.okr_id] = [];
+      }
+      projectsByOkr[project.okr_id].push({
+        id: project.id,
+        project_name: project.project_name,
+        project_code: project.project_code,
+        status: project.status
+      });
+    });
+    
+    // Attach projects to each OKR
+    const okrs = okrsResult.rows.map(okr => ({
+      ...okr,
+      projects: projectsByOkr[okr.id] || []
+    }));
+    
+    res.status(200).json(okrs);
   } catch (error) {
     console.error('Error fetching OKRs:', error);
     res.status(500).json({ error: 'Failed to fetch OKRs' });
