@@ -248,6 +248,7 @@
             .col-md-2 { flex: 0 0 16.666667%; max-width: 16.666667%; }
             .col-md-3 { flex: 0 0 25%; max-width: 25%; }
             .col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+            .col-md-5 { flex: 0 0 41.666667%; max-width: 41.666667%; }
         }
         
         @media (min-width: 992px) {
@@ -1296,7 +1297,7 @@
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <div class="input-group">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text">
@@ -1306,7 +1307,7 @@
                                             <input type="text" class="form-control" placeholder="Tìm kiếm OKRs..." id="searchInput">
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <select class="form-control" id="statusFilter">
                                             <option value="">Tất cả trạng thái</option>
                                             <option value="active">Đang hoạt động</option>
@@ -1315,7 +1316,7 @@
                                             <option value="dropped">Đã hủy</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <select class="form-control" id="quarterFilter">
                                             <option value="">Tất cả quý</option>
                                             <option value="Q1">Q1 2024</option>
@@ -1324,8 +1325,8 @@
                                             <option value="Q4">Q4 2024</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
-                                        <button class="btn btn-primary" onclick="addOKR()">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-primary w-100" onclick="addOKR()">
                                             <i class="fas fa-plus"></i> Thêm OKR
                                         </button>
                                     </div>
