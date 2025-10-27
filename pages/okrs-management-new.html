@@ -1794,15 +1794,8 @@
 
         // Update statistics
         function updateStats() {
-            const totalOKRs = okrs.length;
-            const activeOKRs = okrs.filter(o => o.status === 'active').length;
-            const achievedOKRs = okrs.filter(o => o.status === 'achieved').length;
-            const atRiskOKRs = okrs.filter(o => o.status === 'at-risk').length;
-            
-            document.getElementById('totalOKRs').textContent = totalOKRs;
-            document.getElementById('activeOKRs').textContent = activeOKRs;
-            document.getElementById('achievedOKRs').textContent = achievedOKRs;
-            document.getElementById('atRiskOKRs').textContent = atRiskOKRs;
+            // Stats cards removed - no need to update
+            return;
         }
 
         // Update quarter progress
