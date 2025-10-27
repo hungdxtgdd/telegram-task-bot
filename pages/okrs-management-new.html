@@ -559,15 +559,14 @@
         
         /* Slide-in Panel Styles */
         #addOKRPanel, #editOKRPanel {
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: auto !important;
+            width: 600px !important;
             transform: translateX(100%) !important;
-        }
-        
-        #addOKRPanel.translate-x-0, #editOKRPanel.translate-x-0 {
-            transform: translateX(0) !important;
-        }
-        
-        #addOKRPanel.translate-x-full, #editOKRPanel.translate-x-full {
-            transform: translateX(100%) !important;
+            z-index: 1000 !important;
         }
         
         /* OKR Card specific styles - Modern Design */
@@ -1417,7 +1416,7 @@
     <!-- Add OKR Slide-in Panel -->
     <div id="addOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeAddOKRModal()"></div>
-        <div class="absolute right-0 top-0 bottom-0 bg-white shadow-2xl overflow-y-auto" id="addOKRPanel" style="width: 600px; transform: translateX(100%); transition: transform 0.3s ease-in-out;">
+        <div class="bg-white shadow-2xl overflow-y-auto" id="addOKRPanel" style="transform: translateX(100%); transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Thêm OKR Mới</h2>
                             <button onclick="closeAddOKRModal()" class="btn-icon">
@@ -1493,7 +1492,7 @@
     <!-- Edit OKR Slide-in Panel -->
     <div id="editOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeEditOKRModal()"></div>
-        <div class="absolute right-0 top-0 bottom-0 bg-white shadow-2xl overflow-y-auto" id="editOKRPanel" style="width: 600px; transform: translateX(100%); transition: transform 0.3s ease-in-out;">
+        <div class="bg-white shadow-2xl overflow-y-auto" id="editOKRPanel" style="transform: translateX(100%); transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa OKR</h2>
                             <button onclick="closeEditOKRModal()" class="btn-icon">
