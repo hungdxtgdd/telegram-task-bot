@@ -281,6 +281,35 @@
         }
         .gap-6 { gap: 1.5rem; }
         
+        /* Container với margin 2 bên */
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .container-fluid {
+                max-width: 1140px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .container-fluid {
+                max-width: 960px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+        }
+        
         /* Card styles */
         .card {
             position: relative;
