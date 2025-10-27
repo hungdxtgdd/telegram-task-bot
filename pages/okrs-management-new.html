@@ -1660,6 +1660,14 @@
             const actual = getActualValue(okr);
             const target = getTargetValue(okr);
             const progress = target > 0 ? Math.min(Math.round((actual / target) * 100), 100) : 0;
+            console.log('OKR Progress:', {
+                id: okr.id,
+                objective: okr.objective,
+                actual: actual,
+                target: target,
+                progress: progress + '%',
+                key_results: okr.key_results
+            });
             
             return `
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 okr-card relative ${statusClass} cursor-pointer p-6" data-okr-id="${okr.id}" onclick="showOKRDetail(${okr.id})">
@@ -1759,6 +1767,7 @@
         function getActualValue(okr) {
             if (!okr.key_results || okr.key_results.length === 0) return 0;
             const total = okr.key_results.reduce((sum, kr) => sum + (kr.current_value || 0), 0);
+            console.log('OKR ID:', okr.id, 'Actual:', total, 'Key Results:', okr.key_results);
             return total;
         }
         
@@ -1766,6 +1775,7 @@
         function getTargetValue(okr) {
             if (!okr.key_results || okr.key_results.length === 0) return 0;
             const total = okr.key_results.reduce((sum, kr) => sum + (kr.target_value || 0), 0);
+            console.log('OKR ID:', okr.id, 'Target:', total, 'Key Results:', okr.key_results);
             return total;
         }
 
