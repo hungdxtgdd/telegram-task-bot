@@ -665,6 +665,235 @@
         .okr-card {
             animation: fadeIn 0.3s ease-out;
         }
+        
+        /* Card Content Styling */
+        /* Title */
+        .okr-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Description */
+        .okr-card p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Progress Ring Container */
+        .okr-card .flex.items-center.justify-center {
+            margin: 1.5rem 0;
+        }
+        
+        .okr-card .progress-ring {
+            width: 80px;
+            height: 80px;
+        }
+        
+        /* Progress Ring Text */
+        .okr-card .text-lg.font-bold {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        /* Info Items */
+        .okr-card .space-y-2 > div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.625rem 0;
+            transition: background-color 0.2s;
+            border-radius: 0.375rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        .okr-card .space-y-2 > div:hover {
+            background-color: #f9fafb;
+        }
+        
+        .okr-card .space-y-2 > div .text-sm.text-gray-500 {
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
+        
+        .okr-card .space-y-2 > div .text-sm.text-gray-900 {
+            font-weight: 600;
+        }
+        
+        /* Badge styling */
+        .okr-card .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Key Results Section */
+        .okr-card .border-t {
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .okr-card .text-sm.font-medium {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Key Result Items */
+        .okr-card .space-y-2 > div.text-xs {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+        
+        .okr-card .space-y-2 > div.text-xs:hover {
+            background: #f3f4f6;
+            transform: translateX(4px);
+        }
+        
+        .okr-card .space-y-2 > div .text-xs.text-gray-600 {
+            font-weight: 500;
+            color: #4b5563;
+        }
+        
+        .okr-card .space-y-2 > div .text-xs.font-medium {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        /* Action Buttons */
+        .okr-card button.inline-flex {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Stats Cards Enhancement */
+        .card.text-white {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card.text-white:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Stats Icons */
+        .card.text-white i.fas {
+            opacity: 0.9;
+            transition: transform 0.3s ease;
+        }
+        
+        .card.text-white:hover i.fas {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Stats Numbers */
+        .card.text-white .fs-6.fw-semibold {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Form Controls */
+        .input-group-text {
+            border-radius: 0.375rem 0 0 0.375rem;
+        }
+        
+        .form-control:not(.w-100) {
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+        
+        /* Quarter Buttons Enhancement */
+        .quarter-btn {
+            border: 2px solid #0d6efd;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 90px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quarter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .quarter-btn:hover::before {
+            left: 100%;
+        }
+        
+        .quarter-btn:hover {
+            border-color: #0056b3;
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.15);
+        }
+        
+        .quarter-btn.ring-2 {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+        }
+        
+        /* Filter Bar Enhancement */
+        .card.mb-4 {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .input-group-text i {
+            color: #6b7280;
+        }
+        
+        /* Quarter Cards - Gradient backgrounds on hover */
+        .okr-card:hover .okr-quarter-Q1 {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .okr-card:hover .okr-quarter-Q2 {
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
+        }
+        
+        .okr-card:hover .okr-quarter-Q3 {
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+        
+        .okr-card:hover .okr-quarter-Q4 {
+            box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
+        }
+        
+        /* Stats labels */
+        .text-medium-emphasis {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+        }
+        
+        /* Card padding */
+        .okr-card.p-6 {
+            padding: 1.5rem;
+        }
     </style>
 </head>
 <body>
