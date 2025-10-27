@@ -1417,7 +1417,7 @@
     <!-- Add OKR Slide-in Panel -->
     <div id="addOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeAddOKRModal()"></div>
-        <div class="absolute right-0 top-0 bottom-0 bg-white w-96 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto" id="addOKRPanel" style="width: 600px;">
+        <div class="absolute right-0 top-0 bottom-0 bg-white shadow-2xl overflow-y-auto" id="addOKRPanel" style="width: 600px; transform: translateX(100%); transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Thêm OKR Mới</h2>
                             <button onclick="closeAddOKRModal()" class="btn-icon">
@@ -1493,7 +1493,7 @@
     <!-- Edit OKR Slide-in Panel -->
     <div id="editOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeEditOKRModal()"></div>
-        <div class="absolute right-0 top-0 bottom-0 bg-white w-96 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto" id="editOKRPanel" style="width: 600px;">
+        <div class="absolute right-0 top-0 bottom-0 bg-white shadow-2xl overflow-y-auto" id="editOKRPanel" style="width: 600px; transform: translateX(100%); transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa OKR</h2>
                             <button onclick="closeEditOKRModal()" class="btn-icon">
@@ -2051,16 +2051,14 @@
             document.body.classList.add('overflow-hidden');
             // Trigger slide-in animation
             setTimeout(() => {
-                document.getElementById('addOKRPanel').classList.remove('translate-x-full');
-                document.getElementById('addOKRPanel').classList.add('translate-x-0');
+                document.getElementById('addOKRPanel').style.transform = 'translateX(0)';
             }, 10);
         }
 
         // Close add OKR slide-in panel
         function closeAddOKRModal() {
             const panel = document.getElementById('addOKRPanel');
-            panel.classList.remove('translate-x-0');
-            panel.classList.add('translate-x-full');
+            panel.style.transform = 'translateX(100%)';
             
             setTimeout(() => {
                 document.getElementById('addOKRModal').classList.add('hidden');
@@ -2097,16 +2095,14 @@
             
             // Trigger slide-in animation
             setTimeout(() => {
-                document.getElementById('editOKRPanel').classList.remove('translate-x-full');
-                document.getElementById('editOKRPanel').classList.add('translate-x-0');
+                document.getElementById('editOKRPanel').style.transform = 'translateX(0)';
             }, 10);
         }
 
         // Close edit OKR slide-in panel
         function closeEditOKRModal() {
             const panel = document.getElementById('editOKRPanel');
-            panel.classList.remove('translate-x-0');
-            panel.classList.add('translate-x-full');
+            panel.style.transform = 'translateX(100%)';
             
             setTimeout(() => {
                 document.getElementById('editOKRModal').classList.add('hidden');
