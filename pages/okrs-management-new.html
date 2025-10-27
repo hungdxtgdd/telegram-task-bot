@@ -511,10 +511,20 @@
         /* Ensure cards and filter align */
         #okrsGrid {
             margin: 0;
+            padding: 0;
         }
         
         #listView {
             width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1rem;
+        }
+        
+        /* Remove card-body padding for filter bar to match grid */
+        .filter-bar .card-body {
+            padding: 1rem;
         }
         
         /* OKR Card specific styles - Modern Design */
@@ -1304,7 +1314,7 @@
                 </div>
 
                         <!-- Filter Bar -->
-                        <div class="card mb-4">
+                        <div class="card mb-4 filter-bar">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-5">
