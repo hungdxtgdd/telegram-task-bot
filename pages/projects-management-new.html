@@ -249,6 +249,70 @@
         .focus\:ring-2:focus { box-shadow: 0 0 0 2px currentColor; }
         .focus\:ring-red-300:focus { box-shadow: 0 0 0 2px #fca5a5; }
         .focus\:ring-gray-300:focus { box-shadow: 0 0 0 2px #d1d5db; }
+        
+        /* Fix sidebar and wrapper */
+        .c-wrapper {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure proper positioning */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* CoreUI sidebar fixes */
+        .c-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1030;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .c-sidebar-nav-link {
+            padding: 0.75rem 1rem;
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .c-sidebar-nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .c-sidebar-nav-link.c-active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .c-sidebar-brand-full,
+        .c-sidebar-brand-minimized {
+            padding: 0.75rem 1rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .c-header {
+            position: sticky;
+            top: 0;
+            z-index: 1029;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .c-main {
+            flex: 1;
+            padding: 1.5rem 0;
+        }
     </style>
 </head>
 <body>
@@ -1592,5 +1656,27 @@
     
     <!-- CoreUI JS -->
     <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.2/dist/js/coreui.bundle.min.js"></script>
+    <script>
+        // Initialize CoreUI
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle functionality
+            const sidebarToggler = document.querySelector('.c-header-toggler');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggler && sidebar) {
+                sidebarToggler.addEventListener('click', function() {
+                    sidebar.classList.toggle('c-sidebar-show');
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileToggler = document.querySelector('.d-md-down-none');
+            if (mobileToggler) {
+                mobileToggler.addEventListener('click', function() {
+                    sidebar.classList.toggle('c-sidebar-lg-show');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
