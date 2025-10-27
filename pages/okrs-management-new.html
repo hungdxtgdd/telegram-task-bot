@@ -1626,7 +1626,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-700">Progress</span>
-                                <span class="text-sm font-bold text-gray-900">${getActualValue(okr)} / ${getTargetValue(okr)}</span>
+                                <span class="text-sm font-bold text-gray-900">${getActualValue(okr)} / ${getTargetValue(okr)} ${getUnit(okr)}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full h-3 transition-all duration-500" style="width: ${progress}%"></div>
@@ -1720,6 +1720,20 @@
                 return sum + value;
             }, 0);
             return total;
+        }
+        
+        // Get unit from OKR or key results
+        function getUnit(okr) {
+            // First try to get from OKR
+            if (okr.unit) return okr.unit;
+            
+            // Then try to get from first key result
+            if (okr.key_results && okr.key_results.length > 0) {
+                const firstKR = okr.key_results[0];
+                return firstKR.unit || '';
+            }
+            
+            return '';
         }
 
         // Get status badge class
