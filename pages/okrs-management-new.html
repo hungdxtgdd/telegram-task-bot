@@ -1657,7 +1657,9 @@
         function createOKRCard(okr) {
             const statusClass = `okr-status-${okr.status || 'active'}`;
             const quarterClass = `okr-quarter-${okr.quarter || 'Q1'}`;
-            const progress = calculateOKRProgress(okr);
+            const actual = getActualValue(okr);
+            const target = getTargetValue(okr);
+            const progress = target > 0 ? Math.min(Math.round((actual / target) * 100), 100) : 0;
             
             return `
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 okr-card relative ${statusClass} cursor-pointer p-6" data-okr-id="${okr.id}" onclick="showOKRDetail(${okr.id})">
