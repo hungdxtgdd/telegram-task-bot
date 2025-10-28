@@ -2237,7 +2237,7 @@
             
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/api/okrs-enhanced', {
+                const response = await fetch('/api/okrs-enhanced/okrs', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2277,7 +2277,7 @@
             
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`/api/okrs-enhanced/${okrId}`, {
+                const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
