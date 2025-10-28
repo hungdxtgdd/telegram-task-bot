@@ -321,33 +321,46 @@ async function updateOKR(req, res, okrId) {
       progress
     } = req.body;
     
-    // Track changes for edit history
+    // Track changes for edit history (only track fields that were actually changed)
     const changes = [];
+    
+    // Use strict comparison to avoid string/number mismatches
+    const oldCurrentValue = parseFloat(oldValues.current_value) || 0;
+    const newCurrentValue = current_value !== undefined ? parseFloat(current_value) : oldCurrentValue;
+    
+    const oldTargetValue = parseFloat(oldValues.target_value) || 0;
+    const newTargetValue = target_value !== undefined ? parseFloat(target_value) : oldTargetValue;
+    
     if (objective && objective !== oldValues.objective) {
       changes.push({
         field: 'objective',
-        old: oldValues.objective,
+        old: oldValues.objective || '',
         new: objective
       });
     }
-    if (current_value !== undefined && current_value !== oldValues.current_value) {
+    
+    // Only track if current_value is explicitly provided and different
+    if (current_value !== undefined && newCurrentValue !== oldCurrentValue) {
       changes.push({
         field: 'current_value',
-        old: oldValues.current_value,
+        old: oldValues.current_value || 0,
         new: current_value
       });
     }
-    if (target_value !== undefined && target_value !== oldValues.target_value) {
+    
+    // Only track if target_value is explicitly provided and different
+    if (target_value !== undefined && newTargetValue !== oldTargetValue) {
       changes.push({
         field: 'target_value',
-        old: oldValues.target_value,
+        old: oldValues.target_value || 0,
         new: target_value
       });
     }
+    
     if (status && status !== oldValues.status) {
       changes.push({
         field: 'status',
-        old: oldValues.status,
+        old: oldValues.status || '',
         new: status
       });
     }
@@ -432,6 +445,17 @@ async function updateOKR(req, res, okrId) {
     // Save edit history
     if (changes.length > 0 && req.user) {
       try {
+        // Get user info from database
+        const userQuery = await client.query('SELECT username FROM users WHERE id = $1', [req.user.id]);
+        const username = userQuery.rows[0]?.username || req.user.username || 'Unknown';
+        
+        console.log('Saving edit history:', { 
+          okrId, 
+          userId: req.user.id, 
+          username, 
+          changes: changes.length 
+        });
+        
         // Ensure edit history table exists
         await client.query(`
           CREATE TABLE IF NOT EXISTS okr_edit_history (
@@ -452,7 +476,7 @@ async function updateOKR(req, res, okrId) {
           values: [
             okrId,
             req.user.id,
-            req.user.username || 'Unknown',
+            username,
             change.field,
             String(change.old),
             String(change.new)
