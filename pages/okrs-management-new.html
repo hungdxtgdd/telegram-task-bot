@@ -2548,7 +2548,7 @@
         }
         
         // Show OKR detail modal
-        function showOKRDetail(okrId) {
+        async function showOKRDetail(okrId) {
             const okr = okrs.find(o => o.id === okrId);
             if (!okr) return;
             
@@ -2624,6 +2624,14 @@
                         </div>
                     </div>
                     
+                    <!-- Edit History -->
+                    <div id="okrEditHistory">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Lịch sử chỉnh sửa</label>
+                        <div class="bg-gray-50 p-4 rounded-md border" id="historyContent">
+                            <p class="text-sm text-gray-500">Đang tải...</p>
+                        </div>
+                    </div>
+                    
                     <!-- Actions -->
                     <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                         <button onclick="closeOKRDetailModal()" class="btn btn-ghost">
@@ -2635,6 +2643,9 @@
                     </div>
                 </div>
             `;
+            
+            // Load edit history
+            await loadOKREditHistory(okr.id);
             
             // Show slide-in panel
             document.getElementById('okrDetailModal').classList.remove('hidden');
@@ -2666,6 +2677,64 @@
                 'dropped': 'Đã hủy'
             };
             return statusMap[status] || status;
+        }
+        
+        // Load OKR edit history
+        async function loadOKREditHistory(okrId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}/history`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch edit history');
+                }
+                
+                const history = await response.json();
+                const historyContent = document.getElementById('historyContent');
+                
+                if (history && history.length > 0) {
+                    historyContent.innerHTML = `
+                        <div class="space-y-3">
+                            ${history.map(item => {
+                                const date = new Date(item.edited_at);
+                                const dateStr = date.toLocaleDateString('vi-VN');
+                                const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                                const fieldNameMap = {
+                                    'objective': 'Mục tiêu',
+                                    'current_value': 'Giá trị hiện tại',
+                                    'target_value': 'Giá trị mục tiêu',
+                                    'status': 'Trạng thái'
+                                };
+                                
+                                return `
+                                    <div class="bg-white p-3 rounded border border-gray-200">
+                                        <div class="flex items-start justify-between mb-1">
+                                            <span class="text-sm font-medium text-blue-600">${item.username || 'Unknown'}</span>
+                                            <span class="text-xs text-gray-500">${dateStr} ${timeStr}</span>
+                                        </div>
+                                        <div class="text-sm text-gray-700">
+                                            <span class="font-medium">${fieldNameMap[item.field_name] || item.field_name}:</span>
+                                            <span class="text-gray-500 line-through ml-2">${item.old_value || 'N/A'}</span>
+                                            <i class="fas fa-arrow-right mx-2 text-blue-500"></i>
+                                            <span class="text-green-600 font-medium">${item.new_value || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                } else {
+                    historyContent.innerHTML = '<p class="text-sm text-gray-500">Chưa có lịch sử chỉnh sửa</p>';
+                }
+            } catch (error) {
+                console.error('Error loading edit history:', error);
+                document.getElementById('historyContent').innerHTML = '<p class="text-sm text-red-500">Không thể tải lịch sử chỉnh sửa</p>';
+            }
         }
     </script>
 

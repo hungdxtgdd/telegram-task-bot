@@ -58,7 +58,7 @@ async function handleOKRRequest(req, res) {
           // /api/okrs-enhanced/okrs/123
           okrId = urlParts[3];
         } else if (urlParts.length === 5) {
-          // /api/okrs-enhanced/okrs/123/update-progress
+          // /api/okrs-enhanced/okrs/123/update-progress or /history
           okrId = urlParts[3];
           endpoint = urlParts[4];
         }
@@ -71,6 +71,8 @@ async function handleOKRRequest(req, res) {
       case 'GET':
         if (endpoint === 'okrs') {
           await getAllOKRs(req, res);
+        } else if (endpoint === 'history' && okrId && !isNaN(okrId)) {
+          await getOKREditHistory(req, res, okrId);
         } else if (okrId && !isNaN(okrId)) {
           await getOKRById(req, res, okrId);
         } else {
@@ -195,6 +197,36 @@ async function getOKRById(req, res, okrId) {
   }
 }
 
+async function getOKREditHistory(req, res, okrId) {
+  const client = await pool.connect();
+  
+  try {
+    const query = `
+      SELECT 
+        id,
+        okr_id,
+        user_id,
+        username,
+        field_name,
+        old_value,
+        new_value,
+        edited_at
+      FROM okr_edit_history
+      WHERE okr_id = $1
+      ORDER BY edited_at DESC
+    `;
+    
+    const result = await client.query(query, [okrId]);
+    
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching OKR edit history:', error);
+    res.status(500).json({ error: 'Failed to fetch OKR edit history' });
+  } finally {
+    client.release();
+  }
+}
+
 async function createOKR(req, res) {
   const client = await pool.connect();
   
@@ -250,6 +282,17 @@ async function updateOKR(req, res, okrId) {
   const client = await pool.connect();
   
   try {
+    // Get current OKR values before update for comparison
+    const getCurrentQuery = 'SELECT * FROM okrs WHERE id = $1';
+    const currentResult = await client.query(getCurrentQuery, [okrId]);
+    
+    if (currentResult.rows.length === 0) {
+      res.status(404).json({ error: 'OKR not found' });
+      return;
+    }
+    
+    const oldValues = currentResult.rows[0];
+    
     const {
       objective,
       key_results,
@@ -263,6 +306,37 @@ async function updateOKR(req, res, okrId) {
       end_date,
       progress
     } = req.body;
+    
+    // Track changes for edit history
+    const changes = [];
+    if (objective && objective !== oldValues.objective) {
+      changes.push({
+        field: 'objective',
+        old: oldValues.objective,
+        new: objective
+      });
+    }
+    if (current_value !== undefined && current_value !== oldValues.current_value) {
+      changes.push({
+        field: 'current_value',
+        old: oldValues.current_value,
+        new: current_value
+      });
+    }
+    if (target_value !== undefined && target_value !== oldValues.target_value) {
+      changes.push({
+        field: 'target_value',
+        old: oldValues.target_value,
+        new: target_value
+      });
+    }
+    if (status && status !== oldValues.status) {
+      changes.push({
+        field: 'status',
+        old: oldValues.status,
+        new: status
+      });
+    }
 
     // If current_value and target_value are provided, update key_results
     let updatedKeyResults = key_results;
@@ -339,6 +413,29 @@ async function updateOKR(req, res, okrId) {
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'OKR not found' });
       return;
+    }
+    
+    // Save edit history
+    if (changes.length > 0 && req.user) {
+      try {
+        const historyQueries = changes.map(change => ({
+          text: `INSERT INTO okr_edit_history (okr_id, user_id, username, field_name, old_value, new_value, edited_at) 
+                 VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+          values: [
+            okrId,
+            req.user.id,
+            req.user.username || 'Unknown',
+            change.field,
+            String(change.old),
+            String(change.new)
+          ]
+        }));
+        
+        await Promise.all(historyQueries.map(q => client.query(q.text, q.values)));
+      } catch (historyError) {
+        console.error('Error saving edit history:', historyError);
+        // Don't fail the update if history fails
+      }
     }
 
     res.status(200).json(result.rows[0]);
