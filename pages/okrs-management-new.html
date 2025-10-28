@@ -567,6 +567,69 @@
             width: 600px !important;
             z-index: 1000 !important;
             transform: translateX(100%);
+            padding: 0 !important;
+        }
+        
+        /* Panel Form Styles */
+        #addOKRPanel form, #editOKRPanel form {
+            padding: 1.5rem;
+        }
+        
+        #addOKRPanel .input, #editOKRPanel .input,
+        #addOKRPanel textarea, #editOKRPanel textarea,
+        #addOKRPanel .select, #editOKRPanel .select,
+        #addOKRPanel select, #editOKRPanel select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        #addOKRPanel .input:focus, #editOKRPanel .input:focus,
+        #addOKRPanel textarea:focus, #editOKRPanel textarea:focus,
+        #addOKRPanel .select:focus, #editOKRPanel .select:focus,
+        #addOKRPanel select:focus, #editOKRPanel select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        #addOKRPanel label, #editOKRPanel label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        #addOKRPanel .btn, #editOKRPanel .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        #addOKRPanel .btn-primary, #editOKRPanel .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+        }
+        
+        #addOKRPanel .btn-primary:hover, #editOKRPanel .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        #addOKRPanel .btn-ghost, #editOKRPanel .btn-ghost {
+            background-color: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        
+        #addOKRPanel .btn-ghost:hover, #editOKRPanel .btn-ghost:hover {
+            background-color: #f9fafb;
         }
         
         /* OKR Card specific styles - Modern Design */
