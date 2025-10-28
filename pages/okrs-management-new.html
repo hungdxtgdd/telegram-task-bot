@@ -2295,6 +2295,8 @@
                 target_value: parseFloat(document.getElementById('editOKRTargetValue').value) || 0
             };
             
+            console.log('Updating OKR:', formData);
+            
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}`, {
@@ -2307,13 +2309,14 @@
                 });
                 
                 const data = await response.json();
+                console.log('Update response:', response.status, data);
                 
                 if (response.ok) {
                     showNotification('✅ Cập nhật OKR thành công!', 'success');
                     closeEditOKRModal();
                     loadOKRs();
                 } else {
-                    showNotification('❌ Lỗi khi cập nhật OKR', 'error');
+                    showNotification('❌ Lỗi khi cập nhật OKR: ' + (data.error || ''), 'error');
                 }
             } catch (error) {
                 console.error('Error updating OKR:', error);
