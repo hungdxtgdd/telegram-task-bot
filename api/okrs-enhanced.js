@@ -319,6 +319,13 @@ async function updateOKR(req, res, okrId) {
     
     console.log('Update OKR request body:', req.body);
     
+    // Update database constraint to allow new status values
+    await client.query(`
+      ALTER TABLE okrs DROP CONSTRAINT IF EXISTS okrs_status_check;
+      ALTER TABLE okrs ADD CONSTRAINT okrs_status_check 
+      CHECK (status IN ('active', 'completed', 'archived'));
+    `);
+    
     const {
       objective,
       key_results,
