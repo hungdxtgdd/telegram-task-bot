@@ -41,14 +41,46 @@ function verifyToken(req, res, next) {
     
     // BYPASS JWT verification for testing - accept any token
     try {
-        // Mock user for testing
-        req.user = {
-            id: 1,
-            name: 'Test User',
-            username: 'Phuc',
-            email: 'test@example.com',
-            role: 'admin'
-        };
+        // For testing, decode token to get user info
+        const decoded = jwt.decode(token);
+        
+        if (decoded && decoded.id) {
+            // Get user info from database
+            const client = await pool.connect();
+            const userQuery = await client.query('SELECT id, username, name, email, role FROM users WHERE id = $1', [decoded.id]);
+            
+            if (userQuery.rows.length > 0) {
+                const user = userQuery.rows[0];
+                req.user = {
+                    id: user.id,
+                    name: user.name,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role
+                };
+            } else {
+                // Fallback to decoded token info
+                req.user = {
+                    id: decoded.id,
+                    name: decoded.name,
+                    username: decoded.username,
+                    email: decoded.email || 'test@example.com',
+                    role: decoded.role
+                };
+            }
+            
+            client.release();
+        } else {
+            // Fallback for invalid token
+            req.user = {
+                id: 1,
+                name: 'Test User',
+                username: 'admin',
+                email: 'test@example.com',
+                role: 'admin'
+            };
+        }
+        
         console.log('Auth successful for user:', req.user);
         next();
     } catch (error) {
