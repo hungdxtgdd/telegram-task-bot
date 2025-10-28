@@ -2534,7 +2534,12 @@
             const progress = calculateOKRProgress(okr);
             const statusText = getStatusText(okr.status);
             
-            document.getElementById('okrDetailTitle').textContent = okr.objective || 'Untitled OKR';
+            // Update title in header
+            const titleElement = document.querySelector('#okrDetailModal h2');
+            if (titleElement) {
+                titleElement.textContent = okr.objective || 'Untitled OKR';
+            }
+            
             document.getElementById('okrDetailContent').innerHTML = `
                 <div class="space-y-6">
                     <!-- Basic Info -->
