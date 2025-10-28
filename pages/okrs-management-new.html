@@ -565,8 +565,8 @@
             bottom: 0 !important;
             left: auto !important;
             width: 600px !important;
-            transform: translateX(100%) !important;
             z-index: 1000 !important;
+            transform: translateX(100%);
         }
         
         /* OKR Card specific styles - Modern Design */
@@ -2046,11 +2046,13 @@
 
         // Show add OKR slide-in panel
         function showAddOKRModal() {
-            document.getElementById('addOKRModal').classList.remove('hidden');
+            const modal = document.getElementById('addOKRModal');
+            const panel = document.getElementById('addOKRPanel');
+            modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
             // Trigger slide-in animation
             setTimeout(() => {
-                document.getElementById('addOKRPanel').style.transform = 'translateX(0)';
+                panel.style.transform = 'translateX(0)';
             }, 10);
         }
 
