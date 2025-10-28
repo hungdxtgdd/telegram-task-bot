@@ -1416,7 +1416,7 @@
     <!-- Add OKR Slide-in Panel -->
     <div id="addOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeAddOKRModal()"></div>
-        <div class="bg-white shadow-2xl overflow-y-auto" id="addOKRPanel" style="transform: translateX(100%); transition: transform 0.3s ease-in-out;">
+        <div class="bg-white shadow-2xl overflow-y-auto" id="addOKRPanel" style="transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Thêm OKR Mới</h2>
                             <button onclick="closeAddOKRModal()" class="btn-icon">
@@ -1492,7 +1492,7 @@
     <!-- Edit OKR Slide-in Panel -->
     <div id="editOKRModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeEditOKRModal()"></div>
-        <div class="bg-white shadow-2xl overflow-y-auto" id="editOKRPanel" style="transform: translateX(100%); transition: transform 0.3s ease-in-out;">
+        <div class="bg-white shadow-2xl overflow-y-auto" id="editOKRPanel" style="transition: transform 0.3s ease-in-out;">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa OKR</h2>
                             <button onclick="closeEditOKRModal()" class="btn-icon">
@@ -1590,6 +1590,12 @@
             setupEventListeners();
             initializeInfiniteScroll();
             updateQuarterProgress();
+            
+            // Initialize panel positions
+            const addPanel = document.getElementById('addOKRPanel');
+            const editPanel = document.getElementById('editOKRPanel');
+            if (addPanel) addPanel.style.transform = 'translateX(100%)';
+            if (editPanel) editPanel.style.transform = 'translateX(100%)';
         });
 
         async function checkAuth() {
