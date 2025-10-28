@@ -2523,15 +2523,15 @@
             e.preventDefault();
             
             const keyResults = [];
-            const keyResultInputs = document.querySelectorAll('input[name="keyResult"]');
             const keyResultTargets = document.querySelectorAll('input[name="keyResultTarget"]');
+            const keyResultCurrents = document.querySelectorAll('input[name="keyResultCurrent"]');
             
-            keyResultInputs.forEach((input, index) => {
-                if (input.value.trim()) {
+            keyResultTargets.forEach((targetInput, index) => {
+                if (targetInput.value.trim()) {
                     keyResults.push({
-                        description: input.value.trim(),
-                        target_value: parseInt(keyResultTargets[index].value) || 100,
-                        current_value: 0
+                        description: `Key Result ${index + 1}`,
+                        target_value: parseInt(targetInput.value) || 0,
+                        current_value: parseInt(keyResultCurrents[index].value) || 0
                     });
                 }
             });
