@@ -47,13 +47,13 @@ async function verifyToken(req, res, next) {
         if (decoded && decoded.id) {
             // Get user info from database
             const client = await pool.connect();
-            const userQuery = await client.query('SELECT id, username, name, email, role FROM users WHERE id = $1', [decoded.id]);
+            const userQuery = await client.query('SELECT id, username, full_name, email, role FROM users WHERE id = $1', [decoded.id]);
             
             if (userQuery.rows.length > 0) {
                 const user = userQuery.rows[0];
                 req.user = {
                     id: user.id,
-                    name: user.name,
+                    name: user.full_name,
                     username: user.username,
                     email: user.email,
                     role: user.role
