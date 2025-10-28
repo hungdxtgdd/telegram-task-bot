@@ -1951,21 +1951,60 @@
 
         async function checkAuth() {
             try {
-                        // BYPASS authentication for testing - set mock user
-                        currentUser = {
-                            id: 1,
-                            name: 'Test User',
-                            email: 'test@example.com',
-                            role: 'admin'
-                        };
-                        
-                        // Setup role-based UI
-                        setupRoleBasedUI();
-                        
-                        loadOKRs();
+                // Check if token exists in localStorage
+                let token = localStorage.getItem('token');
+                if (!token) {
+                    console.log('No token found, attempting auto-login');
+                    // Try to login automatically for testing
+                    const loginResponse = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: 'admin',
+                            password: 'password'
+                        })
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        token = loginData.token;
+                        localStorage.setItem('token', token);
+                        console.log('Auto-login successful');
+                    } else {
+                        console.log('Auto-login failed, redirecting to login');
+                        window.location.href = '/login';
+                        return;
+                    }
+                }
+                
+                // Verify token with server
+                const response = await fetch('/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    console.log('Token invalid, redirecting to login');
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const userData = await response.json();
+                currentUser = userData.user;
+                
+                console.log('Auth successful:', currentUser);
+                
+                // Setup role-based UI
+                setupRoleBasedUI();
+                loadOKRs();
             } catch (error) {
-                        console.error('Auth check failed:', error);
-                        loadOKRs(); // Load data anyway
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/login';
             }
         }
 
@@ -2923,12 +2962,21 @@
         async function loadOKREditHistory(okrId) {
             try {
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('No token found');
+                    return;
+                }
+                
+                console.log('Loading edit history for OKR:', okrId, 'with token:', token.substring(0, 20) + '...');
+                
                 const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}/history`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
+                
+                console.log('History response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch edit history');
