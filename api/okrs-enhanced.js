@@ -215,6 +215,12 @@ async function getOKREditHistory(req, res, okrId) {
       )
     `);
     
+    // Create indexes for faster queries
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_okr_edit_history_okr_id ON okr_edit_history(okr_id);
+      CREATE INDEX IF NOT EXISTS idx_okr_edit_history_edited_at ON okr_edit_history(edited_at DESC);
+    `);
+    
     const query = `
       SELECT 
         id,
@@ -228,6 +234,7 @@ async function getOKREditHistory(req, res, okrId) {
       FROM okr_edit_history
       WHERE okr_id = $1
       ORDER BY edited_at DESC
+      LIMIT 50
     `;
     
     const result = await client.query(query, [okrId]);

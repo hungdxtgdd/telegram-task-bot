@@ -2644,10 +2644,7 @@
                 </div>
             `;
             
-            // Load edit history
-            await loadOKREditHistory(okr.id);
-            
-            // Show slide-in panel
+            // Show slide-in panel first (show UI immediately)
             document.getElementById('okrDetailModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
             
@@ -2655,6 +2652,11 @@
             setTimeout(() => {
                 document.getElementById('okrDetailPanel').style.transform = 'translateX(0)';
             }, 10);
+            
+            // Load edit history in background (don't wait)
+            loadOKREditHistory(okr.id).catch(error => {
+                console.error('Error loading edit history:', error);
+            });
         }
         
         // Close OKR detail panel
