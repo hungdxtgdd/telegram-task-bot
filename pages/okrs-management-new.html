@@ -847,6 +847,124 @@
             transform: scale(1.2) rotate(5deg);
         }
         
+        /* Enhanced Modal Content Styling */
+        #deleteConfirmModal .p-6 {
+            padding: 2rem !important;
+        }
+        
+        /* Icon styling */
+        #deleteConfirmModal .fa-exclamation-triangle {
+            font-size: 2rem !important;
+            color: #dc2626 !important;
+            filter: drop-shadow(0 4px 8px rgba(220, 38, 38, 0.3));
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Title styling */
+        #deleteConfirmModal h3 {
+            color: #111827 !important;
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.025em;
+            margin-bottom: 1rem !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Text content styling */
+        #deleteConfirmModal .text-center {
+            margin-bottom: 2rem !important;
+        }
+        
+        #deleteConfirmModal .text-center p {
+            line-height: 1.6 !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        #deleteConfirmModal .text-gray-600 {
+            color: #4b5563 !important;
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+        }
+        
+        #deleteConfirmModal .text-gray-900 {
+            color: #111827 !important;
+            font-weight: 700 !important;
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        #deleteConfirmModal .text-red-600 {
+            color: #dc2626 !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        #deleteConfirmModal .text-red-600 i {
+            font-size: 1rem !important;
+            animation: shake 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(2px); }
+        }
+        
+        /* Button container */
+        #deleteConfirmModal .flex.space-x-3 {
+            gap: 1rem !important;
+            margin-top: 2rem !important;
+        }
+        
+        /* Individual button styling */
+        #deleteConfirmModal button {
+            padding: 0.875rem 1.5rem !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.025em;
+            min-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #deleteConfirmModal button i {
+            font-size: 1.1rem !important;
+            margin-right: 0.75rem !important;
+        }
+        
+        /* Cancel button specific */
+        #deleteConfirmModal button.bg-gray-200 {
+            color: #374151 !important;
+            border: 2px solid transparent;
+        }
+        
+        #deleteConfirmModal button.bg-gray-200:hover {
+            border-color: #9ca3af;
+            color: #111827 !important;
+        }
+        
+        /* Delete button specific */
+        #deleteConfirmModal button.bg-red-600 {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 2px solid transparent;
+        }
+        
+        #deleteConfirmModal button.bg-red-600:hover {
+            border-color: #991b1b;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
         /* Detail Panel Styles */
         #okrDetailContent {
             padding: 1.5rem;
