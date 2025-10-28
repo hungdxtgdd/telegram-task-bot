@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   }
 
   // Verify authentication for all OKR operations
-  verifyToken(req, res, async () => {
+  await verifyToken(req, res, async () => {
     await handleOKRRequest(req, res);
   });
 };
