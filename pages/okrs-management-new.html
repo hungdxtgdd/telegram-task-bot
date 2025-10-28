@@ -663,6 +663,27 @@
             padding-bottom: 0.25rem;
         }
         
+        /* Status badges in detail panel */
+        #okrDetailContent .status-active {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        #okrDetailContent .status-achieved {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        #okrDetailContent .status-at-risk {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        #okrDetailContent .status-dropped {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
         /* OKR Card specific styles - Modern Design */
         .okr-card {
             background: #ffffff;
@@ -2542,77 +2563,70 @@
             
             document.getElementById('okrDetailContent').innerHTML = `
                 <div class="space-y-6">
-                    <!-- Basic Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Mô tả</h4>
-                            <p class="text-gray-900">${okr.description || 'Không có mô tả'}</p>
-                        </div>
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Trạng thái</h4>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full status-${okr.status || 'active'}">
-                                ${statusText}
-                            </span>
-                        </div>
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${okr.description || 'Không có mô tả'}</p>
                     </div>
                     
-                    <!-- Progress -->
+                    <!-- Status -->
                     <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Tiến độ</h4>
-                        <div class="flex items-center space-x-4">
-                            <div class="relative inline-block">
-                                <svg class="progress-ring w-16 h-16" viewBox="0 0 100 100">
-                                    <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="6" fill="transparent" r="40" cx="50" cy="50"/>
-                                    <circle class="progress-ring-circle" stroke="#3b82f6" stroke-width="6" fill="transparent" r="40" cx="50" cy="50" style="stroke-dashoffset: ${283 - (283 * progress / 100)}"/>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-sm font-bold text-gray-900">${Math.round(progress)}%</span>
-                                </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-${okr.status || 'active'}">
+                            ${statusText}
+                        </span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ</label>
+                        <div class="bg-gray-50 p-4 rounded-md border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">${getActualValue(okr)} / ${getTargetValue(okr)} ${getUnit(okr)}</span>
+                                <span class="text-sm font-bold text-blue-600">${Math.round(progress)}%</span>
                             </div>
-                            <div class="flex-1">
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
-                                </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Key Results -->
                     <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-3">Key Results</h4>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Key Results</label>
                         <div class="space-y-3">
                             ${okr.key_results && okr.key_results.length > 0 ? 
                                 okr.key_results.map(kr => `
-                                    <div class="border border-gray-200 rounded-lg p-3">
+                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                         <div class="flex justify-between items-center mb-2">
                                             <span class="text-sm font-medium text-gray-900">${kr.description}</span>
-                                            <span class="text-sm text-gray-500">${kr.current}/${kr.target} ${okr.unit || ''}</span>
+                                            <span class="text-sm text-blue-600 font-medium">${kr.current || kr.current_value || 0}/${kr.target || kr.target_value || 0} ${getUnit(okr)}</span>
                                         </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-1">
-                                            <div class="bg-green-600 h-1 rounded-full" style="width: ${(kr.current / kr.target) * 100}%"></div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-300" style="width: ${((kr.current || kr.current_value || 0) / (kr.target || kr.target_value || 1)) * 100}%"></div>
                                         </div>
                                     </div>
                                 `).join('') : 
-                                '<p class="text-gray-500 text-sm">Không có key results</p>'
+                                '<p class="text-gray-500 text-sm bg-gray-50 p-3 rounded-md border">Không có key results</p>'
                             }
                         </div>
                     </div>
                     
-                    <!-- Timeline -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Quarter & Created Date -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Quarter</h4>
-                            <p class="text-gray-900">${okr.quarter || 'Q1'} ${okr.year || new Date().getFullYear()}</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quý</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${okr.quarter || 'Q1'} ${okr.year || new Date().getFullYear()}</p>
                         </div>
                         <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Ngày tạo</h4>
-                            <p class="text-gray-900">${new Date(okr.created_at).toLocaleDateString('vi-VN')}</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tạo</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${new Date(okr.created_at).toLocaleDateString('vi-VN')}</p>
                         </div>
                     </div>
                     
                     <!-- Actions -->
-                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                        <button onclick="closeOKRDetailModal()" class="btn btn-secondary">
+                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                        <button onclick="closeOKRDetailModal()" class="btn btn-ghost">
                             <i class="fas fa-times mr-2"></i>Đóng
                         </button>
                         <button onclick="editOKR(${okr.id}); closeOKRDetailModal();" class="btn btn-primary">
