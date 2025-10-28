@@ -45,6 +45,7 @@ function verifyToken(req, res, next) {
         req.user = {
             id: 1,
             name: 'Test User',
+            username: 'Phuc',
             email: 'test@example.com',
             role: 'admin'
         };

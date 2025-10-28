@@ -453,7 +453,16 @@ async function updateOKR(req, res, okrId) {
     if (changes.length > 0 && req.user) {
       try {
         // Get user info from database
+        // Get username for edit history
+        console.log('Debug user info:', { 
+          userId: req.user.id, 
+          username: req.user.username,
+          userObject: req.user 
+        });
+        
         const userQuery = await client.query('SELECT username FROM users WHERE id = $1', [req.user.id]);
+        console.log('User query result:', userQuery.rows);
+        
         const username = userQuery.rows[0]?.username || req.user.username || 'Unknown';
         
         console.log('Saving edit history:', { 
