@@ -132,6 +132,8 @@ async function getAllOKRs(req, res) {
     
     const okrsResult = await client.query(okrsQuery);
     
+    console.log('OKR fields from database:', okrsResult.rows[0] ? Object.keys(okrsResult.rows[0]) : 'No OKRs found');
+    
     // Get all projects with their OKR associations
     const projectsQuery = `
       SELECT 
