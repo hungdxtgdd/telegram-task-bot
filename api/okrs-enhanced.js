@@ -201,6 +201,20 @@ async function getOKREditHistory(req, res, okrId) {
   const client = await pool.connect();
   
   try {
+    // Ensure edit history table exists
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS okr_edit_history (
+        id SERIAL PRIMARY KEY,
+        okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        username VARCHAR(100),
+        field_name VARCHAR(100),
+        old_value TEXT,
+        new_value TEXT,
+        edited_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
     const query = `
       SELECT 
         id,
@@ -418,6 +432,20 @@ async function updateOKR(req, res, okrId) {
     // Save edit history
     if (changes.length > 0 && req.user) {
       try {
+        // Ensure edit history table exists
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS okr_edit_history (
+            id SERIAL PRIMARY KEY,
+            okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            username VARCHAR(100),
+            field_name VARCHAR(100),
+            old_value TEXT,
+            new_value TEXT,
+            edited_at TIMESTAMP DEFAULT NOW()
+          )
+        `);
+        
         const historyQueries = changes.map(change => ({
           text: `INSERT INTO okr_edit_history (okr_id, user_id, username, field_name, old_value, new_value, edited_at) 
                  VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
