@@ -634,6 +634,12 @@
         
         /* Delete Confirmation Modal Styles */
         #deleteConfirmModal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 9999 !important;
             backdrop-filter: blur(4px);
         }
         
@@ -641,6 +647,8 @@
             border-radius: 1rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative !important;
+            z-index: 10000 !important;
         }
         
         #deleteConfirmModal .bg-red-100 {
@@ -667,6 +675,19 @@
             background-color: #dc2626;
             transform: translateY(-1px);
             box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+        }
+        
+        /* Ensure modal content is centered */
+        #deleteConfirmModal .fixed.inset-0.flex {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 10000 !important;
         }
         
         /* Detail Panel Styles */
