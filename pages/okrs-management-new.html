@@ -1645,7 +1645,12 @@
                 <ul class="c-header-nav ml-auto">
                     <li class="c-header-nav-item dropdown">
                         <a class="c-header-nav-link" href="#" data-toggle="dropdown">
-                            <span class="text-muted">Welcome, Admin</span>
+                            <span class="text-muted" id="welcomeText">Welcome, Admin</span>
+                        </a>
+                    </li>
+                    <li class="c-header-nav-item">
+                        <a class="c-header-nav-link text-danger" href="#" onclick="logout()" style="text-decoration: none;">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Đăng xuất
                         </a>
                     </li>
                 </ul>
@@ -1933,6 +1938,26 @@
         let selectedQuarter = 'Q1';
         let currentUser = null;
 
+        // Logout function
+        async function logout() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
@@ -1997,6 +2022,12 @@
                 currentUser = userData.user;
                 
                 console.log('Auth successful:', currentUser);
+                
+                // Update welcome text
+                const welcomeText = document.getElementById('welcomeText');
+                if (welcomeText) {
+                    welcomeText.textContent = `Welcome, ${currentUser.username}`;
+                }
                 
                 // Setup role-based UI
                 setupRoleBasedUI();
