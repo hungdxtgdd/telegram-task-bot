@@ -317,6 +317,8 @@ async function updateOKR(req, res, okrId) {
     
     const oldValues = currentResult.rows[0];
     
+    console.log('Update OKR request body:', req.body);
+    
     const {
       objective,
       key_results,
@@ -366,6 +368,12 @@ async function updateOKR(req, res, okrId) {
         new: target_value
       });
     }
+    
+    console.log('Update OKR - Status check:', { 
+      oldStatus: oldValues.status, 
+      newStatus: status,
+      statusChanged: status && status !== oldValues.status 
+    });
     
     if (status && status !== oldValues.status) {
       changes.push({
