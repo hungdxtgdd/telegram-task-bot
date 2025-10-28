@@ -2236,10 +2236,12 @@
             };
             
             try {
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/okrs-enhanced', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 });
@@ -2274,10 +2276,12 @@
             };
             
             try {
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/okrs-enhanced/${okrId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 });
