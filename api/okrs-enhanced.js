@@ -264,6 +264,44 @@ async function updateOKR(req, res, okrId) {
       progress
     } = req.body;
 
+    // If current_value and target_value are provided, update key_results
+    let updatedKeyResults = key_results;
+    if (current_value !== undefined && target_value !== undefined && !key_results) {
+      // Get current OKR
+      const getOKRQuery = 'SELECT key_results FROM okrs WHERE id = $1';
+      const okrResult = await client.query(getOKRQuery, [okrId]);
+      
+      if (okrResult.rows.length > 0) {
+        let existingKeyResults = [];
+        try {
+          existingKeyResults = typeof okrResult.rows[0].key_results === 'string' 
+            ? JSON.parse(okrResult.rows[0].key_results) 
+            : okrResult.rows[0].key_results || [];
+        } catch (e) {
+          existingKeyResults = [];
+        }
+        
+        // Update the first key result with new values
+        if (existingKeyResults.length > 0) {
+          existingKeyResults[0].current = current_value;
+          existingKeyResults[0].current_value = current_value;
+          existingKeyResults[0].target = target_value;
+          existingKeyResults[0].target_value = target_value;
+        } else {
+          // Create a default key result
+          existingKeyResults = [{
+            description: objective || 'Key Result',
+            current: current_value,
+            current_value: current_value,
+            target: target_value,
+            target_value: target_value
+          }];
+        }
+        
+        updatedKeyResults = existingKeyResults;
+      }
+    }
+
     const query = `
       UPDATE okrs
       SET
@@ -286,7 +324,7 @@ async function updateOKR(req, res, okrId) {
     const result = await client.query(query, [
       okrId,
       objective,
-      key_results ? JSON.stringify(key_results) : null,
+      updatedKeyResults ? JSON.stringify(updatedKeyResults) : null,
       target_value,
       unit,
       current_value,
