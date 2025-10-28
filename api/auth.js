@@ -22,7 +22,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f39
 const JWT_EXPIRES_IN = '24h';
 
 // Middleware to verify JWT token - BYPASSED FOR TESTING
-function verifyToken(req, res, next) {
+async function verifyToken(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token;
     
     console.log('Auth check:', {
