@@ -1791,11 +1791,19 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Key Results</label>
                                 <div id="keyResultsContainer" class="space-y-3">
                                     <div class="flex gap-2">
-                                        <input type="text" class="input flex-1" placeholder="Key Result 1" name="keyResult">
-                                        <input type="number" class="input w-20" placeholder="Target" name="keyResultTarget" min="0">
-                                        <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <div class="flex-1">
+                                            <label class="text-sm font-medium text-gray-700 mb-1 block">Tên Key Result</label>
+                                            <input type="text" class="input w-full" placeholder="Ví dụ: Tăng doanh thu" name="keyResult">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="text-sm font-medium text-gray-700 mb-1 block">Mục tiêu</label>
+                                            <input type="number" class="input w-full" placeholder="Ví dụ: 1000000" name="keyResultTarget" min="0">
+                                        </div>
+                                        <div class="flex items-end">
+                                            <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <button type="button" onclick="addKeyResult()" class="btn btn-ghost btn-sm mt-2">
@@ -2379,11 +2387,19 @@
             const keyResultDiv = document.createElement('div');
             keyResultDiv.className = 'flex gap-2';
             keyResultDiv.innerHTML = `
-                <input type="text" class="input flex-1" placeholder="Key Result" name="keyResult">
-                <input type="number" class="input w-20" placeholder="Target" name="keyResultTarget" min="0" max="100">
-                <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Tên Key Result</label>
+                    <input type="text" class="input w-full" placeholder="Ví dụ: Tăng doanh thu" name="keyResult">
+                </div>
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Mục tiêu</label>
+                    <input type="number" class="input w-full" placeholder="Ví dụ: 1000000" name="keyResultTarget" min="0">
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             `;
             container.appendChild(keyResultDiv);
         }
@@ -2416,13 +2432,21 @@
                 document.getElementById('addOKRForm').reset();
                 // Reset key results container
                 document.getElementById('keyResultsContainer').innerHTML = `
-                    <div class="flex gap-2">
-                        <input type="text" class="input flex-1" placeholder="Key Result 1" name="keyResult">
-                        <input type="number" class="input w-20" placeholder="Target" name="keyResultTarget" min="0" max="100">
-                        <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">Tên Key Result</label>
+                                <input type="text" class="input w-full" placeholder="Ví dụ: Tăng doanh thu" name="keyResult">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">Mục tiêu</label>
+                                <input type="number" class="input w-full" placeholder="Ví dụ: 1000000" name="keyResultTarget" min="0">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" onclick="removeKeyResult(this)" class="btn-icon text-error-600">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                 `;
             }, 300);
         }
