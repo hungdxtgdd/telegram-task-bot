@@ -270,6 +270,7 @@ async function createOKR(req, res) {
   try {
     const {
       objective,
+      description,
       key_results,
       target_value,
       unit,
