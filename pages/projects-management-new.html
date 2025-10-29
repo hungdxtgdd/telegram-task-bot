@@ -187,6 +187,18 @@
             font-size: 0.875rem;
         }
 
+        /* Project Detail Modal Container (ensure visible above header/sidebar) */
+        #projectDetailModal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 1032 !important; /* above header(1029) & sidebar(1030) */
+            display: none; /* toggled by hidden class */
+        }
+        #projectDetailModal:not(.hidden) { display: block; }
+
         /* Project Card Styling - Modern Design */
         .project-card {
             background: white;
