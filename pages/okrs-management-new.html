@@ -2913,6 +2913,16 @@
             
             document.getElementById('okrDetailContent').innerHTML = `
                 <div class="space-y-6">
+                    <!-- Actions - Fixed at top -->
+                    <div class="flex justify-end space-x-3 py-4 border-b border-gray-200 sticky">
+                        <button onclick="closeOKRDetailModal()" class="btn btn-ghost">
+                            <i class="fas fa-times mr-2"></i>Đóng
+                        </button>
+                        <button onclick="editOKR(${okr.id}); closeOKRDetailModal();" class="btn btn-primary">
+                            <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+                        </button>
+                    </div>
+                    
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
@@ -2980,16 +2990,6 @@
                         <div class="bg-gray-50 p-4 rounded-md border" id="historyContent">
                             <p class="text-sm text-gray-500">Đang tải...</p>
                         </div>
-                    </div>
-                    
-                    <!-- Actions - Fixed at top -->
-                    <div class="flex justify-end space-x-3 py-4 border-t border-gray-200 sticky">
-                        <button onclick="closeOKRDetailModal()" class="btn btn-ghost">
-                            <i class="fas fa-times mr-2"></i>Đóng
-                        </button>
-                        <button onclick="editOKR(${okr.id}); closeOKRDetailModal();" class="btn btn-primary">
-                            <i class="fas fa-edit mr-2"></i>Chỉnh sửa
-                        </button>
                     </div>
                 </div>
             `;
