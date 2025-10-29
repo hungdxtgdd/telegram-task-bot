@@ -134,6 +134,11 @@ async function getAllOKRs(req, res) {
     
     console.log('OKR fields from database:', okrsResult.rows[0] ? Object.keys(okrsResult.rows[0]) : 'No OKRs found');
     
+    // Ensure description column exists
+    await client.query(`
+      ALTER TABLE okrs ADD COLUMN IF NOT EXISTS description TEXT;
+    `);
+    
     // Get all projects with their OKR associations
     const projectsQuery = `
       SELECT 
@@ -273,15 +278,16 @@ async function createOKR(req, res) {
 
     const query = `
       INSERT INTO okrs (
-        objective, key_results, target_value, unit, current_value, status,
+        objective, description, key_results, target_value, unit, current_value, status,
         quarter, year, start_date, end_date, progress, owner_id, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
       RETURNING *
     `;
 
     const result = await client.query(query, [
       objective,
+      description || '',
       JSON.stringify(key_results || []),
       target_value || null,
       unit || '%',
@@ -434,16 +440,17 @@ async function updateOKR(req, res, okrId) {
       UPDATE okrs
       SET
         objective = COALESCE($2, objective),
-        key_results = COALESCE($3, key_results),
-        target_value = COALESCE($4, target_value),
-        unit = COALESCE($5, unit),
-        current_value = COALESCE($6, current_value),
-        status = COALESCE($7, status),
-        quarter = COALESCE($8, quarter),
-        year = COALESCE($9, year),
-        start_date = COALESCE($10, start_date),
-        end_date = COALESCE($11, end_date),
-        progress = COALESCE($12, progress),
+        description = COALESCE($3, description),
+        key_results = COALESCE($4, key_results),
+        target_value = COALESCE($5, target_value),
+        unit = COALESCE($6, unit),
+        current_value = COALESCE($7, current_value),
+        status = COALESCE($8, status),
+        quarter = COALESCE($9, quarter),
+        year = COALESCE($10, year),
+        start_date = COALESCE($11, start_date),
+        end_date = COALESCE($12, end_date),
+        progress = COALESCE($13, progress),
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
@@ -452,6 +459,7 @@ async function updateOKR(req, res, okrId) {
     const result = await client.query(query, [
       okrId,
       objective,
+      description,
       updatedKeyResults ? JSON.stringify(updatedKeyResults) : null,
       target_value,
       unit,
