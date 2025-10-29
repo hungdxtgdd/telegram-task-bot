@@ -2009,172 +2009,139 @@
                 headerTitle.textContent = project.project_name || project.name || 'Untitled Project';
             }
             
-            // Populate detail content with beautiful design
+            // Populate detail content with OKR-style structure
             document.getElementById('projectDetailContent').innerHTML = `
-                <div class="space-y-8">
-                    <!-- Hero Section -->
-                    <div class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 rounded-2xl p-8 text-white">
-                        <div class="absolute inset-0 bg-black opacity-10"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-start justify-between mb-6">
-                                <div class="flex-1">
-                                    <h3 class="text-2xl font-bold mb-3">${project.project_name || 'Untitled Project'}</h3>
-                                    <p class="text-indigo-100 text-lg leading-relaxed">${project.description || 'Không có mô tả'}</p>
-                                </div>
-                                <div class="flex flex-col items-end space-y-3">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-3 h-3 rounded-full ${project.status === 'active' ? 'bg-green-400' : project.status === 'completed' ? 'bg-blue-400' : 'bg-yellow-400'}"></div>
-                                        <span class="text-sm font-medium">${statusText[project.status || 'active']}</span>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-3 h-3 rounded-full ${project.health === 'excellent' ? 'bg-green-400' : project.health === 'good' ? 'bg-blue-400' : project.health === 'warning' ? 'bg-yellow-400' : 'bg-red-400'}"></div>
-                                        <span class="text-sm font-medium">${healthText[project.health || 'good']}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+                <div class="space-y-6">
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                        <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.description || 'Không có mô tả'}</p>
                     </div>
                     
-                    <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Progress Card -->
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="p-3 bg-blue-100 rounded-xl">
-                                    <i class="fas fa-chart-line text-blue-600 text-xl"></i>
-                                </div>
-                                <span class="text-3xl font-bold text-blue-600">${progress}%</span>
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-${project.status || 'active'}">
+                            ${statusText[project.status || 'active']}
+                        </span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ</label>
+                        <div class="bg-gray-50 p-4 rounded-md border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">${project.current_value || 0} / ${project.target_value || 0} ${project.unit || ''}</span>
+                                <span class="text-sm font-bold text-blue-600">${progress}%</span>
                             </div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Tiến độ dự án</h4>
-                            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
                             </div>
-                            <p class="text-xs text-gray-500">${project.current_value || 0} / ${project.target_value || 0} ${project.unit || ''}</p>
-                        </div>
-                        
-                        <!-- Tasks Card -->
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="p-3 bg-green-100 rounded-xl">
-                                    <i class="fas fa-tasks text-green-600 text-xl"></i>
-                                </div>
-                                <span class="text-3xl font-bold text-green-600">${taskProgress}%</span>
-                            </div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Tasks hoàn thành</h4>
-                            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-                                <div class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-1000" style="width: ${taskProgress}%"></div>
-                            </div>
-                            <p class="text-xs text-gray-500">${project.completed_tasks || 0} / ${project.task_count || 0} tasks</p>
-                        </div>
-                        
-                        <!-- Team Card -->
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="p-3 bg-purple-100 rounded-xl">
-                                    <i class="fas fa-users text-purple-600 text-xl"></i>
-                                </div>
-                                <span class="text-3xl font-bold text-purple-600">${project.member_count || 0}</span>
-                            </div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Thành viên</h4>
-                            <p class="text-xs text-gray-500">${project.project_manager_name ? `Trưởng: ${project.project_manager_name}` : 'Chưa gán trưởng dự án'}</p>
                         </div>
                     </div>
                     
-                    <!-- Info Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Project Info -->
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                            <h4 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-info-circle text-blue-600 mr-3"></i>
-                                Thông tin dự án
-                            </h4>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Mã dự án</span>
-                                    <span class="text-sm font-mono bg-gray-100 px-3 py-1 rounded-lg">${project.project_code || 'N/A'}</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Độ ưu tiên</span>
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full ${getPriorityBadgeClass(project.priority)}">
-                                        ${priorityText[project.priority?.toLowerCase()] || '🟡 Trung bình'}
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Ngân sách</span>
-                                    <span class="text-sm font-semibold text-gray-900">${formatCurrency(project.budget)}</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3">
-                                    <span class="text-sm font-medium text-gray-600">Người tạo</span>
-                                    <span class="text-sm text-gray-900">${project.created_by_name || 'N/A'}</span>
-                                </div>
+                    <!-- Tasks -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tasks</label>
+                        <div class="bg-gray-50 p-4 rounded-md border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">${project.completed_tasks || 0} / ${project.task_count || 0} tasks</span>
+                                <span class="text-sm font-bold text-green-600">${taskProgress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-500" style="width: ${taskProgress}%"></div>
                             </div>
                         </div>
-                        
-                        <!-- Timeline -->
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                            <h4 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-calendar-alt text-green-600 mr-3"></i>
-                                Thời gian
-                            </h4>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Bắt đầu</span>
-                                    <span class="text-sm text-gray-900">${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'}</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Kết thúc</span>
-                                    <span class="text-sm text-gray-900">${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'Chưa có'}</span>
-                                </div>
-                                ${daysRemaining !== null ? `
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-medium text-gray-600">Còn lại</span>
-                                    <span class="text-sm font-semibold ${daysRemaining < 0 ? 'text-red-600' : daysRemaining < 7 ? 'text-orange-600' : 'text-green-600'}">
-                                        ${daysRemaining < 0 ? `${Math.abs(daysRemaining)} ngày quá hạn` : `${daysRemaining} ngày`}
-                                    </span>
-                                </div>
-                                ` : ''}
-                                <div class="flex items-center justify-between py-3">
-                                    <span class="text-sm font-medium text-gray-600">Tạo lúc</span>
-                                    <span class="text-sm text-gray-900">${project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : 'N/A'}</span>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                    
+                    <!-- Health -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tình trạng sức khỏe</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium health-${project.health || 'good'}">
+                            ${healthText[project.health || 'good']}
+                        </span>
                     </div>
                     
                     <!-- OKR Connection -->
                     ${project.okr_objective ? `
-                    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
-                        <h4 class="text-lg font-bold mb-3 flex items-center">
-                            <i class="fas fa-bullseye mr-3"></i>
-                            OKR liên quan
-                        </h4>
-                        <p class="text-emerald-100 text-lg">${project.okr_objective}</p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OKR liên quan</label>
+                        <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.okr_objective}</p>
                     </div>
                     ` : ''}
                     
-                    <!-- Action Buttons -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-bolt text-yellow-600 mr-3"></i>
-                            Hành động nhanh
-                        </h4>
-                        <div class="flex flex-wrap gap-3">
-                            <button onclick="viewProjectTasks(${project.id})" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                                <i class="fas fa-tasks mr-2"></i>
-                                <span class="font-medium">Xem Tasks</span>
-                            </button>
-                            <button onclick="viewProjectMembers(${project.id})" class="flex items-center px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                                <i class="fas fa-users mr-2"></i>
-                                <span class="font-medium">Thành viên</span>
-                            </button>
-                            <button onclick="viewProjectTimeline(${project.id})" class="flex items-center px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                                <i class="fas fa-calendar mr-2"></i>
-                                <span class="font-medium">Timeline</span>
-                            </button>
+                    <!-- Project Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã dự án</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.project_code || 'Chưa có'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Độ ưu tiên</label>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(project.priority)}">
+                                ${priorityText[project.priority?.toLowerCase()] || '🟡 Trung bình'}
+                            </span>
                         </div>
                     </div>
+                    
+                    <!-- Timeline -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Manager & Created Date -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trưởng dự án</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.project_manager_name || 'Chưa gán'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tạo</label>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget -->
+                    ${project.budget ? `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
+                        <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${formatCurrency(project.budget)}</p>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Team Info -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Thành viên</label>
+                        <div class="bg-gray-50 p-4 rounded-md border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Số lượng thành viên</span>
+                                <span class="text-sm font-bold text-purple-600">${project.member_count || 0}</span>
+                            </div>
+                            <p class="text-xs text-gray-500">${project.project_manager_name ? `Trưởng dự án: ${project.project_manager_name}` : 'Chưa gán trưởng dự án'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Days Remaining -->
+                    ${daysRemaining !== null ? `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian còn lại</label>
+                        <div class="bg-gray-50 p-4 rounded-md border">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">${daysRemaining < 0 ? 'Quá hạn' : 'Còn lại'}</span>
+                                <span class="text-sm font-bold ${daysRemaining < 0 ? 'text-red-600' : daysRemaining < 7 ? 'text-orange-600' : 'text-green-600'}">
+                                    ${daysRemaining < 0 ? `${Math.abs(daysRemaining)} ngày` : `${daysRemaining} ngày`}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             `;
             
