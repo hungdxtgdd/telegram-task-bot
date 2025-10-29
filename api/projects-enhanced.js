@@ -192,9 +192,10 @@ async function getAllProjects(req, res) {
         LEFT JOIN (
           SELECT 
             project_id,
-            COUNT(*) as task_count,
-            COUNT(CASE WHEN status IN ('Done', 'completed', 'done') THEN 1 END) as completed_tasks
+            COUNT(*)::INTEGER as task_count,
+            COUNT(CASE WHEN status IN ('Done', 'completed', 'done') THEN 1 END)::INTEGER as completed_tasks
           FROM tasks 
+          WHERE project_id IS NOT NULL
           GROUP BY project_id
         ) task_stats ON p.id = task_stats.project_id
       ),
@@ -226,23 +227,27 @@ async function getAllProjects(req, res) {
           END as health
         FROM project_stats
       )
+      project_member_count AS (
+        SELECT 
+          project_id,
+          COUNT(*)::INTEGER as member_count
+        FROM project_members
+        GROUP BY project_id
+      )
       SELECT 
         ph.*,
-        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = ph.id) as member_count
+        COALESCE(pmc.member_count, 0) as member_count
       FROM project_health ph
+      LEFT JOIN project_member_count pmc ON ph.id = pmc.project_id
       ${whereClause}
       ORDER BY ph.created_at DESC
     `;
     
     const result = await client.query(query, queryParams);
     
-    // Update projects table with calculated health - Optimized: batch update instead of loop
-    if (result.rows.length > 0) {
-      const updatePromises = result.rows.map(project =>
-        client.query('UPDATE projects SET health = $1 WHERE id = $2', [project.health, project.id])
-      );
-      await Promise.all(updatePromises);
-    }
+    // Don't update health on every GET - only calculate it
+    // Health should be updated when projects/tasks change, not on every read
+    // This saves significant database write overhead (can be 50%+ of query time)
     
     client.release();
     
