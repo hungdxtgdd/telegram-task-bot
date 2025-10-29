@@ -336,6 +336,7 @@ async function updateOKR(req, res, okrId) {
     
     const {
       objective,
+      description,
       key_results,
       target_value,
       unit,
@@ -363,6 +364,14 @@ async function updateOKR(req, res, okrId) {
         field: 'objective',
         old: oldValues.objective || '',
         new: objective
+      });
+    }
+    
+    if (description !== undefined && description !== oldValues.description) {
+      changes.push({
+        field: 'description',
+        old: oldValues.description || '',
+        new: description
       });
     }
     
