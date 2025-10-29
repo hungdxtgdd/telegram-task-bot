@@ -3057,44 +3057,41 @@
         // Display edit history
         function displayEditHistory(history) {
             const historyContent = document.getElementById('historyContent');
-                
-                if (history && history.length > 0) {
-                    historyContent.innerHTML = `
-                        <div class="space-y-3">
-                            ${history.map(item => {
-                                const date = new Date(item.edited_at);
-                                const dateStr = date.toLocaleDateString('vi-VN');
-                                const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                                const fieldNameMap = {
-                                    'objective': 'Mục tiêu',
-                                    'current_value': 'Giá trị hiện tại',
-                                    'target_value': 'Giá trị mục tiêu',
-                                    'status': 'Trạng thái'
-                                };
-                                
-                                return `
-                                    <div class="bg-white p-3 rounded border border-gray-200">
-                                        <div class="flex items-start justify-between mb-1">
-                                            <span class="text-sm font-medium text-blue-600">${item.username || 'Unknown'}</span>
-                                            <span class="text-xs text-gray-500">${dateStr} ${timeStr}</span>
-                                        </div>
-                                        <div class="text-sm text-gray-700">
-                                            <span class="font-medium">${fieldNameMap[item.field_name] || item.field_name}:</span>
-                                            <span class="text-gray-500 line-through ml-2">${item.old_value || 'N/A'}</span>
-                                            <i class="fas fa-arrow-right mx-2 text-blue-500"></i>
-                                            <span class="text-green-600 font-medium">${item.new_value || 'N/A'}</span>
-                                        </div>
+            
+            if (history && history.length > 0) {
+                historyContent.innerHTML = `
+                    <div class="space-y-3">
+                        ${history.map(item => {
+                            const date = new Date(item.edited_at);
+                            const dateStr = date.toLocaleDateString('vi-VN');
+                            const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                            const fieldNameMap = {
+                                'objective': 'Mục tiêu',
+                                'current_value': 'Giá trị hiện tại',
+                                'target_value': 'Giá trị mục tiêu',
+                                'status': 'Trạng thái',
+                                'description': 'Mô tả'
+                            };
+                            
+                            return `
+                                <div class="bg-white p-3 rounded border border-gray-200">
+                                    <div class="flex items-start justify-between mb-1">
+                                        <span class="text-sm font-medium text-blue-600">${item.username || 'Unknown'}</span>
+                                        <span class="text-xs text-gray-500">${dateStr} ${timeStr}</span>
                                     </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    `;
-                } else {
-                    historyContent.innerHTML = '<p class="text-sm text-gray-500">Chưa có lịch sử chỉnh sửa</p>';
-                }
-            } catch (error) {
-                console.error('Error loading edit history:', error);
-                document.getElementById('historyContent').innerHTML = '<p class="text-sm text-red-500">Không thể tải lịch sử chỉnh sửa</p>';
+                                    <div class="text-sm text-gray-700">
+                                        <span class="font-medium">${fieldNameMap[item.field_name] || item.field_name}:</span>
+                                        <span class="text-gray-500 line-through ml-2">${item.old_value || 'N/A'}</span>
+                                        <i class="fas fa-arrow-right mx-2 text-blue-500"></i>
+                                        <span class="text-green-600 font-medium">${item.new_value || 'N/A'}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } else {
+                historyContent.innerHTML = '<p class="text-sm text-gray-500">Chưa có lịch sử chỉnh sửa</p>';
             }
         }
     </script>
