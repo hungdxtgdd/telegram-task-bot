@@ -2206,6 +2206,9 @@
                 notification.remove();
             }, 300);
         }
+        
+        // Initialize CoreUI sidebar functionality
+        document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const wrapper = document.querySelector('.c-wrapper');
             const togglers = document.querySelectorAll('.c-header-toggler');
@@ -2249,6 +2252,7 @@
                 });
                 observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
             }
+        });
         });
     </script>
 </body>
