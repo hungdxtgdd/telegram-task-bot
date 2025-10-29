@@ -1514,6 +1514,22 @@
                     if (projects.length > 0) {
                         console.log('First project fields:', Object.keys(projects[0]));
                         console.log('First project data:', projects[0]);
+                        
+                        // Check specific fields for display
+                        const firstProject = projects[0];
+                        console.log('Progress data:', {
+                            current_value: firstProject.current_value,
+                            target_value: firstProject.target_value,
+                            progress_percentage: firstProject.target_value > 0 ? Math.round((firstProject.current_value / firstProject.target_value) * 100) : 0
+                        });
+                        console.log('Tasks data:', {
+                            task_count: firstProject.task_count,
+                            completed_tasks: firstProject.completed_tasks,
+                            completion_percentage: firstProject.completion_percentage
+                        });
+                        console.log('Owner data:', {
+                            created_by_name: firstProject.created_by_name
+                        });
                     }
                     
                     filteredProjects = [...projects];
