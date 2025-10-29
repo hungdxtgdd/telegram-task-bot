@@ -975,73 +975,6 @@
                                 <h1>Quản lý Projects</h1>
                             </div>
                         </div>
-                <!-- Stats Cards -->
-                <div class="row mb-4">
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="card text-white bg-primary">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-project-diagram text-white" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <div class="text-medium-emphasis">Tổng Projects</div>
-                                        <div class="fs-6 fw-semibold" id="totalProjects">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="card text-white bg-success">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-play text-white" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <div class="text-medium-emphasis">Active</div>
-                                        <div class="fs-6 fw-semibold" id="activeProjects">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="card text-white bg-info">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-check-circle text-white" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <div class="text-medium-emphasis">Completed</div>
-                                        <div class="fs-6 fw-semibold" id="completedProjects">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="card text-white bg-warning">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-exclamation-triangle text-white" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <div class="text-medium-emphasis">At Risk</div>
-                                        <div class="fs-6 fw-semibold" id="atRiskProjects">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                     <!-- Filter Bar -->
                     <div class="card mb-4">
                         <div class="card-body">
@@ -1384,7 +1317,6 @@
                     projects = await response.json();
                     filteredProjects = [...projects];
                     renderProjects();
-                    updateStats();
                     updateUnitFilter();
                 } else {
                     showError('Không thể tải danh sách projects');
@@ -1592,18 +1524,6 @@
             }).format(amount);
         }
 
-        // Update statistics
-        function updateStats() {
-            const totalProjects = projects.length;
-            const activeProjects = projects.filter(p => p.status === 'active').length;
-            const completedProjects = projects.filter(p => p.status === 'completed').length;
-            const atRiskProjects = projects.filter(p => p.health === 'critical' || p.health === 'warning').length;
-            
-            document.getElementById('totalProjects').textContent = totalProjects;
-            document.getElementById('activeProjects').textContent = activeProjects;
-            document.getElementById('completedProjects').textContent = completedProjects;
-            document.getElementById('atRiskProjects').textContent = atRiskProjects;
-        }
 
         // Update unit filter
         function updateUnitFilter() {
