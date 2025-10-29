@@ -226,7 +226,7 @@ async function getAllProjects(req, res) {
             ELSE 'good'
           END as health
         FROM project_stats
-      )
+      ),
       project_member_count AS (
         SELECT 
           project_id,
