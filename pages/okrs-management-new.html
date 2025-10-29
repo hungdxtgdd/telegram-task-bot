@@ -2038,23 +2038,46 @@
             }
         }
 
-        // Load OKRs from API
+        // Cache để tránh gọi API nhiều lần
+        let okrsCache = null;
+        let cacheTimestamp = 0;
+        const CACHE_DURATION = 30000; // 30 giây
+
+        // Load OKRs from API với cache
         async function loadOKRs() {
             try {
-                        const response = await fetch('/api/okrs-enhanced/okrs', {
-                            headers: { 'Authorization': 'Bearer test-token' }
-                        });
-                        
-                        if (response.ok) {
-                            okrs = await response.json();
-                            filteredOKRs = [...okrs];
-                            renderOKRs();
-                            updateStats();
-                            updateUnitFilter();
-                            updateQuarterProgress();
-                        } else {
-                            showError('Không thể tải danh sách OKRs');
-                        }
+                const now = Date.now();
+                
+                // Kiểm tra cache trước
+                if (okrsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+                    console.log('Using cached OKRs data');
+                    okrs = okrsCache;
+                    filteredOKRs = [...okrs];
+                    renderOKRs();
+                    updateStats();
+                    updateUnitFilter();
+                    updateQuarterProgress();
+                    document.getElementById('loadingState').classList.add('hidden');
+                    return;
+                }
+                
+                console.log('Fetching fresh OKRs data');
+                const response = await fetch('/api/okrs-enhanced/okrs', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                
+                if (response.ok) {
+                    okrs = await response.json();
+                    okrsCache = okrs; // Cache data
+                    cacheTimestamp = now;
+                    filteredOKRs = [...okrs];
+                    renderOKRs();
+                    updateStats();
+                    updateUnitFilter();
+                    updateQuarterProgress();
+                } else {
+                    showError('Không thể tải danh sách OKRs');
+                }
             } catch (error) {
                 console.error('Error loading OKRs:', error);
                 showError('Lỗi khi tải danh sách OKRs');
@@ -2976,16 +2999,31 @@
             return statusMap[status] || status;
         }
         
-        // Load OKR edit history
+        // Cache cho edit history
+        let historyCache = new Map();
+        const HISTORY_CACHE_DURATION = 60000; // 1 phút
+
+        // Load OKR edit history với cache
         async function loadOKREditHistory(okrId) {
             try {
+                const now = Date.now();
+                const cacheKey = `history_${okrId}`;
+                
+                // Kiểm tra cache trước
+                const cached = historyCache.get(cacheKey);
+                if (cached && (now - cached.timestamp) < HISTORY_CACHE_DURATION) {
+                    console.log('Using cached edit history for OKR:', okrId);
+                    displayEditHistory(cached.data);
+                    return;
+                }
+                
                 const token = localStorage.getItem('token');
                 if (!token) {
                     console.error('No token found');
                     return;
                 }
                 
-                console.log('Loading edit history for OKR:', okrId, 'with token:', token.substring(0, 20) + '...');
+                console.log('Loading edit history for OKR:', okrId);
                 
                 const response = await fetch(`/api/okrs-enhanced/okrs/${okrId}/history`, {
                     headers: {
@@ -2994,14 +3032,31 @@
                     }
                 });
                 
-                console.log('History response status:', response.status);
-                
                 if (!response.ok) {
                     throw new Error('Failed to fetch edit history');
                 }
                 
                 const history = await response.json();
+                
+                // Cache history data
+                historyCache.set(cacheKey, {
+                    data: history,
+                    timestamp: now
+                });
+                
+                displayEditHistory(history);
+            } catch (error) {
+                console.error('Error loading edit history:', error);
                 const historyContent = document.getElementById('historyContent');
+                if (historyContent) {
+                    historyContent.innerHTML = '<p class="text-sm text-red-500">Lỗi khi tải lịch sử chỉnh sửa</p>';
+                }
+            }
+        }
+        
+        // Display edit history
+        function displayEditHistory(history) {
+            const historyContent = document.getElementById('historyContent');
                 
                 if (history && history.length > 0) {
                     historyContent.innerHTML = `

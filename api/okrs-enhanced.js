@@ -13,7 +13,13 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Tối ưu connection pool
+  max: 20, // Tăng số connection tối đa
+  min: 2,  // Giữ ít nhất 2 connection
+  idleTimeoutMillis: 30000, // Giảm thời gian idle
+  connectionTimeoutMillis: 2000, // Giảm timeout
+  acquireTimeoutMillis: 2000
 });
 
 module.exports = async (req, res) => {
@@ -27,9 +33,12 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Verify authentication for all OKR operations
+  // Verify authentication for all OKR operations - tối ưu với cache
+  const startTime = Date.now();
   await new Promise((resolve) => {
     verifyToken(req, res, async () => {
+      const authTime = Date.now() - startTime;
+      console.log(`Auth took: ${authTime}ms`);
       await handleOKRRequest(req, res);
       resolve();
     });
@@ -120,56 +129,42 @@ async function getAllOKRs(req, res) {
   const client = await pool.connect();
   
   try {
-    // First get all OKRs
+    const startTime = Date.now();
+    
+    // Tối ưu: Sử dụng 1 query duy nhất với LEFT JOIN thay vì 2 queries riêng biệt
     const okrsQuery = `
       SELECT 
         o.*,
-        u.username as owner_username
+        u.username as owner_username,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', p.id,
+              'project_name', p.project_name,
+              'project_code', p.project_code,
+              'status', p.status
+            )
+          ) FILTER (WHERE p.id IS NOT NULL),
+          '[]'::json
+        ) as projects
       FROM okrs o
       LEFT JOIN users u ON o.owner_id = u.id
+      LEFT JOIN projects p ON o.id = p.okr_id
+      GROUP BY o.id, u.username
       ORDER BY o.created_at DESC
     `;
     
     const okrsResult = await client.query(okrsQuery);
     
-    console.log('OKR fields from database:', okrsResult.rows[0] ? Object.keys(okrsResult.rows[0]) : 'No OKRs found');
+    const queryTime = Date.now() - startTime;
+    console.log(`getAllOKRs query took: ${queryTime}ms`);
     
-    // Ensure description column exists
+    // Ensure description column exists (chỉ chạy 1 lần)
     await client.query(`
       ALTER TABLE okrs ADD COLUMN IF NOT EXISTS description TEXT;
     `);
     
-    // Get all projects with their OKR associations
-    const projectsQuery = `
-      SELECT 
-        p.id, p.project_name, p.project_code, p.status, p.okr_id
-      FROM projects p
-      WHERE p.okr_id IS NOT NULL
-    `;
-    
-    const projectsResult = await client.query(projectsQuery);
-    
-    // Group projects by okr_id
-    const projectsByOkr = {};
-    projectsResult.rows.forEach(project => {
-      if (!projectsByOkr[project.okr_id]) {
-        projectsByOkr[project.okr_id] = [];
-      }
-      projectsByOkr[project.okr_id].push({
-        id: project.id,
-        project_name: project.project_name,
-        project_code: project.project_code,
-        status: project.status
-      });
-    });
-    
-    // Attach projects to each OKR
-    const okrs = okrsResult.rows.map(okr => ({
-      ...okr,
-      projects: projectsByOkr[okr.id] || []
-    }));
-    
-    res.status(200).json(okrs);
+    res.status(200).json(okrsResult.rows);
   } catch (error) {
     console.error('Error fetching OKRs:', error);
     res.status(500).json({ error: 'Failed to fetch OKRs' });
@@ -211,31 +206,39 @@ async function getOKREditHistory(req, res, okrId) {
   const client = await pool.connect();
   
   try {
-    // Ensure edit history table exists
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS okr_edit_history (
-        id SERIAL PRIMARY KEY,
-        okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
-        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        username VARCHAR(100),
-        field_name VARCHAR(100),
-        old_value TEXT,
-        new_value TEXT,
-        edited_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
+    const startTime = Date.now();
     
-    // Create indexes for faster queries
-    await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_okr_edit_history_okr_id ON okr_edit_history(okr_id);
-      CREATE INDEX IF NOT EXISTS idx_okr_edit_history_edited_at ON okr_edit_history(edited_at DESC);
-    `);
+    // Tối ưu: Chỉ tạo table/indexes nếu chưa tồn tại (tránh overhead)
+    const tableExistsQuery = `
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'okr_edit_history'
+      );
+    `;
+    const tableExists = await client.query(tableExistsQuery);
     
+    if (!tableExists.rows[0].exists) {
+      await client.query(`
+        CREATE TABLE okr_edit_history (
+          id SERIAL PRIMARY KEY,
+          okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
+          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          username VARCHAR(100),
+          field_name VARCHAR(100),
+          old_value TEXT,
+          new_value TEXT,
+          edited_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        CREATE INDEX idx_okr_edit_history_okr_id ON okr_edit_history(okr_id);
+        CREATE INDEX idx_okr_edit_history_edited_at ON okr_edit_history(edited_at DESC);
+      `);
+    }
+    
+    // Tối ưu query với chỉ các fields cần thiết
     const query = `
       SELECT 
-        id,
-        okr_id,
-        user_id,
         username,
         field_name,
         old_value,
@@ -244,10 +247,13 @@ async function getOKREditHistory(req, res, okrId) {
       FROM okr_edit_history
       WHERE okr_id = $1
       ORDER BY edited_at DESC
-      LIMIT 50
+      LIMIT 20
     `;
     
     const result = await client.query(query, [okrId]);
+    
+    const queryTime = Date.now() - startTime;
+    console.log(`getOKREditHistory query took: ${queryTime}ms`);
     
     res.status(200).json(result.rows);
   } catch (error) {

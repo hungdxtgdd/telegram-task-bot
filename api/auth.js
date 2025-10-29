@@ -15,8 +15,17 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Tối ưu connection pool cho auth
+  max: 10,
+  min: 1,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
 });
+
+// Cache user info để tránh query database mỗi lần
+const userCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 const JWT_EXPIRES_IN = '24h';
@@ -45,9 +54,20 @@ async function verifyToken(req, res, next) {
         const decoded = jwt.decode(token);
         
         if (decoded && decoded.id) {
+            // Check cache first
+            const cacheKey = `user_${decoded.id}`;
+            const cached = userCache.get(cacheKey);
+            
+            if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+                req.user = cached.user;
+                console.log('Auth successful (cached):', req.user);
+                return next();
+            }
+            
             // Get user info from database
             const client = await pool.connect();
             const userQuery = await client.query('SELECT id, username, full_name, email, role FROM users WHERE id = $1', [decoded.id]);
+            client.release();
             
             if (userQuery.rows.length > 0) {
                 const user = userQuery.rows[0];
@@ -58,6 +78,15 @@ async function verifyToken(req, res, next) {
                     email: user.email,
                     role: user.role
                 };
+                
+                // Cache user info
+                userCache.set(cacheKey, {
+                    user: req.user,
+                    timestamp: Date.now()
+                });
+                
+                console.log('Auth successful for user:', req.user);
+                return next();
             } else {
                 // Fallback to decoded token info
                 req.user = {
@@ -67,9 +96,9 @@ async function verifyToken(req, res, next) {
                     email: decoded.email || 'test@example.com',
                     role: decoded.role
                 };
+                console.log('Auth successful (fallback):', req.user);
+                return next();
             }
-            
-            client.release();
         } else {
             // Fallback for invalid token
             req.user = {
