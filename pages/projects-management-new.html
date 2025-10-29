@@ -198,6 +198,42 @@
             display: none; /* toggled by hidden class */
         }
         #projectDetailModal:not(.hidden) { display: block; }
+        
+        /* Project Detail Panel - Slide-in from right (same as OKR) */
+        #projectDetailPanel {
+            position: fixed !important;
+            top: 60px !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: auto !important;
+            width: 600px !important;
+            z-index: 1031 !important;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+        }
+        
+        #projectDetailPanel.show {
+            transform: translateX(0);
+        }
+        
+        #projectDetailContent {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* Project Detail Panel Header - Higher z-index */
+        #projectDetailPanel .flex.items-center.justify-between {
+            z-index: 1001 !important;
+            position: sticky !important;
+            top: 0 !important;
+            background: white !important;
+        }
 
         /* Project Card Styling - Modern Design */
         .project-card {
@@ -1965,11 +2001,11 @@
                 editButton.setAttribute('onclick', `editProject(${projectId}); closeProjectDetailModal();`);
             }
             
-            // Show slide-in panel first (show UI immediately)
+            // Show slide-in panel first (show UI immediately) - same as OKR
             document.getElementById('projectDetailModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
             
-            // Trigger slide-in animation
+            // Trigger slide-in animation from right
             setTimeout(() => {
                 document.getElementById('projectDetailPanel').style.transform = 'translateX(0)';
             }, 10);
