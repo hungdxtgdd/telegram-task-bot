@@ -2573,35 +2573,25 @@
                 </div>
             `;
             
-            // Show slide-in modal
-            document.getElementById('projectDetailModalOverlay').classList.add('show');
-            document.getElementById('projectDetailModal').classList.add('show');
+            // Show slide-in modal - using new modal structure
+            document.getElementById('projectDetailModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
+            
+            // Trigger slide-in animation from right
+            setTimeout(() => {
+                document.getElementById('projectDetailPanel').style.transform = 'translateX(0)';
+            }, 10);
         }
         
-        // Close Project detail modal
+        // Close Project detail modal - using new modal structure
         function closeProjectDetailModal() {
-            document.getElementById('projectDetailModalOverlay').classList.remove('show');
-            document.getElementById('projectDetailModal').classList.remove('show');
+            document.getElementById('projectDetailPanel').style.transform = 'translateX(100%)';
             document.body.classList.remove('overflow-hidden');
+            
+            setTimeout(() => {
+                document.getElementById('projectDetailModal').classList.add('hidden');
+            }, 300);
         }
-        
-        // Close Project modal when clicking overlay
-        const projectDetailModalOverlay = document.getElementById('projectDetailModalOverlay');
-        if (projectDetailModalOverlay) {
-            projectDetailModalOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeProjectDetailModal();
-                }
-            });
-        }
-        
-        // Close Project modal with ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('projectDetailModal').classList.contains('show')) {
-                closeProjectDetailModal();
-            }
-        });
         
         // Get status text
         function getStatusText(status) {
@@ -2626,22 +2616,6 @@
         }
     </script>
     
-    <!-- Project Detail Modal - Slide-in from right -->
-    <div id="projectDetailModalOverlay" class="slide-modal-overlay"></div>
-    <div id="projectDetailModal" class="slide-modal">
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-900" id="projectDetailTitle">Chi tiết Project</h3>
-                <button onclick="closeProjectDetailModal()" class="btn-icon">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-        </div>
-        <div id="projectDetailContent" class="p-6">
-            <!-- Content will be populated by JavaScript -->
-        </div>
-    </div>
-
     <!-- Delete Confirmation Modal -->
     <div id="deleteConfirmModal" class="hidden">
         <!-- Overlay -->
