@@ -2485,7 +2485,11 @@
             const statusText = getStatusText(project.status);
             const healthText = getHealthText(project.health);
             
-            document.getElementById('projectDetailTitle').textContent = project.project_name || project.name || 'Untitled Project';
+            // Update header title in the modal
+            const headerTitle = document.querySelector('#projectDetailPanel h2');
+            if (headerTitle) {
+                headerTitle.textContent = project.project_name || project.name || 'Untitled Project';
+            }
             document.getElementById('projectDetailContent').innerHTML = `
                 <div class="space-y-6">
                     <!-- Basic Info -->
