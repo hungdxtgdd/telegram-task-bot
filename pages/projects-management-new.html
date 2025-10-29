@@ -1543,6 +1543,22 @@
                         </div>
                         
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Độ ưu tiên</label>
+                            <select id="projectPriority" class="select" required>
+                                <option value="High">Cao</option>
+                                <option value="Medium" selected>Trung bình</option>
+                                <option value="Low">Thấp</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu</label>
+                            <input type="number" id="projectTargetValue" class="input" placeholder="Nhập mục tiêu" step="0.01">
+                        </div>
+                        
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
                             <input type="text" id="projectUnit" class="input" placeholder="Nhập đơn vị">
                         </div>
@@ -1558,6 +1574,13 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
                             <input type="date" id="projectEndDate" class="input">
                         </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OKR liên quan</label>
+                        <select id="projectOKR" class="select">
+                            <option value="">-- Chọn OKR --</option>
+                        </select>
                     </div>
                     
                     <div>
@@ -1604,7 +1627,7 @@
                         <textarea id="editProjectDescription" class="textarea" placeholder="Nhập mô tả project" rows="3"></textarea>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
+                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                             <select id="editProjectStatus" class="select" required>
@@ -1617,9 +1640,30 @@
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
-                            <input type="text" id="editProjectUnit" class="input" placeholder="Nhập đơn vị">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Độ ưu tiên</label>
+                            <select id="editProjectPriority" class="select" required>
+                                <option value="High">Cao</option>
+                                <option value="Medium">Trung bình</option>
+                                <option value="Low">Thấp</option>
+                            </select>
                         </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu</label>
+                            <input type="number" id="editProjectTargetValue" class="input" placeholder="Nhập mục tiêu" step="0.01">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thực tế</label>
+                            <input type="number" id="editProjectCurrentValue" class="input" placeholder="Nhập giá trị thực tế" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
+                        <input type="text" id="editProjectUnit" class="input" placeholder="Nhập đơn vị">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -1632,6 +1676,13 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
                             <input type="date" id="editProjectEndDate" class="input">
                         </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OKR liên quan</label>
+                        <select id="editProjectOKR" class="select">
+                            <option value="">-- Chọn OKR --</option>
+                        </select>
                     </div>
                     
                     <div>
@@ -1681,9 +1732,48 @@
             if (detailPanel) detailPanel.style.transform = 'translateX(100%)';
             
             checkAuth();
+            loadOKRs();
             setupEventListeners();
             initializeInfiniteScroll();
         });
+
+        // Load OKRs for dropdown
+        async function loadOKRs() {
+            try {
+                const response = await fetch('/api/okrs-enhanced/okrs', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                
+                if (response.ok) {
+                    const okrs = await response.json();
+                    const addOKRSelect = document.getElementById('projectOKR');
+                    const editOKRSelect = document.getElementById('editProjectOKR');
+                    
+                    // Clear existing options except the first one
+                    if (addOKRSelect) {
+                        addOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
+                        okrs.forEach(okr => {
+                            const option = document.createElement('option');
+                            option.value = okr.id;
+                            option.textContent = okr.objective || `OKR ${okr.id}`;
+                            addOKRSelect.appendChild(option);
+                        });
+                    }
+                    
+                    if (editOKRSelect) {
+                        editOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
+                        okrs.forEach(okr => {
+                            const option = document.createElement('option');
+                            option.value = okr.id;
+                            option.textContent = okr.objective || `OKR ${okr.id}`;
+                            editOKRSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading OKRs:', error);
+            }
+        }
 
         async function checkAuth() {
             try {
@@ -2418,10 +2508,22 @@
             document.getElementById('editProjectName').value = project.project_name || project.name || '';
             document.getElementById('editProjectDescription').value = project.description || '';
             document.getElementById('editProjectStatus').value = project.status || 'active';
+            document.getElementById('editProjectPriority').value = project.priority || 'Medium';
             document.getElementById('editProjectUnit').value = project.unit || '';
+            document.getElementById('editProjectTargetValue').value = project.target_value || '';
+            document.getElementById('editProjectCurrentValue').value = project.current_value || '';
             document.getElementById('editProjectStartDate').value = project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '';
             document.getElementById('editProjectEndDate').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
             document.getElementById('editProjectBudget').value = project.budget || '';
+            
+            // Set OKR if exists - need to wait for OKR options to load
+            const editOKRSelect = document.getElementById('editProjectOKR');
+            if (editOKRSelect && project.okr_id) {
+                // Wait a bit for OKRs to load, then set value
+                setTimeout(() => {
+                    editOKRSelect.value = project.okr_id || '';
+                }, 100);
+            }
             
             // Show panel
             const modal = document.getElementById('editProjectModal');
@@ -2450,33 +2552,40 @@
         async function handleAddProject(e) {
             e.preventDefault();
             
+            const okrValue = document.getElementById('projectOKR').value;
+            const targetValue = document.getElementById('projectTargetValue').value;
+            
             const formData = {
                 project_name: document.getElementById('projectName').value,
                 description: document.getElementById('projectDescription').value,
                 status: document.getElementById('projectStatus').value,
-                unit: document.getElementById('projectUnit').value,
-                start_date: document.getElementById('projectStartDate').value,
-                end_date: document.getElementById('projectEndDate').value,
+                priority: document.getElementById('projectPriority').value,
+                unit: document.getElementById('projectUnit').value || '%',
+                start_date: document.getElementById('projectStartDate').value || null,
+                end_date: document.getElementById('projectEndDate').value || null,
+                target_value: targetValue ? parseFloat(targetValue) : null,
+                okr_id: okrValue ? parseInt(okrValue) : null,
                 budget: document.getElementById('projectBudget').value ? parseFloat(document.getElementById('projectBudget').value) : null
             };
             
             try {
-                const response = await fetch('/api/projects-enhanced', {
+                const response = await fetch('/api/projects-enhanced/projects', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
                     },
                     body: JSON.stringify(formData)
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Project đã được tạo thành công!', 'success');
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.message || 'Project đã được tạo thành công!', 'success');
                     closeAddProjectModal();
                     loadProjects();
                 } else {
-                    showNotification('Lỗi khi thêm project: ' + data.message, 'error');
+                    const error = await response.json();
+                    showNotification('Lỗi khi thêm project: ' + (error.error || error.message || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Error adding project:', error);
@@ -2489,33 +2598,42 @@
             e.preventDefault();
             
             const projectId = document.getElementById('editProjectId').value;
+            const okrValue = document.getElementById('editProjectOKR').value;
+            const targetValue = document.getElementById('editProjectTargetValue').value;
+            const currentValue = document.getElementById('editProjectCurrentValue').value;
+            
             const formData = {
                 project_name: document.getElementById('editProjectName').value,
                 description: document.getElementById('editProjectDescription').value,
                 status: document.getElementById('editProjectStatus').value,
-                unit: document.getElementById('editProjectUnit').value,
-                start_date: document.getElementById('editProjectStartDate').value,
-                end_date: document.getElementById('editProjectEndDate').value,
+                priority: document.getElementById('editProjectPriority').value,
+                unit: document.getElementById('editProjectUnit').value || '%',
+                start_date: document.getElementById('editProjectStartDate').value || null,
+                end_date: document.getElementById('editProjectEndDate').value || null,
+                target_value: targetValue ? parseFloat(targetValue) : null,
+                current_value: currentValue ? parseFloat(currentValue) : null,
+                okr_id: okrValue ? parseInt(okrValue) : null,
                 budget: document.getElementById('editProjectBudget').value ? parseFloat(document.getElementById('editProjectBudget').value) : null
             };
             
             try {
-                const response = await fetch(`/api/projects-enhanced/${projectId}`, {
+                const response = await fetch(`/api/projects-enhanced/projects/${projectId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
                     },
                     body: JSON.stringify(formData)
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Project đã được cập nhật thành công!', 'success');
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.message || 'Project đã được cập nhật thành công!', 'success');
                     closeEditProjectModal();
                     loadProjects();
                 } else {
-                    showNotification('Lỗi khi cập nhật project: ' + data.message, 'error');
+                    const error = await response.json();
+                    showNotification('Lỗi khi cập nhật project: ' + (error.error || error.message || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Error updating project:', error);
