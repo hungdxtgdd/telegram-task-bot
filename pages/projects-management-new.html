@@ -1342,7 +1342,12 @@
                 <ul class="c-header-nav ml-auto">
                     <li class="c-header-nav-item dropdown">
                         <a class="c-header-nav-link" href="#" data-toggle="dropdown">
-                            <span class="text-muted">Welcome, Admin</span>
+                            <span class="text-muted" id="welcomeText">Welcome, Admin</span>
+                        </a>
+                    </li>
+                    <li class="c-header-nav-item">
+                        <a class="c-header-nav-link text-danger" href="#" onclick="logout()" style="text-decoration: none;">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Đăng xuất
                         </a>
                     </li>
                 </ul>
@@ -1668,9 +1673,16 @@
                 currentUser = {
                     id: 1,
                     name: 'Test User',
+                    username: 'admin',
                     email: 'test@example.com',
                     role: 'admin'
                 };
+                
+                // Update welcome text
+                const welcomeText = document.getElementById('welcomeText');
+                if (welcomeText) {
+                    welcomeText.textContent = `Welcome, ${currentUser.username}`;
+                }
                 
                 // Setup role-based UI
                 setupRoleBasedUI();
