@@ -206,13 +206,13 @@ async function getAllProjects(req, res) {
             -- Critical: Low completion, overdue, or very low progress
             WHEN completion_percentage < 50 
                  OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
-                 OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '7 days')
+                 OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 7)
                  OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
             THEN 'critical'
             
             -- Warning: Medium completion or approaching deadline
             WHEN completion_percentage < 70 
-                 OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '14 days')
+                 OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 14)
                  OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
             THEN 'warning'
             
@@ -303,13 +303,13 @@ async function getProjectById(req, res, projectId) {
             -- Critical: Low completion, overdue, or very low progress
             WHEN completion_percentage < 50 
                  OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
-                 OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '7 days')
+                 OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 7)
                  OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
             THEN 'critical'
             
             -- Warning: Medium completion or approaching deadline
             WHEN completion_percentage < 70 
-                 OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '14 days')
+                 OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 14)
                  OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
             THEN 'warning'
             
@@ -621,13 +621,13 @@ async function updateProject(req, res, projectId) {
           -- Critical: Low completion, overdue, or very low progress
           WHEN completion_percentage < 50 
                OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
-               OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '7 days')
+               OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 7)
                OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
           THEN 'critical'
           
           -- Warning: Medium completion or approaching deadline
           WHEN completion_percentage < 70 
-               OR (end_date IS NOT NULL AND (end_date - CURRENT_DATE) < INTERVAL '14 days')
+               OR (end_date IS NOT NULL AND EXTRACT(EPOCH FROM (end_date - CURRENT_DATE))/86400 < 14)
                OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
           THEN 'warning'
           
