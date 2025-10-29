@@ -102,6 +102,27 @@
             color: white;
         }
         
+        /* Health Badge Colors */
+        .badge.health-excellent {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .badge.health-good {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .badge.health-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        
+        .badge.health-critical {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
         /* Project Info Items */
         .project-card .project-info {
             display: flex;
@@ -1002,10 +1023,10 @@
                                 <div class="col-md-3">
                                     <select class="form-control" id="healthFilter">
                                         <option value="">Tất cả tình trạng</option>
-                                        <option value="excellent">Xuất sắc</option>
-                                        <option value="good">Tốt</option>
-                                        <option value="warning">Cảnh báo</option>
-                                        <option value="critical">Nghiêm trọng</option>
+                                        <option value="excellent">🟢 Xuất sắc</option>
+                                        <option value="good">🔵 Tốt</option>
+                                        <option value="warning">🟡 Cảnh báo</option>
+                                        <option value="critical">🔴 Nghiêm trọng</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
@@ -1420,9 +1441,16 @@
                         <div class="p-6">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <h3>${project.project_name || project.name || 'Untitled Project'}</h3>
-                                <span class="badge ${statusBadgeClass[project.status || 'active']}">
-                                    ${statusText[project.status || 'active']}
-                                </span>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    <span class="badge ${statusBadgeClass[project.status || 'active']}">
+                                        ${statusText[project.status || 'active']}
+                                    </span>
+                                    ${project.health ? `
+                                    <span class="badge ${getHealthBadgeClass(project.health)}">
+                                        ${getHealthText(project.health)}
+                                    </span>
+                                    ` : ''}
+                                </div>
                             </div>
                             
                             ${project.description ? `<p>${project.description}</p>` : ''}
@@ -1505,11 +1533,11 @@
         // Get health badge class
         function getHealthBadgeClass(health) {
             switch (health) {
-                case 'excellent': return 'bg-success';
-                case 'good': return 'bg-primary';
-                case 'warning': return 'bg-warning';
-                case 'critical': return 'bg-danger';
-                default: return 'bg-secondary';
+                case 'excellent': return 'health-excellent';
+                case 'good': return 'health-good';
+                case 'warning': return 'health-warning';
+                case 'critical': return 'health-critical';
+                default: return 'health-good';
             }
         }
 
@@ -2061,10 +2089,10 @@
         // Get health text
         function getHealthText(health) {
             const healthMap = {
-                'excellent': 'Xuất sắc',
-                'good': 'Tốt',
-                'warning': 'Cảnh báo',
-                'critical': 'Nghiêm trọng'
+                'excellent': '🟢 Xuất sắc',
+                'good': '🔵 Tốt',
+                'warning': '🟡 Cảnh báo',
+                'critical': '🔴 Nghiêm trọng'
             };
             return healthMap[health] || health;
         }

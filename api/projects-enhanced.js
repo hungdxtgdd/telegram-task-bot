@@ -113,12 +113,12 @@ async function getAllProjects(req, res) {
   try {
     const client = await pool.connect();
     
-    const { okr_id, status, priority } = req.query;
+    const { okr_id, status, priority, health } = req.query;
     let whereClause = '';
     let queryParams = [];
     let paramCount = 0;
 
-    if (okr_id || status || priority) {
+    if (okr_id || status || priority || health) {
       const conditions = [];
       
       if (okr_id) {
@@ -139,25 +139,106 @@ async function getAllProjects(req, res) {
         queryParams.push(priority);
       }
       
+      if (health) {
+        paramCount++;
+        conditions.push(`project_health.health = $${paramCount}`);
+        queryParams.push(health);
+      }
+      
       whereClause = 'WHERE ' + conditions.join(' AND ');
     }
 
+    // First, ensure health column exists
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
+        ALTER TABLE projects ADD CONSTRAINT projects_health_check 
+          CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
+      END $$;
+    `);
+
     const query = `
+      WITH project_stats AS (
+        SELECT 
+          p.id,
+          p.project_name,
+          p.status,
+          p.priority,
+          p.start_date,
+          p.end_date,
+          p.target_value,
+          p.current_value,
+          p.budget,
+          p.created_at,
+          p.updated_at,
+          o.objective as okr_objective,
+          u.full_name as created_by_name,
+          COALESCE(task_stats.task_count, 0) as task_count,
+          COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
+          CASE 
+            WHEN COALESCE(task_stats.task_count, 0) > 0 THEN 
+              ROUND((COALESCE(task_stats.completed_tasks, 0)::DECIMAL / task_stats.task_count) * 100, 2)
+            ELSE 0 
+          END as completion_percentage
+        FROM projects p
+        LEFT JOIN okrs o ON p.okr_id = o.id
+        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN (
+          SELECT 
+            project_id,
+            COUNT(*) as task_count,
+            COUNT(CASE WHEN status IN ('Done', 'completed', 'done') THEN 1 END) as completed_tasks
+          FROM tasks 
+          GROUP BY project_id
+        ) task_stats ON p.id = task_stats.project_id
+      ),
+      project_health AS (
+        SELECT 
+          *,
+          CASE 
+            -- Excellent: High completion, not overdue, good progress
+            WHEN completion_percentage >= 90 
+                 AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+                 AND (target_value IS NULL OR target_value = 0 OR ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) >= 80)
+            THEN 'excellent'
+            
+            -- Critical: Low completion, overdue, or very low progress
+            WHEN completion_percentage < 50 
+                 OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
+                 OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 7)
+                 OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
+            THEN 'critical'
+            
+            -- Warning: Medium completion or approaching deadline
+            WHEN completion_percentage < 70 
+                 OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 14)
+                 OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
+            THEN 'warning'
+            
+            -- Good: Default good status
+            ELSE 'good'
+          END as health
+        FROM project_stats
+      )
       SELECT 
-        p.*,
-        o.objective as okr_objective,
-        u.full_name as created_by_name,
-        (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) as task_count,
-        (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'Done') as completed_tasks,
-        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = p.id) as member_count
-      FROM projects p
-      LEFT JOIN okrs o ON p.okr_id = o.id
-      LEFT JOIN users u ON p.created_by = u.id
+        ph.*,
+        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = ph.id) as member_count
+      FROM project_health ph
       ${whereClause}
-      ORDER BY p.created_at DESC
+      ORDER BY ph.created_at DESC
     `;
     
     const result = await client.query(query, queryParams);
+    
+    // Update projects table with calculated health
+    for (const project of result.rows) {
+      await client.query(
+        'UPDATE projects SET health = $1 WHERE id = $2',
+        [project.health, project.id]
+      );
+    }
+    
     client.release();
     
     res.status(200).json(result.rows);
@@ -172,28 +253,94 @@ async function getProjectById(req, res, projectId) {
   try {
     const client = await pool.connect();
     
+    // Ensure health column exists
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
+        ALTER TABLE projects ADD CONSTRAINT projects_health_check 
+          CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
+      END $$;
+    `);
+    
     const query = `
+      WITH project_stats AS (
+        SELECT 
+          p.*,
+          o.objective as okr_objective,
+          u.full_name as created_by_name,
+          COALESCE(task_stats.task_count, 0) as task_count,
+          COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
+          CASE 
+            WHEN COALESCE(task_stats.task_count, 0) > 0 THEN 
+              ROUND((COALESCE(task_stats.completed_tasks, 0)::DECIMAL / task_stats.task_count) * 100, 2)
+            ELSE 0 
+          END as completion_percentage
+        FROM projects p
+        LEFT JOIN okrs o ON p.okr_id = o.id
+        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN (
+          SELECT 
+            project_id,
+            COUNT(*) as task_count,
+            COUNT(CASE WHEN status IN ('Done', 'completed', 'done') THEN 1 END) as completed_tasks
+          FROM tasks 
+          WHERE project_id = $1
+          GROUP BY project_id
+        ) task_stats ON p.id = task_stats.project_id
+        WHERE p.id = $1
+      ),
+      project_health AS (
+        SELECT 
+          *,
+          CASE 
+            -- Excellent: High completion, not overdue, good progress
+            WHEN completion_percentage >= 90 
+                 AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+                 AND (target_value IS NULL OR target_value = 0 OR ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) >= 80)
+            THEN 'excellent'
+            
+            -- Critical: Low completion, overdue, or very low progress
+            WHEN completion_percentage < 50 
+                 OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
+                 OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 7)
+                 OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
+            THEN 'critical'
+            
+            -- Warning: Medium completion or approaching deadline
+            WHEN completion_percentage < 70 
+                 OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 14)
+                 OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
+            THEN 'warning'
+            
+            -- Good: Default good status
+            ELSE 'good'
+          END as health
+        FROM project_stats
+      )
       SELECT 
-        p.*,
-        o.objective as okr_objective,
-        u.full_name as created_by_name,
-        (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) as task_count,
-        (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'Done') as completed_tasks,
-        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = p.id) as member_count
-      FROM projects p
-      LEFT JOIN okrs o ON p.okr_id = o.id
-      LEFT JOIN users u ON p.created_by = u.id
-      WHERE p.id = $1
+        ph.*,
+        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = ph.id) as member_count
+      FROM project_health ph
     `;
     
     const result = await client.query(query, [projectId]);
-    client.release();
     
     if (result.rows.length === 0) {
+      client.release();
       return res.status(404).json({ error: 'Dự án không tồn tại' });
     }
     
-    res.status(200).json(result.rows[0]);
+    // Update project with calculated health
+    const project = result.rows[0];
+    await client.query(
+      'UPDATE projects SET health = $1 WHERE id = $2',
+      [project.health, project.id]
+    );
+    
+    client.release();
+    
+    res.status(200).json(project);
   } catch (error) {
     console.error('Error fetching project:', error);
     res.status(500).json({ error: 'Lỗi khi lấy dự án' });
@@ -298,13 +445,23 @@ async function createProject(req, res) {
     console.log('Budget:', budget);
     console.log('OKR ID:', okr_id);
     
+    // Ensure health column exists
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
+        ALTER TABLE projects ADD CONSTRAINT projects_health_check 
+          CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
+      END $$;
+    `);
+
     const query = `
       INSERT INTO projects (
         okr_id, project_code, project_name, description, priority, status,
-        start_date, end_date, target_value, unit, budget, created_by,
+        start_date, end_date, target_value, unit, budget, created_by, health,
         created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'good', NOW(), NOW())
       RETURNING *
     `;
     
@@ -373,6 +530,16 @@ async function updateProject(req, res, projectId) {
 
     const client = await pool.connect();
     
+    // Ensure health column exists
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
+        ALTER TABLE projects ADD CONSTRAINT projects_health_check 
+          CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
+      END $$;
+    `);
+    
     const query = `
       UPDATE projects
       SET
@@ -413,15 +580,80 @@ async function updateProject(req, res, projectId) {
     
     const result = await client.query(query, values);
     
-    client.release();
-    
     if (result.rows.length === 0) {
+      client.release();
       return res.status(404).json({ error: 'Dự án không tồn tại' });
     }
     
+    // Recalculate health status after update
+    const project = result.rows[0];
+    const healthQuery = `
+      WITH project_stats AS (
+        SELECT 
+          p.*,
+          COALESCE(task_stats.task_count, 0) as task_count,
+          COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
+          CASE 
+            WHEN COALESCE(task_stats.task_count, 0) > 0 THEN 
+              ROUND((COALESCE(task_stats.completed_tasks, 0)::DECIMAL / task_stats.task_count) * 100, 2)
+            ELSE 0 
+          END as completion_percentage
+        FROM projects p
+        LEFT JOIN (
+          SELECT 
+            project_id,
+            COUNT(*) as task_count,
+            COUNT(CASE WHEN status IN ('Done', 'completed', 'done') THEN 1 END) as completed_tasks
+          FROM tasks 
+          WHERE project_id = $1
+          GROUP BY project_id
+        ) task_stats ON p.id = task_stats.project_id
+        WHERE p.id = $1
+      )
+      SELECT 
+        CASE 
+          -- Excellent: High completion, not overdue, good progress
+          WHEN completion_percentage >= 90 
+               AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+               AND (target_value IS NULL OR target_value = 0 OR ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) >= 80)
+          THEN 'excellent'
+          
+          -- Critical: Low completion, overdue, or very low progress
+          WHEN completion_percentage < 50 
+               OR (end_date IS NOT NULL AND end_date < CURRENT_DATE)
+               OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 7)
+               OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 30)
+          THEN 'critical'
+          
+          -- Warning: Medium completion or approaching deadline
+          WHEN completion_percentage < 70 
+               OR (end_date IS NOT NULL AND EXTRACT(DAYS FROM (end_date - CURRENT_DATE)) < 14)
+               OR (target_value IS NOT NULL AND target_value > 0 AND ROUND((COALESCE(current_value, 0) / target_value) * 100, 2) < 50)
+          THEN 'warning'
+          
+          -- Good: Default good status
+          ELSE 'good'
+        END as health
+      FROM project_stats
+    `;
+    
+    const healthResult = await client.query(healthQuery, [projectId]);
+    const newHealth = healthResult.rows[0]?.health || 'good';
+    
+    // Update health in database
+    await client.query(
+      'UPDATE projects SET health = $1 WHERE id = $2',
+      [newHealth, projectId]
+    );
+    
+    // Update project object with new health
+    project.health = newHealth;
+    
+    client.release();
+    
     res.status(200).json({
       message: 'Cập nhật dự án thành công',
-      project: result.rows[0]
+      project: project
     });
   } catch (error) {
     console.error('Error updating project:', error);
