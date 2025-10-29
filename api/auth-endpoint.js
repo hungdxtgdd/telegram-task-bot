@@ -71,16 +71,33 @@ async function login(req, res) {
   }
 }
 
+// Cache user info để tránh query database mỗi lần verify
+const userCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
+
 async function verify(req, res) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token không hợp lệ' });
+      return res.status(401).json({ error: 'Token không hợp l Онệ' });
     }
     
     const token = authHeader.substring(7);
     const decoded = jwt.verify(token, JWT_SECRET);
     
+    // Check cache first để tránh database query
+    const cacheKey = `user_${decoded.id}`;
+    const cached = userCache.get(cacheKey);
+    
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      // Return cached user data - no database query needed
+      return res.json({
+        valid: true,
+        user: cached.user
+      });
+    }
+    
+    // Only query database if not in cache
     const client = await pool.connect();
     try {
       const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
@@ -91,16 +108,24 @@ async function verify(req, res) {
       }
       
       const user = result.rows[0];
+      const userData = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.full_name,
+        role: user.role,
+        is_active: user.is_active
+      };
+      
+      // Cache user data for next request
+      userCache.set(cacheKey, {
+        user: userData,
+        timestamp: Date.now()
+      });
+      
       res.json({
         valid: true,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          name: user.full_name,
-          role: user.role,
-          is_active: user.is_active
-        }
+        user: userData
       });
     } finally {
       client.release();
