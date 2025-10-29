@@ -1724,6 +1724,13 @@
 
         // Load projects from API
         async function loadProjects() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Show loading immediately
+            if (loadingState) loadingState.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+            
             try {
                 const response = await fetch('/api/projects-enhanced/projects', {
                     headers: { 'Authorization': 'Bearer test-token' }
@@ -1731,46 +1738,21 @@
                 
                 if (response.ok) {
                     projects = await response.json();
-                    
-                    // Debug: Log project data to check fields
-                    console.log('Projects loaded:', projects);
-                    if (projects.length > 0) {
-                        console.log('First project fields:', Object.keys(projects[0]));
-                        console.log('First project data:', projects[0]);
-                        
-                        // Check specific fields for display
-                        const firstProject = projects[0];
-                        console.log('Progress data:', {
-                            current_value: firstProject.current_value,
-                            target_value: firstProject.target_value,
-                            progress_percentage: firstProject.target_value > 0 ? Math.round((firstProject.current_value / firstProject.target_value) * 100) : 0
-                        });
-                        console.log('Tasks data:', {
-                            task_count: firstProject.task_count,
-                            completed_tasks: firstProject.completed_tasks,
-                            completion_percentage: firstProject.completion_percentage
-                        });
-                        console.log('Manager data:', {
-                            project_manager_name: firstProject.project_manager_name,
-                            created_by_name: firstProject.created_by_name
-                        });
-                        console.log('Additional fields:', {
-                            description: firstProject.description,
-                            created_at: firstProject.created_at
-                        });
-                    }
-                    
                     filteredProjects = [...projects];
+                    
+                    // Hide loading before render (better UX)
+                    if (loadingState) loadingState.classList.add('hidden');
+                    
                     renderProjects();
                     updateUnitFilter();
                 } else {
+                    if (loadingState) loadingState.classList.add('hidden');
                     showError('Không thể tải danh sách projects');
                 }
             } catch (error) {
                 console.error('Error loading projects:', error);
+                if (loadingState) loadingState.classList.add('hidden');
                 showError('Lỗi khi tải danh sách projects');
-            } finally {
-                document.getElementById('loadingState').classList.add('hidden');
             }
         }
 
@@ -1783,20 +1765,23 @@
             }
         }
 
-        // Render list view
+        // Render list view - optimized
         function renderListView() {
             const grid = document.getElementById('projectsGrid');
             const emptyState = document.getElementById('emptyState');
             
             if (filteredProjects.length === 0) {
-                grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                if (grid) grid.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
             
-            emptyState.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
             
-            grid.innerHTML = filteredProjects.map(project => createProjectCard(project)).join('');
+            // Render projects
+            if (grid) {
+                grid.innerHTML = filteredProjects.map(project => createProjectCard(project)).join('');
+            }
         }
 
         // Render kanban view
@@ -1959,7 +1944,6 @@
                 return;
             }
             
-            console.log('Showing project detail:', project);
             
             // Status text mapping
             const statusText = {
