@@ -9,6 +9,181 @@
     <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.2/dist/css/coreui.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* Project Card Layout - New Design */
+        .project-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .project-card .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f2937 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.4;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+        
+        .project-card .badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .project-card .description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+            font-weight: 500;
+        }
+        
+        /* Info Sections */
+        .project-card .okr-info,
+        .project-card .progress-info,
+        .project-card .task-info,
+        .project-card .timeline-info,
+        .project-card .owner-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s;
+        }
+        
+        .project-card .okr-info:last-child,
+        .project-card .progress-info:last-child,
+        .project-card .task-info:last-child,
+        .project-card .timeline-info:last-child,
+        .project-card .owner-info:last-child {
+            border-bottom: none;
+        }
+        
+        .project-card .okr-info:hover,
+        .project-card .progress-info:hover,
+        .project-card .task-info:hover,
+        .project-card .timeline-info:hover,
+        .project-card .owner-info:hover {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border-radius: 0.5rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            transform: translateX(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .project-card .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .project-card .value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        /* Clickable Task Info */
+        .project-card .task-info.clickable {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .project-card .task-info.clickable:hover {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #3b82f6;
+        }
+        
+        .project-card .task-info.clickable i {
+            color: #3b82f6;
+            font-size: 0.875rem;
+            transition: transform 0.2s;
+        }
+        
+        .project-card .task-info.clickable:hover i {
+            transform: translateX(4px);
+        }
+        
+        /* Progress Bar */
+        .project-card .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .project-card .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Action Buttons */
+        .project-card .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .project-card .action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card .action-btn.edit {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+        
+        .project-card .action-btn.edit:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .project-card .action-btn.delete {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+        
+        .project-card .action-btn.delete:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .project-card .action-btn i {
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+
         /* Project Card Styling - Modern Design */
         .project-card {
             background: white;
@@ -1439,9 +1614,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="project-card ${statusClass}" data-project-id="${project.id}">
                         <div class="p-6">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
+                            <!-- Header -->
+                            <div class="card-header">
                                 <h3>${project.project_name || project.name || 'Untitled Project'}</h3>
-                                <div class="d-flex flex-column align-items-end gap-2">
+                                <div class="badges">
                                     <span class="badge ${statusBadgeClass[project.status || 'active']}">
                                         ${statusText[project.status || 'active']}
                                     </span>
@@ -1453,35 +1629,54 @@
                             </div>
                         </div>
                             
-                            ${project.description ? `<p>${project.description}</p>` : ''}
+                            <!-- Description -->
+                            ${project.description ? `<p class="description">${project.description}</p>` : ''}
                             
-                            <div class="project-info">
-                                <span class="label">📅 Ngày bắt đầu</span>
-                                <span class="value">${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'}</span>
-                            </div>
+                            <!-- OKR Connection -->
+                            ${project.okr_objective ? `
+                            <div class="okr-info">
+                                <span class="label">🎯 OKR:</span>
+                                <span class="value">${project.okr_objective}</span>
+                                </div>
+                            ` : ''}
                             
-                            <div class="project-info">
-                                <span class="label">📅 Ngày kết thúc</span>
-                                <span class="value ${isOverdue ? 'text-danger fw-bold' : ''}">
+                            <!-- Progress -->
+                            ${project.target_value && project.current_value !== undefined ? `
+                            <div class="progress-info">
+                                <span class="label">📊 Tiến độ:</span>
+                                <span class="value">${project.current_value}/${project.target_value} ${project.unit || ''}</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.round((project.current_value / project.target_value) * 100)}%"></div>
+                                </div>
+                                </div>
+                                ` : ''}
+                            
+                            <!-- Tasks (Clickable) -->
+                            <div class="task-info clickable" onclick="viewProjectTasks(${project.id})">
+                                <span class="label">📋 Tasks:</span>
+                                <span class="value">${project.completed_tasks || 0}/${project.task_count || 0}</span>
+                                <i class="fas fa-arrow-right"></i>
+                                </div>
+                            
+                            <!-- Timeline -->
+                            <div class="timeline-info">
+                                <span class="label">📅 Thời gian:</span>
+                                <span class="value">
+                                    ${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'} - 
                                     ${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'Chưa có'}
                                     ${isOverdue ? ' (Quá hạn)' : ''}
-                                </span>
+                                    </span>
                                 </div>
                             
-                                ${project.unit ? `
-                            <div class="project-info">
-                                <span class="label">📏 Đơn vị</span>
-                                <span class="value">${project.unit}</span>
-                                </div>
+                            <!-- Owner -->
+                            ${project.created_by_name ? `
+                            <div class="owner-info">
+                                <span class="label">👤 Người tạo:</span>
+                                <span class="value">${project.created_by_name}</span>
+                            </div>
                                 ` : ''}
                             
-                                ${project.budget ? `
-                            <div class="project-info">
-                                <span class="label">💰 Ngân sách</span>
-                                <span class="value">${formatCurrency(project.budget)}</span>
-                                </div>
-                                ` : ''}
-                            
+                            <!-- Actions -->
                             <div class="action-buttons">
                                 <button onclick="event.stopPropagation(); editProject(${project.id})" class="action-btn edit">
                                     <i class="fas fa-edit"></i>
@@ -1491,11 +1686,16 @@
                                     <i class="fas fa-trash"></i>
                                     Xóa
                                 </button>
-                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
+        }
+
+        // Navigate to tasks page with project filter
+        function viewProjectTasks(projectId) {
+            window.location.href = `/pages/tasks-management-new.html?project_id=${projectId}`;
         }
 
         // Calculate project progress
