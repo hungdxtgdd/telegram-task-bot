@@ -19,41 +19,89 @@
         .project-health-warning { background-color: var(--warning-50); }
         .project-health-critical { background-color: var(--error-50); }
         
-        /* Slide-in Modal Styles */
-        .slide-modal {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
+        /* Slide-in Panel Styles */
+        #addProjectPanel, #editProjectPanel, #projectDetailPanel {
+            position: fixed !important;
+            top: 60px !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: auto !important;
+            width: 600px !important;
+            z-index: 1031 !important;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
             background: white;
             box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            transition: right 0.3s ease-in-out;
             overflow-y: auto;
         }
         
-        .slide-modal.show {
-            right: 0;
+        #addProjectPanel.show, #editProjectPanel.show, #projectDetailPanel.show {
+            transform: translateX(0);
         }
         
-        .slide-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* Panel Content */
+        #addProjectContent, #editProjectContent, #projectDetailContent {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* Form Elements */
+        #addProjectPanel .input, #editProjectPanel .input,
+        #addProjectPanel .textarea, #editProjectPanel .textarea,
+        #addProjectPanel .select, #editProjectPanel .select {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         
-        .slide-modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
+        #addProjectPanel .input:focus, #editProjectPanel .input:focus,
+        #addProjectPanel .textarea:focus, #editProjectPanel .textarea:focus,
+        #addProjectPanel .select:focus, #editProjectPanel .select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        #addProjectPanel label, #editProjectPanel label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        #addProjectPanel .btn, #editProjectPanel .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        #addProjectPanel .btn-primary, #editProjectPanel .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+        }
+        
+        #addProjectPanel .btn-primary:hover, #editProjectPanel .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        #addProjectPanel .btn-ghost, #editProjectPanel .btn-ghost {
+            background-color: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        
+        #addProjectPanel .btn-ghost:hover, #editProjectPanel .btn-ghost:hover {
+            background-color: #f9fafb;
+            color: #374151;
         }
         
         /* Mobile responsive */
@@ -658,18 +706,17 @@
         </div>
     </div>
 
-    <!-- Add Project Modal -->
-    <div id="addProjectModal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-                <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Thêm Project Mới</h2>
-                    <button onclick="closeAddProjectModal()" class="btn-icon">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <form id="addProjectForm" class="p-6 space-y-4">
+    <!-- Add Project Panel -->
+    <div id="addProjectPanel" class="hidden">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h2 class="text-xl font-semibold text-gray-900">Thêm Project Mới</h2>
+            <button onclick="closeAddProjectModal()" class="btn-icon">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="addProjectContent" class="p-6">
+            <form id="addProjectForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tên Project</label>
                         <input type="text" id="projectName" class="input" placeholder="Nhập tên project" required>
@@ -682,37 +729,37 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                             <select id="projectStatus" class="select" required>
-                                <option value="active" selected>Active</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="paused">Paused</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option value="active" selected>Đang hoạt động</option>
+                                <option value="in-progress">Đang thực hiện</option>
+                                <option value="completed">Đã hoàn thành</option>
+                                <option value="paused">Tạm dừng</option>
+                                <option value="cancelled">Đã hủy</option>
                             </select>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                            <input type="text" id="projectUnit" class="input" placeholder="Nhập unit">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
+                            <input type="text" id="projectUnit" class="input" placeholder="Nhập đơn vị">
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
                             <input type="date" id="projectStartDate" class="input">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
                             <input type="date" id="projectEndDate" class="input">
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget</label>
-                        <input type="number" id="projectBudget" class="input" placeholder="Nhập budget" step="0.01">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
+                        <input type="number" id="projectBudget" class="input" placeholder="Nhập ngân sách" step="0.01">
                     </div>
                     
                     <div class="flex justify-end space-x-3 pt-4">
@@ -727,20 +774,18 @@
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Edit Project Modal -->
-    <div id="editProjectModal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-                <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa Project</h2>
-                    <button onclick="closeEditProjectModal()" class="btn-icon">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <form id="editProjectForm" class="p-6 space-y-4">
+    <!-- Edit Project Panel -->
+    <div id="editProjectPanel" class="hidden">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h2 class="text-xl font-semibold text-gray-900">Chỉnh sửa Project</h2>
+            <button onclick="closeEditProjectModal()" class="btn-icon">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="editProjectContent" class="p-6">
+            <form id="editProjectForm" class="space-y-4">
                     <input type="hidden" id="editProjectId">
                     
                     <div>
@@ -755,37 +800,37 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                             <select id="editProjectStatus" class="select" required>
-                                <option value="active">Active</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="paused">Paused</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="in-progress">Đang thực hiện</option>
+                                <option value="completed">Đã hoàn thành</option>
+                                <option value="paused">Tạm dừng</option>
+                                <option value="cancelled">Đã hủy</option>
                             </select>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                            <input type="text" id="editProjectUnit" class="input" placeholder="Nhập unit">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
+                            <input type="text" id="editProjectUnit" class="input" placeholder="Nhập đơn vị">
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
                             <input type="date" id="editProjectStartDate" class="input">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
                             <input type="date" id="editProjectEndDate" class="input">
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget</label>
-                        <input type="number" id="editProjectBudget" class="input" placeholder="Nhập budget" step="0.01">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
+                        <input type="number" id="editProjectBudget" class="input" placeholder="Nhập ngân sách" step="0.01">
                     </div>
                     
                     <div class="flex justify-end space-x-3 pt-4">
@@ -800,7 +845,6 @@
                 </form>
             </div>
         </div>
-    </div>
 
     <!-- Include Components -->
     <script>
@@ -1210,33 +1254,26 @@
             renderProjects();
         }
 
-        // Show add project modal
+        // Show add project panel
         function showAddProjectModal() {
-            const modal = document.getElementById('addProjectModal');
-            const overlay = modal.querySelector('.modal-overlay');
-            modal.classList.remove('hidden');
-            overlay.classList.add('show');
+            const panel = document.getElementById('addProjectPanel');
+            panel.classList.remove('hidden');
+            panel.classList.add('show');
             document.body.classList.add('overflow-hidden');
-            
-            // Close modal when clicking overlay
-            overlay.onclick = function(e) {
-                if (e.target === overlay) {
-                    closeAddProjectModal();
-                }
-            };
         }
 
-        // Close add project modal
+        // Close add project panel
         function closeAddProjectModal() {
-            const modal = document.getElementById('addProjectModal');
-            const overlay = modal.querySelector('.modal-overlay');
-            modal.classList.add('hidden');
-            overlay.classList.remove('show');
+            const panel = document.getElementById('addProjectPanel');
+            panel.classList.remove('show');
             document.body.classList.remove('overflow-hidden');
+            setTimeout(() => {
+                panel.classList.add('hidden');
+            }, 300);
             document.getElementById('addProjectForm').reset();
         }
 
-        // Show edit project modal
+        // Show edit project panel
         function editProject(projectId) {
             const project = projects.find(p => p.id === projectId);
             if (!project) return;
@@ -1250,27 +1287,21 @@
             document.getElementById('editProjectEndDate').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
             document.getElementById('editProjectBudget').value = project.budget || '';
             
-            const modal = document.getElementById('editProjectModal');
-            const overlay = modal.querySelector('.modal-overlay');
-            modal.classList.remove('hidden');
-            overlay.classList.add('show');
+            // Show panel
+            const panel = document.getElementById('editProjectPanel');
+            panel.classList.remove('hidden');
+            panel.classList.add('show');
             document.body.classList.add('overflow-hidden');
-            
-            // Close modal when clicking overlay
-            overlay.onclick = function(e) {
-                if (e.target === overlay) {
-                    closeEditProjectModal();
-                }
-            };
         }
 
-        // Close edit project modal
+        // Close edit project panel
         function closeEditProjectModal() {
-            const modal = document.getElementById('editProjectModal');
-            const overlay = modal.querySelector('.modal-overlay');
-            modal.classList.add('hidden');
-            overlay.classList.remove('show');
+            const panel = document.getElementById('editProjectPanel');
+            panel.classList.remove('show');
             document.body.classList.remove('overflow-hidden');
+            setTimeout(() => {
+                panel.classList.add('hidden');
+            }, 300);
         }
 
         // Handle add project
