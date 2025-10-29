@@ -1732,13 +1732,26 @@
             if (detailPanel) detailPanel.style.transform = 'translateX(100%)';
             
             checkAuth();
-            loadOKRs();
             setupEventListeners();
             initializeInfiniteScroll();
         });
 
-        // Load OKRs for dropdown
+        // Load OKRs for dropdown - Lazy load with cache
+        let okrsCache = null;
+        let okrsLoading = false;
         async function loadOKRs() {
+            // Return cached OKRs if already loaded
+            if (okrsCache) {
+                populateOKRDropdowns(okrsCache);
+                return;
+            }
+            
+            // Prevent multiple simultaneous requests
+            if (okrsLoading) {
+                return;
+            }
+            okrsLoading = true;
+            
             try {
                 const response = await fetch('/api/okrs-enhanced/okrs', {
                     headers: { 'Authorization': 'Bearer test-token' }
@@ -1746,32 +1759,39 @@
                 
                 if (response.ok) {
                     const okrs = await response.json();
-                    const addOKRSelect = document.getElementById('projectOKR');
-                    const editOKRSelect = document.getElementById('editProjectOKR');
-                    
-                    // Clear existing options except the first one
-                    if (addOKRSelect) {
-                        addOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
-                        okrs.forEach(okr => {
-                            const option = document.createElement('option');
-                            option.value = okr.id;
-                            option.textContent = okr.objective || `OKR ${okr.id}`;
-                            addOKRSelect.appendChild(option);
-                        });
-                    }
-                    
-                    if (editOKRSelect) {
-                        editOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
-                        okrs.forEach(okr => {
-                            const option = document.createElement('option');
-                            option.value = okr.id;
-                            option.textContent = okr.objective || `OKR ${okr.id}`;
-                            editOKRSelect.appendChild(option);
-                        });
-                    }
+                    okrsCache = okrs; // Cache for future use
+                    populateOKRDropdowns(okrs);
                 }
             } catch (error) {
                 console.error('Error loading OKRs:', error);
+            } finally {
+                okrsLoading = false;
+            }
+        }
+        
+        function populateOKRDropdowns(okrs) {
+            const addOKRSelect = document.getElementById('projectOKR');
+            const editOKRSelect = document.getElementById('editProjectOKR');
+            
+            // Clear existing options except the first one
+            if (addOKRSelect) {
+                addOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
+                okrs.forEach(okr => {
+                    const option = document.createElement('option');
+                    option.value = okr.id;
+                    option.textContent = okr.objective || `OKR ${okr.id}`;
+                    addOKRSelect.appendChild(option);
+                });
+            }
+            
+            if (editOKRSelect) {
+                editOKRSelect.innerHTML = '<option value="">-- Chọn OKR --</option>';
+                okrs.forEach(okr => {
+                    const option = document.createElement('option');
+                    option.value = okr.id;
+                    option.textContent = okr.objective || `OKR ${okr.id}`;
+                    editOKRSelect.appendChild(option);
+                });
             }
         }
 
@@ -2475,7 +2495,10 @@
         }
 
         // Show add project panel
-        function showAddProjectModal() {
+        async function showAddProjectModal() {
+            // Lazy load OKRs when opening modal
+            await loadOKRs();
+            
             const modal = document.getElementById('addProjectModal');
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -2500,9 +2523,12 @@
         }
 
         // Show edit project panel
-        function editProject(projectId) {
+        async function editProject(projectId) {
             const project = projects.find(p => p.id === projectId);
             if (!project) return;
+            
+            // Lazy load OKRs when opening edit modal
+            await loadOKRs();
             
             document.getElementById('editProjectId').value = project.id;
             document.getElementById('editProjectName').value = project.project_name || project.name || '';
@@ -2516,13 +2542,10 @@
             document.getElementById('editProjectEndDate').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
             document.getElementById('editProjectBudget').value = project.budget || '';
             
-            // Set OKR if exists - need to wait for OKR options to load
+            // Set OKR if exists - OKRs are now loaded before showing modal
             const editOKRSelect = document.getElementById('editProjectOKR');
             if (editOKRSelect && project.okr_id) {
-                // Wait a bit for OKRs to load, then set value
-                setTimeout(() => {
-                    editOKRSelect.value = project.okr_id || '';
-                }, 100);
+                editOKRSelect.value = project.okr_id || '';
             }
             
             // Show panel

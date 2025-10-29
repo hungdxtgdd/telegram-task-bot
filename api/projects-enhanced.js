@@ -236,12 +236,12 @@ async function getAllProjects(req, res) {
     
     const result = await client.query(query, queryParams);
     
-    // Update projects table with calculated health
-    for (const project of result.rows) {
-      await client.query(
-        'UPDATE projects SET health = $1 WHERE id = $2',
-        [project.health, project.id]
+    // Update projects table with calculated health - Optimized: batch update instead of loop
+    if (result.rows.length > 0) {
+      const updatePromises = result.rows.map(project =>
+        client.query('UPDATE projects SET health = $1 WHERE id = $2', [project.health, project.id])
       );
+      await Promise.all(updatePromises);
     }
     
     client.release();
