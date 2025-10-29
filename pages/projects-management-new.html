@@ -1508,6 +1508,14 @@
                 
                 if (response.ok) {
                     projects = await response.json();
+                    
+                    // Debug: Log project data to check fields
+                    console.log('Projects loaded:', projects);
+                    if (projects.length > 0) {
+                        console.log('First project fields:', Object.keys(projects[0]));
+                        console.log('First project data:', projects[0]);
+                    }
+                    
                     filteredProjects = [...projects];
                     renderProjects();
                     updateUnitFilter();
@@ -1641,15 +1649,15 @@
                             ` : ''}
                             
                             <!-- Progress -->
-                            ${project.target_value && project.current_value !== undefined ? `
+                            ${project.target_value && project.current_value !== undefined && project.target_value > 0 ? `
                             <div class="progress-info">
                                 <span class="label">📊 Tiến độ:</span>
                                 <span class="value">${project.current_value}/${project.target_value} ${project.unit || ''}</span>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.round((project.current_value / project.target_value) * 100)}%"></div>
+                                    <div class="progress-fill" style="width: ${Math.min(Math.round((project.current_value / project.target_value) * 100), 100)}%"></div>
                                 </div>
-                                </div>
-                                ` : ''}
+                            </div>
+                            ` : ''}
                             
                             <!-- Tasks (Clickable) -->
                             <div class="task-info clickable" onclick="viewProjectTasks(${project.id})">
