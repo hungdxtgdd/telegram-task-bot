@@ -49,7 +49,8 @@
         .project-card .progress-info,
         .project-card .task-info,
         .project-card .timeline-info,
-        .project-card .owner-info {
+        .project-card .created-info,
+        .project-card .manager-info {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -62,7 +63,8 @@
         .project-card .progress-info:last-child,
         .project-card .task-info:last-child,
         .project-card .timeline-info:last-child,
-        .project-card .owner-info:last-child {
+        .project-card .created-info:last-child,
+        .project-card .manager-info:last-child {
             border-bottom: none;
         }
         
@@ -70,7 +72,8 @@
         .project-card .progress-info:hover,
         .project-card .task-info:hover,
         .project-card .timeline-info:hover,
-        .project-card .owner-info:hover {
+        .project-card .created-info:hover,
+        .project-card .manager-info:hover {
             background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
             border-radius: 0.5rem;
             padding-left: 0.5rem;
@@ -1527,8 +1530,13 @@
                             completed_tasks: firstProject.completed_tasks,
                             completion_percentage: firstProject.completion_percentage
                         });
-                        console.log('Owner data:', {
+                        console.log('Manager data:', {
+                            project_manager_name: firstProject.project_manager_name,
                             created_by_name: firstProject.created_by_name
+                        });
+                        console.log('Additional fields:', {
+                            description: firstProject.description,
+                            created_at: firstProject.created_at
                         });
                     }
                     
@@ -1656,6 +1664,12 @@
                             <!-- Description -->
                             ${project.description ? `<p class="description">${project.description}</p>` : ''}
                             
+                            <!-- Created Date -->
+                            <div class="created-info">
+                                <span class="label">📅 Ngày tạo:</span>
+                                <span class="value">${project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : 'Chưa có'}</span>
+                            </div>
+                            
                             <!-- OKR Connection -->
                             ${project.okr_objective ? `
                             <div class="okr-info">
@@ -1672,8 +1686,8 @@
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${Math.min(Math.round((project.current_value / project.target_value) * 100), 100)}%"></div>
                                 </div>
-                            </div>
-                            ` : ''}
+                                </div>
+                                ` : ''}
                             
                             <!-- Tasks (Clickable) -->
                             <div class="task-info clickable" onclick="viewProjectTasks(${project.id})">
@@ -1692,13 +1706,13 @@
                                     </span>
                                 </div>
                             
-                            <!-- Owner -->
-                            ${project.created_by_name ? `
-                            <div class="owner-info">
-                                <span class="label">👤 Người tạo:</span>
-                                <span class="value">${project.created_by_name}</span>
+                            <!-- Project Manager -->
+                            ${project.project_manager_name ? `
+                            <div class="manager-info">
+                                <span class="label">👨‍💼 Trưởng dự án:</span>
+                                <span class="value">${project.project_manager_name}</span>
                             </div>
-                                ` : ''}
+                            ` : ''}
                             
                             <!-- Actions -->
                             <div class="action-buttons">

@@ -152,6 +152,7 @@ async function getAllProjects(req, res) {
     await client.query(`
       DO $$ BEGIN
         ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_manager INTEGER REFERENCES users(id) ON DELETE SET NULL;
         ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
         ALTER TABLE projects ADD CONSTRAINT projects_health_check 
           CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
@@ -163,6 +164,7 @@ async function getAllProjects(req, res) {
         SELECT 
           p.id,
           p.project_name,
+          p.description,
           p.status,
           p.priority,
           p.start_date,
@@ -172,8 +174,10 @@ async function getAllProjects(req, res) {
           p.budget,
           p.created_at,
           p.updated_at,
+          p.project_manager,
           o.objective as okr_objective,
           u.full_name as created_by_name,
+          pm.full_name as project_manager_name,
           COALESCE(task_stats.task_count, 0) as task_count,
           COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
           CASE 
@@ -184,6 +188,7 @@ async function getAllProjects(req, res) {
         FROM projects p
         LEFT JOIN okrs o ON p.okr_id = o.id
         LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users pm ON p.project_manager = pm.id
         LEFT JOIN (
           SELECT 
             project_id,
@@ -257,6 +262,7 @@ async function getProjectById(req, res, projectId) {
     await client.query(`
       DO $$ BEGIN
         ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_manager INTEGER REFERENCES users(id) ON DELETE SET NULL;
         ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
         ALTER TABLE projects ADD CONSTRAINT projects_health_check 
           CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
@@ -269,6 +275,7 @@ async function getProjectById(req, res, projectId) {
           p.*,
           o.objective as okr_objective,
           u.full_name as created_by_name,
+          pm.full_name as project_manager_name,
           COALESCE(task_stats.task_count, 0) as task_count,
           COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
           CASE 
@@ -279,6 +286,7 @@ async function getProjectById(req, res, projectId) {
         FROM projects p
         LEFT JOIN okrs o ON p.okr_id = o.id
         LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users pm ON p.project_manager = pm.id
         LEFT JOIN (
           SELECT 
             project_id,
