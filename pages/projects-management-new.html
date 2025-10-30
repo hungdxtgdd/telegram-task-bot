@@ -2164,6 +2164,9 @@
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(project.priority)}">
                                 ${priorityText[project.priority?.toLowerCase()] || '🟡 Trung bình'}
                             </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getHealthBadgeClass(project.health)}">
+                                ${healthText[project.health || 'good']}
+                            </span>
                             <span class="text-sm text-gray-600">👨‍💼 ${project.project_manager_name || 'Chưa gán'}</span>
                         </div>
                         <div class="">
@@ -2213,13 +2216,7 @@
                         </div>
                     </div>
 
-                    <!-- Health -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tình trạng sức khỏe</label>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium health-${project.health || 'good'}">
-                            ${healthText[project.health || 'good']}
-                        </span>
-                    </div>
+                    
 
                     <!-- OKR Connection -->
                     ${project.okr_objective ? `
