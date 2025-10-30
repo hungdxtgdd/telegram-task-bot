@@ -1594,15 +1594,13 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu</label>
-                            <input type="number" id="projectTargetValue" class="input" placeholder="Nhập mục tiêu" step="0.01">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
-                            <input type="text" id="projectUnit" class="input" placeholder="Nhập đơn vị">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Chỉ tiêu (có thể thêm nhiều)</label>
+                        <div id="metricsList" class="space-y-3"></div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-ghost" onclick="addMetricRow('metricsList')">
+                                <i class="fas fa-plus mr-2"></i>Thêm chỉ tiêu
+                            </button>
                         </div>
                     </div>
                     
@@ -1624,10 +1622,12 @@
                             <option value="">-- Chọn OKR --</option>
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
-                        <input type="number" id="projectBudget" class="input" placeholder="Nhập ngân sách" step="0.01">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Manager</label>
+                        <select id="projectManager" class="select">
+                            <option value="">-- Chọn người quản lý --</option>
+                        </select>
                     </div>
                     
                     <div class="flex justify-end space-x-3 pt-4">
@@ -1691,21 +1691,14 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Mục tiêu</label>
-                            <input type="number" id="editProjectTargetValue" class="input" placeholder="Nhập mục tiêu" step="0.01">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Thực tế</label>
-                            <input type="number" id="editProjectCurrentValue" class="input" placeholder="Nhập giá trị thực tế" step="0.01">
-                        </div>
-                    </div>
-                    
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
-                        <input type="text" id="editProjectUnit" class="input" placeholder="Nhập đơn vị">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Chỉ tiêu (có thể thêm nhiều)</label>
+                        <div id="editMetricsList" class="space-y-3"></div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-ghost" onclick="addMetricRow('editMetricsList')">
+                                <i class="fas fa-plus mr-2"></i>Thêm chỉ tiêu
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -1726,10 +1719,12 @@
                             <option value="">-- Chọn OKR --</option>
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
-                        <input type="number" id="editProjectBudget" class="input" placeholder="Nhập ngân sách" step="0.01">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Manager</label>
+                        <select id="editProjectManager" class="select">
+                            <option value="">-- Chọn người quản lý --</option>
+                        </select>
                     </div>
                     
                     <div class="flex justify-end space-x-3 pt-4">
@@ -2539,7 +2534,12 @@
         // Show add project panel
         async function showAddProjectModal() {
             // Lazy load OKRs when opening modal
-            await loadOKRs();
+            await Promise.all([loadOKRs(), loadUsers()]);
+            // Ensure at least one metric row exists
+            const list = document.getElementById('metricsList');
+            if (list && list.children.length === 0) {
+                addMetricRow('metricsList');
+            }
             
             const modal = document.getElementById('addProjectModal');
             modal.classList.remove('hidden');
@@ -2560,7 +2560,10 @@
             setTimeout(() => {
                 const modal = document.getElementById('addProjectModal');
                 modal.classList.add('hidden');
-                document.getElementById('addProjectForm').reset();
+                const addForm = document.getElementById('addProjectForm');
+                if (addForm) addForm.reset();
+                const list = document.getElementById('metricsList');
+                if (list) list.innerHTML = '';
             }, 300);
         }
 
@@ -2569,25 +2572,32 @@
             const project = projects.find(p => p.id === projectId);
             if (!project) return;
             
-            // Lazy load OKRs when opening edit modal
-            await loadOKRs();
+            // Lazy load OKRs and Users when opening edit modal
+            await Promise.all([loadOKRs(), loadUsers()]);
             
             document.getElementById('editProjectId').value = project.id;
             document.getElementById('editProjectName').value = project.project_name || project.name || '';
             document.getElementById('editProjectDescription').value = project.description || '';
             document.getElementById('editProjectStatus').value = project.status || 'active';
             document.getElementById('editProjectPriority').value = project.priority || 'Medium';
-            document.getElementById('editProjectUnit').value = project.unit || '';
-            document.getElementById('editProjectTargetValue').value = project.target_value || '';
-            document.getElementById('editProjectCurrentValue').value = project.current_value || '';
             document.getElementById('editProjectStartDate').value = project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '';
             document.getElementById('editProjectEndDate').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
-            document.getElementById('editProjectBudget').value = project.budget || '';
+            
+            // Set metrics from project.metrics if available, else from legacy fields
+            const metrics = Array.isArray(project.metrics) && project.metrics.length > 0
+                ? project.metrics
+                : [{ unit: project.unit || '', target_value: project.target_value || null, current_value: project.current_value || null }];
+            setMetrics('editMetricsList', metrics);
             
             // Set OKR if exists - OKRs are now loaded before showing modal
             const editOKRSelect = document.getElementById('editProjectOKR');
             if (editOKRSelect && project.okr_id) {
                 editOKRSelect.value = project.okr_id || '';
+            }
+            // Set Project Manager
+            const editPM = document.getElementById('editProjectManager');
+            if (editPM) {
+                editPM.value = project.project_manager || '';
             }
             
             // Show panel
@@ -2618,19 +2628,23 @@
             e.preventDefault();
             
             const okrValue = document.getElementById('projectOKR').value;
-            const targetValue = document.getElementById('projectTargetValue').value;
+            const pmValue = document.getElementById('projectManager') ? document.getElementById('projectManager').value : '';
+            const metrics = getMetrics('metricsList');
+            const firstMetric = metrics[0] || { unit: '', target_value: null, current_value: null };
             
             const formData = {
                 project_name: document.getElementById('projectName').value,
                 description: document.getElementById('projectDescription').value,
                 status: document.getElementById('projectStatus').value,
                 priority: document.getElementById('projectPriority').value,
-                unit: document.getElementById('projectUnit').value || '%',
+                unit: firstMetric.unit || '%',
                 start_date: document.getElementById('projectStartDate').value || null,
                 end_date: document.getElementById('projectEndDate').value || null,
-                target_value: targetValue ? parseFloat(targetValue) : null,
+                target_value: firstMetric.target_value != null && firstMetric.target_value !== '' ? parseFloat(firstMetric.target_value) : null,
+                current_value: firstMetric.current_value != null && firstMetric.current_value !== '' ? parseFloat(firstMetric.current_value) : null,
                 okr_id: okrValue ? parseInt(okrValue) : null,
-                budget: document.getElementById('projectBudget').value ? parseFloat(document.getElementById('projectBudget').value) : null
+                project_manager: pmValue ? parseInt(pmValue) : null,
+                metrics: metrics
             };
             
             try {
@@ -2664,21 +2678,23 @@
             
             const projectId = document.getElementById('editProjectId').value;
             const okrValue = document.getElementById('editProjectOKR').value;
-            const targetValue = document.getElementById('editProjectTargetValue').value;
-            const currentValue = document.getElementById('editProjectCurrentValue').value;
+            const pmValue = document.getElementById('editProjectManager') ? document.getElementById('editProjectManager').value : '';
+            const metrics = getMetrics('editMetricsList');
+            const firstMetric = metrics[0] || { unit: '', target_value: null, current_value: null };
             
             const formData = {
                 project_name: document.getElementById('editProjectName').value,
                 description: document.getElementById('editProjectDescription').value,
                 status: document.getElementById('editProjectStatus').value,
                 priority: document.getElementById('editProjectPriority').value,
-                unit: document.getElementById('editProjectUnit').value || '%',
+                unit: firstMetric.unit || '%',
                 start_date: document.getElementById('editProjectStartDate').value || null,
                 end_date: document.getElementById('editProjectEndDate').value || null,
-                target_value: targetValue ? parseFloat(targetValue) : null,
-                current_value: currentValue ? parseFloat(currentValue) : null,
+                target_value: firstMetric.target_value != null && firstMetric.target_value !== '' ? parseFloat(firstMetric.target_value) : null,
+                current_value: firstMetric.current_value != null && firstMetric.current_value !== '' ? parseFloat(firstMetric.current_value) : null,
                 okr_id: okrValue ? parseInt(okrValue) : null,
-                budget: document.getElementById('editProjectBudget').value ? parseFloat(document.getElementById('editProjectBudget').value) : null
+                project_manager: pmValue ? parseInt(pmValue) : null,
+                metrics: metrics
             };
             
             try {
@@ -2704,6 +2720,100 @@
                 console.error('Error updating project:', error);
                 showNotification('Lỗi kết nối khi cập nhật project', 'error');
             }
+        }
+
+        // Users dropdown (Project Manager) - Lazy load with cache
+        let usersCache = null;
+        let usersLoading = false;
+        async function loadUsers() {
+            if (usersCache) {
+                populateUserDropdowns(usersCache);
+                return;
+            }
+            if (usersLoading) return;
+            usersLoading = true;
+            try {
+                const response = await fetch('/api/users-enhanced/users', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                if (response.ok) {
+                    const users = await response.json();
+                    usersCache = users;
+                    populateUserDropdowns(users);
+                }
+            } catch (err) {
+                console.error('Error loading users:', err);
+            } finally {
+                usersLoading = false;
+            }
+        }
+
+        function populateUserDropdowns(users) {
+            const addPM = document.getElementById('projectManager');
+            const editPM = document.getElementById('editProjectManager');
+            if (addPM) {
+                addPM.innerHTML = '<option value="">-- Chọn người quản lý --</option>';
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = u.full_name || u.name || u.username || `User ${u.id}`;
+                    addPM.appendChild(opt);
+                });
+            }
+            if (editPM) {
+                editPM.innerHTML = '<option value="">-- Chọn người quản lý --</option>';
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = u.full_name || u.name || u.username || `User ${u.id}`;
+                    editPM.appendChild(opt);
+                });
+            }
+        }
+
+        // Metrics helpers
+        function addMetricRow(containerId, metric) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-3 items-center metric-row';
+            row.innerHTML = `
+                <div class="col-span-4">
+                    <input type="text" class="input metric-unit" placeholder="Đơn vị" value="${metric?.unit ?? ''}">
+                </div>
+                <div class="col-span-4">
+                    <input type="number" step="0.01" class="input metric-target" placeholder="Mục tiêu" value="${metric?.target_value ?? ''}">
+                </div>
+                <div class="col-span-3">
+                    <input type="number" step="0.01" class="input metric-current" placeholder="Giá trị thực tế" value="${metric?.current_value ?? ''}">
+                </div>
+                <div class="col-span-1 flex justify-end">
+                    <button type="button" class="btn btn-ghost" onclick="this.closest('.metric-row').remove()"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        function getMetrics(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return [];
+            const rows = Array.from(container.querySelectorAll('.metric-row'));
+            return rows.map(r => ({
+                unit: r.querySelector('.metric-unit')?.value?.trim() || '',
+                target_value: r.querySelector('.metric-target')?.value || null,
+                current_value: r.querySelector('.metric-current')?.value || null
+            })).filter(m => m.unit || m.target_value || m.current_value);
+        }
+
+        function setMetrics(containerId, metrics) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            if (!metrics || metrics.length === 0) {
+                addMetricRow(containerId);
+                return;
+            }
+            metrics.forEach(m => addMetricRow(containerId, m));
         }
 
         // Delete project
