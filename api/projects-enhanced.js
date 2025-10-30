@@ -430,7 +430,8 @@ async function createProject(req, res) {
       deadline,
       target_value,
       unit,
-      budget
+      budget,
+      project_manager
     } = req.body;
 
     if (!project_name) {
@@ -458,10 +459,11 @@ async function createProject(req, res) {
     console.log('Budget:', budget);
     console.log('OKR ID:', okr_id);
     
-    // Ensure health column exists
+    // Ensure required columns exist
     await client.query(`
       DO $$ BEGIN
         ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_manager INTEGER REFERENCES users(id) ON DELETE SET NULL;
         ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
         ALTER TABLE projects ADD CONSTRAINT projects_health_check 
           CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
@@ -471,10 +473,10 @@ async function createProject(req, res) {
     const query = `
       INSERT INTO projects (
         okr_id, project_code, project_name, description, priority, status,
-        start_date, end_date, target_value, unit, budget, created_by, health,
+        start_date, end_date, target_value, unit, budget, project_manager, created_by, health,
         created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'good', NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'good', NOW(), NOW())
       RETURNING *
     `;
     
@@ -490,6 +492,7 @@ async function createProject(req, res) {
       target_value || null,
       unit || '%',
       budget || null,
+      project_manager || null,
       req.user.id
     ];
     
@@ -538,15 +541,17 @@ async function updateProject(req, res, projectId) {
       target_value,
       unit,
       current_value,
-      budget
+      budget,
+      project_manager
     } = req.body;
 
     const client = await pool.connect();
     
-    // Ensure health column exists
+    // Ensure required columns exist
     await client.query(`
       DO $$ BEGIN
         ALTER TABLE projects ADD COLUMN IF NOT EXISTS health VARCHAR(20) DEFAULT 'good';
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_manager INTEGER REFERENCES users(id) ON DELETE SET NULL;
         ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_health_check;
         ALTER TABLE projects ADD CONSTRAINT projects_health_check 
           CHECK (health IN ('excellent', 'good', 'warning', 'critical'));
@@ -568,6 +573,7 @@ async function updateProject(req, res, projectId) {
         unit = COALESCE($11, unit),
         current_value = COALESCE($12, current_value),
         budget = COALESCE($13, budget),
+        project_manager = COALESCE($14, project_manager),
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
@@ -586,7 +592,8 @@ async function updateProject(req, res, projectId) {
       target_value,
       unit,
       current_value,
-      budget
+      budget,
+      project_manager
     ];
     
     console.log('Executing update query with values:', values);
