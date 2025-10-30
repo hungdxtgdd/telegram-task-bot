@@ -20,10 +20,17 @@
         .project-card .card-header h3 {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #111827; /* text-gray-900 */
+            color: #111827 !important; /* ensure override */
             line-height: 1.4;
             margin: 0;
             letter-spacing: -0.025em;
+        }
+
+        /* Neutral status pill (no green background) */
+        .status-pill {
+            background: transparent !important;
+            color: #111827 !important;
+            border: 1px solid #e5e7eb !important;
         }
         
         .project-card .badges {
@@ -1984,11 +1991,11 @@
             };
             
             const statusBadgeClass = {
-                'active': 'bg-success',
-                'in-progress': 'bg-primary',
-                'completed': 'bg-success', 
-                'paused': 'bg-warning',
-                'cancelled': 'bg-danger'
+                'active': 'status-pill',
+                'in-progress': 'status-pill',
+                'completed': 'status-pill', 
+                'paused': 'status-pill',
+                'cancelled': 'status-pill'
             };
             
             return `
