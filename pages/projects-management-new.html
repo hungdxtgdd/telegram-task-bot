@@ -2117,8 +2117,10 @@
             };
             
             // Calculate progress
-            const progress = project.target_value && project.target_value > 0 
-                ? Math.min(Math.round((project.current_value / project.target_value) * 100), 100)
+            const currentVal = project.current_value ? Number(project.current_value) : 0;
+            const targetVal = project.target_value ? Number(project.target_value) : 0;
+            const progress = targetVal > 0 
+                ? Math.min(Math.round((currentVal / targetVal) * 100), 100)
                 : 0;
             
             // Calculate task progress
@@ -2153,6 +2155,7 @@
             }
             
             // Populate detail content with new structure
+            const unitLabel = project.unit || '';
             document.getElementById('projectDetailContent').innerHTML = `
                 <div class="space-y-6">
                     <!-- Header Meta: Status, Priority, PM, Days Remaining -->
@@ -2190,11 +2193,11 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ</label>
                         <div class="bg-gray-50 p-4 rounded-md border">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-gray-700">${project.current_value || 0} / ${project.target_value || 0} ${project.unit || ''}</span>
+                                <span class="text-sm font-medium text-gray-700">${currentVal} / ${targetVal} ${unitLabel}</span>
                                 <span class="text-sm font-bold text-blue-600">${progress}%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3">
-                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                            <div style="width:100%;height:8px;background:#e5e7eb;border-radius:9999px;overflow:hidden;">
+                                <div id="progressBar-${projectId}" style="width:0;height:100%;background:linear-gradient(90deg,#3b82f6,#2563eb);border-radius:9999px;transition:width .6s ease;"></div>
                             </div>
                         </div>
                     </div>
@@ -2210,8 +2213,8 @@
                                 <span class="text-sm font-medium text-gray-700">${project.completed_tasks || 0} / ${project.task_count || 0} tasks</span>
                                 <span class="text-sm font-bold text-green-600">${taskProgress}%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-500" style="width: ${taskProgress}%"></div>
+                            <div style="width:100%;height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;">
+                                <div id="taskBar-${projectId}" style="width:0;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:9999px;transition:width .6s ease;"></div>
                             </div>
                         </div>
                     </div>
@@ -2271,6 +2274,14 @@
                     const ul = document.getElementById('memberList');
                     if (ul) ul.innerHTML = '<li class="text-gray-500">Không tải được danh sách thành viên</li>';
                 });
+
+            // Animate progress bars after render
+            setTimeout(() => {
+                const pb = document.getElementById(`progressBar-${projectId}`);
+                const tb = document.getElementById(`taskBar-${projectId}`);
+                if (pb) pb.style.width = `${progress}%`;
+                if (tb) tb.style.width = `${taskProgress}%`;
+            }, 50);
         }
         
         // Helper functions for badge classes

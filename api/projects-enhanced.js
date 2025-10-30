@@ -170,6 +170,7 @@ async function getAllProjects(req, res) {
           p.priority,
           p.start_date,
           p.end_date,
+          p.unit,
           p.target_value,
           p.current_value,
           p.budget,
