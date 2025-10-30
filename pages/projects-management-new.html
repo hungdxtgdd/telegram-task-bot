@@ -2733,7 +2733,7 @@
             if (usersLoading) return;
             usersLoading = true;
             try {
-                const response = await fetch('/api/users-enhanced/users', {
+                const response = await fetch('/api/users-enhanced?simple=true', {
                     headers: { 'Authorization': 'Bearer test-token' }
                 });
                 if (response.ok) {
