@@ -2126,9 +2126,15 @@
                 ? Math.round((project.completed_tasks / project.task_count) * 100)
                 : 0;
             
-            // Calculate days remaining
-            const daysRemaining = project.end_date 
-                ? Math.ceil((new Date(project.end_date) - new Date()) / (1000 * 60 * 60 * 24))
+            // Calculate timeline and days remaining
+            const startDate = project.start_date ? new Date(project.start_date) : null;
+            const endDate = project.end_date ? new Date(project.end_date) : null;
+            const now = new Date();
+            const totalDays = (startDate && endDate) ? Math.max(1, Math.ceil((endDate - startDate) / (1000*60*60*24))) : null;
+            const daysPassed = (startDate) ? Math.max(0, Math.ceil((now - startDate) / (1000*60*60*24))) : null;
+            const daysRemaining = (endDate) ? Math.ceil((endDate - now) / (1000*60*60*24)) : null;
+            const timePercent = (totalDays !== null && daysPassed !== null)
+                ? Math.min(100, Math.max(0, Math.round((daysPassed / totalDays) * 100)))
                 : null;
             
             // Format currency
@@ -2146,24 +2152,37 @@
                 headerTitle.textContent = project.project_name || project.name || 'Untitled Project';
             }
             
-            // Populate detail content with OKR-style structure
+            // Populate detail content with new structure
             document.getElementById('projectDetailContent').innerHTML = `
                 <div class="space-y-6">
+                    <!-- Header Meta: Status, Priority, PM, Days Remaining -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-${project.status || 'active'}">
+                                ${statusText[project.status || 'active']}
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(project.priority)}">
+                                ${priorityText[project.priority?.toLowerCase()] || '🟡 Trung bình'}
+                            </span>
+                            <span class="text-sm text-gray-600">👨‍💼 ${project.project_manager_name || 'Chưa gán'}</span>
+                        </div>
+                        <div class="">
+                            ${(timePercent !== null) ? `
+                            <div class="text-xs text-gray-600 mb-1">Thời gian: ${startDate ? startDate.toLocaleDateString('vi-VN') : '—'} → ${endDate ? endDate.toLocaleDateString('vi-VN') : '—'} (${daysRemaining !== null ? (daysRemaining < 0 ? `Quá hạn ${Math.abs(daysRemaining)} ngày` : `Còn ${daysRemaining} ngày`) : '—'})</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500" style="width: ${timePercent}%"></div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
                         <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.description || 'Không có mô tả'}</p>
                     </div>
-                    
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-${project.status || 'active'}">
-                            ${statusText[project.status || 'active']}
-                        </span>
-                    </div>
-                    
-                    <!-- Progress Bar -->
+
+                    <!-- Progress Bar (with unit) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tiến độ</label>
                         <div class="bg-gray-50 p-4 rounded-md border">
@@ -2176,10 +2195,13 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Tasks -->
+
+                    <!-- Tasks with link -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tasks</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Tasks</label>
+                            <a class="text-sm text-blue-600 hover:underline" href="/pages/tasks-management-new.html?project_id=${projectId}">Xem tất cả</a>
+                        </div>
                         <div class="bg-gray-50 p-4 rounded-md border">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-700">${project.completed_tasks || 0} / ${project.task_count || 0} tasks</span>
@@ -2190,7 +2212,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Health -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tình trạng sức khỏe</label>
@@ -2198,7 +2220,7 @@
                             ${healthText[project.health || 'good']}
                         </span>
                     </div>
-                    
+
                     <!-- OKR Connection -->
                     ${project.okr_objective ? `
                     <div>
@@ -2206,54 +2228,8 @@
                         <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.okr_objective}</p>
                     </div>
                     ` : ''}
-                    
-                    <!-- Project Details -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã dự án</label>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.project_code || 'Chưa có'}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Độ ưu tiên</label>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(project.priority)}">
-                                ${priorityText[project.priority?.toLowerCase()] || '🟡 Trung bình'}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <!-- Timeline -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Project Manager & Created Date -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Trưởng dự án</label>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.project_manager_name || 'Chưa gán'}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tạo</label>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Budget -->
-                    ${project.budget ? `
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngân sách</label>
-                        <p class="text-gray-900 bg-gray-50 p-3 rounded-md border">${formatCurrency(project.budget)}</p>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Team Info -->
+
+                    <!-- Team Info: count + names -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Thành viên</label>
                         <div class="bg-gray-50 p-4 rounded-md border">
@@ -2261,24 +2237,9 @@
                                 <span class="text-sm font-medium text-gray-700">Số lượng thành viên</span>
                                 <span class="text-sm font-bold text-purple-600">${project.member_count || 0}</span>
                             </div>
-                            <p class="text-xs text-gray-500">${project.project_manager_name ? `Trưởng dự án: ${project.project_manager_name}` : 'Chưa gán trưởng dự án'}</p>
+                            <ul id="memberList" class="list-disc pl-5 text-sm text-gray-700"></ul>
                         </div>
                     </div>
-                    
-                    <!-- Days Remaining -->
-                    ${daysRemaining !== null ? `
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian còn lại</label>
-                        <div class="bg-gray-50 p-4 rounded-md border">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">${daysRemaining < 0 ? 'Quá hạn' : 'Còn lại'}</span>
-                                <span class="text-sm font-bold ${daysRemaining < 0 ? 'text-red-600' : daysRemaining < 7 ? 'text-orange-600' : 'text-green-600'}">
-                                    ${daysRemaining < 0 ? `${Math.abs(daysRemaining)} ngày` : `${daysRemaining} ngày`}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
             `;
             
@@ -2296,6 +2257,23 @@
             setTimeout(() => {
                 document.getElementById('projectDetailPanel').style.transform = 'translateX(0)';
             }, 10);
+
+            // Load members list asynchronously
+            fetch(`/api/projects-enhanced/members/${projectId}`, { headers: { 'Authorization': 'Bearer test-token' } })
+                .then(r => r.ok ? r.json() : [])
+                .then(list => {
+                    const ul = document.getElementById('memberList');
+                    if (!ul) return;
+                    if (!list || list.length === 0) {
+                        ul.innerHTML = '<li class="text-gray-500">Chưa có thành viên</li>';
+                        return;
+                    }
+                    ul.innerHTML = list.map(m => `<li>${m.full_name || m.username || 'User ' + m.user_id}</li>`).join('');
+                })
+                .catch(() => {
+                    const ul = document.getElementById('memberList');
+                    if (ul) ul.innerHTML = '<li class="text-gray-500">Không tải được danh sách thành viên</li>';
+                });
         }
         
         // Helper functions for badge classes
