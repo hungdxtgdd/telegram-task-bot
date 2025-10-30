@@ -2592,7 +2592,7 @@
             // Set OKR if exists - OKRs are now loaded before showing modal
             const editOKRSelect = document.getElementById('editProjectOKR');
             if (editOKRSelect && project.okr_id) {
-                editOKRSelect.value = project.okr_id || '';
+                editOKRSelect.value = String(project.okr_id);
             }
             // Set Project Manager
             const editPM = document.getElementById('editProjectManager');

@@ -163,6 +163,7 @@ async function getAllProjects(req, res) {
       WITH project_stats AS (
         SELECT 
           p.id,
+          p.okr_id,
           p.project_name,
           p.description,
           p.status,
