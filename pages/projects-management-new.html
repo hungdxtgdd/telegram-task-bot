@@ -1961,12 +1961,43 @@
             const startDate = project.start_date ? new Date(project.start_date) : null;
             const endDate = project.end_date ? new Date(project.end_date) : null;
             const now = new Date();
-            const totalDays = (startDate && endDate) ? Math.max(1, Math.ceil((endDate - startDate) / (1000*60*60*24))) : null;
-            const daysPassed = (startDate) ? Math.max(0, Math.ceil((now - startDate) / (1000*60*60*24))) : null;
-            const daysRemaining = (endDate) ? Math.ceil((endDate - now) / (1000*60*60*24)) : null;
-            const timePercent = (totalDays !== null && daysPassed !== null)
-                ? Math.min(100, Math.max(0, Math.round((daysPassed / totalDays) * 100)))
-                : null;
+            const isCompleted = project.status === 'completed' || project.status === 'Completed';
+            const completedDate = isCompleted && project.updated_at ? new Date(project.updated_at) : null;
+            
+            // Calculate time info based on completion status
+            let timeStatusText = '';
+            let timePercent = null;
+            let daysRemaining = null;
+            
+            if (isCompleted && completedDate && endDate) {
+                // Project is completed - check if completed before or after deadline
+                const daysDiff = Math.ceil((completedDate - endDate) / (1000*60*60*24));
+                if (daysDiff < 0) {
+                    // Completed before deadline
+                    timeStatusText = `Hoàn thành trước hạn ${Math.abs(daysDiff)} ngày`;
+                } else if (daysDiff > 0) {
+                    // Completed after deadline
+                    timeStatusText = `Hoàn thành sau hạn ${daysDiff} ngày`;
+                } else {
+                    // Completed exactly on deadline
+                    timeStatusText = 'Hoàn thành đúng hạn';
+                }
+                // For completed projects, progress bar should be 100%
+                timePercent = 100;
+            } else if (startDate && endDate) {
+                // Project is not completed - show normal timeline
+                const totalDays = Math.max(1, Math.ceil((endDate - startDate) / (1000*60*60*24)));
+                const daysPassed = Math.max(0, Math.ceil((now - startDate) / (1000*60*60*24)));
+                daysRemaining = Math.ceil((endDate - now) / (1000*60*60*24));
+                
+                if (daysRemaining < 0) {
+                    timeStatusText = `Quá hạn ${Math.abs(daysRemaining)} ngày`;
+                } else {
+                    timeStatusText = `Còn ${daysRemaining} ngày`;
+                }
+                
+                timePercent = Math.min(100, Math.max(0, Math.round((daysPassed / totalDays) * 100)));
+            }
             
             // Format currency
             const formatCurrency = (amount) => {
@@ -1999,8 +2030,8 @@
                             <span class="text-sm text-gray-600">${project.project_manager_name || 'Chưa gán'}</span>
                         </div>
                         <div class="">
-                            ${(timePercent !== null) ? `
-                            <div class="text-xs text-gray-600 mb-1">Thời gian: ${startDate ? startDate.toLocaleDateString('vi-VN') : '—'} → ${endDate ? endDate.toLocaleDateString('vi-VN') : '—'} (${daysRemaining !== null ? (daysRemaining < 0 ? `Quá hạn ${Math.abs(daysRemaining)} ngày` : `Còn ${daysRemaining} ngày`) : '—'})</div>
+                            ${(timePercent !== null && startDate && endDate) ? `
+                            <div class="text-xs text-gray-600 mb-1">Thời gian: ${startDate.toLocaleDateString('vi-VN')} → ${endDate.toLocaleDateString('vi-VN')}${timeStatusText ? ` (${timeStatusText})` : ''}</div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500" style="width: ${timePercent}%"></div>
                             </div>
