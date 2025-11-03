@@ -160,32 +160,27 @@
         }
         
         .project-card .action-btn.edit {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            background: #fff;
+            color: #111827;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: none;
         }
         
         .project-card .action-btn.edit:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-            transform: translateY(-1px);
+            background: #f9fafb;
+            border-color: #d1d5db;
         }
         
         .project-card .action-btn.delete {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            background: #fff;
+            color: #ef4444;
+            border: 1.5px solid #fee2e2;
+            box-shadow: none;
         }
         
         .project-card .action-btn.delete:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
-            transform: translateY(-1px);
-        }
-        
-        .project-card .action-btn i {
-            margin-right: 0.5rem;
-            font-size: 0.875rem;
+            background: #fef2f2;
+            border-color: #fecaca;
         }
 
         /* Project Modals Container */
@@ -363,32 +358,27 @@
         }
         
         .project-card .action-btn.edit {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            background: #fff;
+            color: #111827;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: none;
         }
         
         .project-card .action-btn.edit:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-            transform: translateY(-1px);
+            background: #f9fafb;
+            border-color: #d1d5db;
         }
         
         .project-card .action-btn.delete {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            background: #fff;
+            color: #ef4444;
+            border: 1.5px solid #fee2e2;
+            box-shadow: none;
         }
         
         .project-card .action-btn.delete:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
-            transform: translateY(-1px);
-        }
-        
-        .project-card .action-btn i {
-            margin-right: 0.5rem;
-            font-size: 0.875rem;
+            background: #fef2f2;
+            border-color: #fecaca;
         }
         
         /* Card Animation */
@@ -1983,14 +1973,14 @@
                             
                             <!-- Created Date -->
                             <div class="created-info">
-                                <span class="label">📅 Ngày tạo:</span>
+                                <span class="label">Ngày tạo:</span>
                                 <span class="value">${project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : 'Chưa có'}</span>
                             </div>
                             
                             <!-- OKR Connection -->
                             ${project.okr_objective ? `
                             <div class="okr-info">
-                                <span class="label">🎯 OKR:</span>
+                                <span class="label">OKR:</span>
                                 <span class="value">${project.okr_objective}</span>
                                 </div>
                             ` : ''}
@@ -1998,7 +1988,7 @@
                             <!-- Progress -->
                             ${project.target_value && project.current_value !== undefined && project.target_value > 0 ? `
                             <div class="progress-info">
-                                <span class="label">📊 Tiến độ:</span>
+                                <span class="label">Tiến độ:</span>
                                 <span class="value">${project.current_value}/${project.target_value} ${project.unit || ''}</span>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${Math.min(Math.round((project.current_value / project.target_value) * 100), 100)}%"></div>
@@ -2008,14 +1998,13 @@
                             
                             <!-- Tasks (Clickable) -->
                             <div class="task-info clickable" onclick="viewProjectTasks(${project.id})">
-                                <span class="label">📋 Tasks:</span>
+                                <span class="label">Tasks:</span>
                                 <span class="value">${project.completed_tasks || 0}/${project.task_count || 0}</span>
-                                <i class="fas fa-arrow-right"></i>
                                 </div>
                             
                             <!-- Timeline -->
                             <div class="timeline-info">
-                                <span class="label">📅 Thời gian:</span>
+                                <span class="label">Thời gian:</span>
                                 <span class="value">
                                     ${project.start_date ? new Date(project.start_date).toLocaleDateString('vi-VN') : 'Chưa có'} - 
                                     ${project.end_date ? new Date(project.end_date).toLocaleDateString('vi-VN') : 'Chưa có'}
@@ -2026,7 +2015,7 @@
                             <!-- Project Manager -->
                             ${project.project_manager_name ? `
                             <div class="manager-info">
-                                <span class="label">👨‍💼 Trưởng dự án:</span>
+                                <span class="label">Trưởng dự án:</span>
                                 <span class="value">${project.project_manager_name}</span>
                             </div>
                             ` : ''}
@@ -2034,11 +2023,9 @@
                             <!-- Actions -->
                             <div class="action-buttons">
                                 <button onclick="event.stopPropagation(); editProject(${project.id})" class="action-btn edit">
-                                    <i class="fas fa-edit"></i>
                                     Sửa
                                 </button>
                                 <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="action-btn delete">
-                                    <i class="fas fa-trash"></i>
                                     Xóa
                                 </button>
                             </div>
