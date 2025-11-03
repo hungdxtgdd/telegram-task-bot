@@ -163,6 +163,11 @@
             cursor: pointer;
         }
         
+        .project-card .action-btn i {
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
         .project-card .action-btn.edit {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
@@ -1915,9 +1920,11 @@
                             <!-- Actions -->
                             <div class="action-buttons">
                                 <button onclick="event.stopPropagation(); editProject(${project.id})" class="action-btn edit">
+                                    <i class="fas fa-edit"></i>
                                     Sửa
                                 </button>
                                 <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="action-btn delete">
+                                    <i class="fas fa-trash"></i>
                                     Xóa
                                 </button>
                             </div>
