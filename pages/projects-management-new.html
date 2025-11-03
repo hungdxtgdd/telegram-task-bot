@@ -9,7 +9,23 @@
     <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.2/dist/css/coreui.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Project Card Layout - New Design */
+        /* Project Card - Clean CSS */
+        .project-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            border-left-width: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.035);
+            transition: box-shadow 0.25s, transform 0.25s;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .project-card:hover {
+            box-shadow: 0 8px 32px -4px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
         .project-card .card-header {
             display: flex;
             justify-content: space-between;
@@ -17,26 +33,19 @@
             margin-bottom: 1rem;
         }
         
-        .project-card .card-header h3 {
+        .project-card .card-header h3,
+        .project-card h3 {
             font-size: 1.13rem;
             font-weight: 700;
-            color: #111827 !important;
+            color: #111827;
             line-height: 1.4;
             margin: 0;
             letter-spacing: -0.025em;
-            background: none !important;
-            background-image: none !important;
-            -webkit-background-clip: initial !important;
-            -webkit-text-fill-color: #111827 !important;
-            background-clip: initial !important;
-            text-fill-color: #111827 !important;
-        }
-
-        /* Neutral status pill (no green background) */
-        .status-pill {
-            background: transparent !important;
-            color: #111827 !important;
-            border: 1px solid #e5e7eb !important;
+            background: none;
+            background-image: none;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: #111827;
+            background-clip: initial;
         }
         
         .project-card .badges {
@@ -60,13 +69,14 @@
         .project-card .task-info,
         .project-card .timeline-info,
         .project-card .created-info,
-        .project-card .manager-info {
+        .project-card .manager-info,
+        .project-card .project-info {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0.75rem 0;
             border-bottom: 1px solid #f3f4f6;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
         
         .project-card .okr-info:last-child,
@@ -74,7 +84,8 @@
         .project-card .task-info:last-child,
         .project-card .timeline-info:last-child,
         .project-card .created-info:last-child,
-        .project-card .manager-info:last-child {
+        .project-card .manager-info:last-child,
+        .project-card .project-info:last-child {
             border-bottom: none;
         }
         
@@ -83,45 +94,34 @@
         .project-card .task-info:hover,
         .project-card .timeline-info:hover,
         .project-card .created-info:hover,
-        .project-card .manager-info:hover {
+        .project-card .manager-info:hover,
+        .project-card .project-info:hover {
             background: #f9fafb;
             border-radius: 0.5rem;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
         
-        .project-card .label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .project-card .value {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #111827;
-        }
-        
-        /* Clickable Task Info */
         .project-card .task-info.clickable {
             cursor: pointer;
-            position: relative;
         }
         
         .project-card .task-info.clickable:hover {
             background: #eff6ff;
         }
         
-        .project-card .task-info.clickable i {
-            color: #3b82f6;
-            font-size: 0.875rem;
-            transition: transform 0.2s;
+        .project-card .label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: none;
+            letter-spacing: 0.02em;
         }
         
-        .project-card .task-info.clickable:hover i {
-            transform: translateX(4px);
+        .project-card .value {
+            font-size: 0.98rem;
+            font-weight: 500;
+            color: #111827;
         }
         
         /* Progress Bar */
@@ -158,18 +158,15 @@
             border-radius: 0.5rem;
             font-size: 0.875rem;
             font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
             border: none;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
         
         .project-card .action-btn.edit {
             background: #fff;
             color: #111827;
             border: 1.5px solid #e5e7eb;
-            box-shadow: none;
         }
         
         .project-card .action-btn.edit:hover {
@@ -181,14 +178,13 @@
             background: #fff;
             color: #ef4444;
             border: 1.5px solid #fee2e2;
-            box-shadow: none;
         }
         
         .project-card .action-btn.delete:hover {
             background: #fef2f2;
             border-color: #fecaca;
         }
-
+        
         /* Project Modals Container */
         #projectDetailModal, #addProjectModal, #editProjectModal {
             position: fixed !important;
@@ -218,59 +214,26 @@
             z-index: 1032 !important;
         }
 
-        /* Project Card - Tinh gọn */
-        .project-card {
-            background: #fff !important;
-            border-radius: 1rem;
-            border: 1px solid #e5e7eb;
-            border-left-width: 4px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.035);
-            transition: box-shadow 0.25s, transform 0.25s;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .project-card:hover {
-            box-shadow: 0 8px 32px -4px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
-        /* Status Border Colors - Chỉ border, không gradient */
+        /* Status Border Colors */
         .project-status-active { 
-            border-left-color: #10b981 !important;
-            background: #fff !important;
+            border-left-color: #10b981;
+            background: #fff;
         }
         .project-status-in-progress { 
-            border-left-color: #3b82f6 !important;
-            background: #fff !important;
+            border-left-color: #3b82f6;
+            background: #fff;
         }
         .project-status-completed { 
-            border-left-color: #059669 !important;
-            background: #fff !important;
+            border-left-color: #059669;
+            background: #fff;
         }
         .project-status-paused { 
-            border-left-color: #f59e0b !important;
-            background: #fff !important;
+            border-left-color: #f59e0b;
+            background: #fff;
         }
         .project-status-cancelled { 
-            border-left-color: #ef4444 !important;
-            background: #fff !important;
-        }
-        
-        /* Project Title - Màu đen, không gradient */
-        .project-card h3 {
-            font-size: 1.13rem;
-            font-weight: 700;
-            color: #111827 !important;
-            margin: 0;
-            letter-spacing: -0.025em;
-            line-height: 1.4;
-            background: none !important;
-            background-image: none !important;
-            -webkit-background-clip: initial !important;
-            -webkit-text-fill-color: #111827 !important;
-            background-clip: initial !important;
-            text-fill-color: #111827 !important;
+            border-left-color: #ef4444;
+            background: #fff;
         }
         
         /* Project Description */
@@ -282,7 +245,7 @@
             font-weight: 500;
         }
         
-        /* Status Badge - Trung tính, nền trắng */
+        /* Badges - Neutral style */
         .project-card .badge,
         .project-card .badge.bg-primary,
         .project-card .badge.bg-success,
@@ -291,17 +254,18 @@
         .project-card .badge.health-excellent,
         .project-card .badge.health-good,
         .project-card .badge.health-warning,
-        .project-card .badge.health-critical {
-            background: #fff !important;
-            color: #111827 !important;
-            border: 1.5px solid #e5e7eb !important;
+        .project-card .badge.health-critical,
+        .status-pill {
+            background: #fff;
+            color: #111827;
+            border: 1.5px solid #e5e7eb;
             border-radius: 9999px;
             font-size: 0.77rem;
             font-weight: 600;
             text-transform: none;
             letter-spacing: 0.05em;
             padding: 0.2rem 1rem;
-            box-shadow: none !important;
+            box-shadow: none;
             display: inline-flex;
             align-items: center;
         }
