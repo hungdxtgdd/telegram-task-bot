@@ -1291,15 +1291,6 @@
                                         <option value="cancelled">Đã hủy</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <select class="form-control" id="healthFilter">
-                                        <option value="">Tất cả tình trạng</option>
-                                        <option value="excellent">Xuất sắc</option>
-                                        <option value="good">Tốt</option>
-                                        <option value="warning">Cảnh báo</option>
-                                        <option value="critical">Nghiêm trọng</option>
-                                    </select>
-                                </div>
                                 <div class="col-md-2">
                                     <button class="btn btn-primary" onclick="showAddProjectModal()">
                                         <i class="fas fa-plus"></i> Thêm Project
@@ -1857,11 +1848,6 @@
                                     <span class="badge ${statusBadgeClass[project.status || 'active']}">
                                         ${statusText[project.status || 'active']}
                                     </span>
-                                    ${project.health ? `
-                                    <span class="badge ${getHealthBadgeClass(project.health)}">
-                                        ${getHealthText(project.health)}
-                                    </span>
-                                    ` : ''}
                             </div>
                         </div>
                             
@@ -2272,10 +2258,6 @@
                 statusFilter.addEventListener('change', filterProjects);
             }
             
-            const healthFilter = document.getElementById('healthFilter');
-            if (healthFilter) {
-                healthFilter.addEventListener('change', filterProjects);
-            }
             const unitFilter = document.getElementById('unitFilter');
             if (unitFilter) {
                 unitFilter.addEventListener('change', filterProjects);
@@ -2297,12 +2279,10 @@
         function filterProjects() {
             const searchInput = document.getElementById('searchInput');
             const statusFilter = document.getElementById('statusFilter');
-            const healthFilter = document.getElementById('healthFilter');
             const unitFilter = document.getElementById('unitFilter');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const statusValue = statusFilter ? statusFilter.value : '';
-            const healthValue = healthFilter ? healthFilter.value : '';
             const unitValue = unitFilter ? unitFilter.value : '';
             
             filteredProjects = projects.filter(project => {
@@ -2311,10 +2291,9 @@
                     (project.description && project.description.toLowerCase().includes(searchTerm));
                 
                 const matchesStatus = !statusValue || project.status === statusValue;
-                const matchesHealth = !healthValue || project.health === healthValue;
                 const matchesUnit = !unitValue || project.unit === unitValue;
                 
-                return matchesSearch && matchesStatus && matchesHealth && matchesUnit;
+                return matchesSearch && matchesStatus && matchesUnit;
             });
             
             renderProjects();
@@ -2331,7 +2310,6 @@
         function clearFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('statusFilter').value = '';
-            document.getElementById('healthFilter').value = '';
             document.getElementById('unitFilter').value = '';
             filterProjects();
         }
