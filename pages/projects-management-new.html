@@ -1938,14 +1938,6 @@
                 'cancelled': 'Đã hủy'
             };
             
-            // Health text mapping
-            const healthText = {
-                'excellent': 'Xuất sắc',
-                'good': 'Tốt',
-                'warning': 'Cảnh báo',
-                'critical': 'Nghiêm trọng'
-            };
-            
             // Priority text mapping
             const priorityText = {
                 'high': 'Cao',
@@ -2003,9 +1995,6 @@
                             </span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(project.priority)}">
                                 ${priorityText[project.priority?.toLowerCase()] || 'Trung bình'}
-                            </span>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getHealthBadgeClass(project.health)}">
-                                ${healthText[project.health || 'good']}
                             </span>
                             <span class="text-sm text-gray-600">${project.project_manager_name || 'Chưa gán'}</span>
                         </div>
