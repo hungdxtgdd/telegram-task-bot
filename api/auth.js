@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { Pool } = require('pg');
-
 require('dotenv').config();
+const { createPool } = require('./db-utils');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -11,17 +10,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  // Tối ưu connection pool cho auth
-  max: 10,
-  min: 1,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000
-});
+const pool = createPool(DATABASE_URL);
 
 // Cache user info để tránh query database mỗi lần
 const userCache = new Map();
@@ -101,13 +90,13 @@ async function verifyToken(req, res, next) {
             }
         } else {
             // Fallback for invalid token
-            req.user = {
-                id: 1,
-                name: 'Test User',
+        req.user = {
+            id: 1,
+            name: 'Test User',
                 username: 'admin',
-                email: 'test@example.com',
-                role: 'admin'
-            };
+            email: 'test@example.com',
+            role: 'admin'
+        };
         }
         
         console.log('Auth successful for user:', req.user);
@@ -185,7 +174,17 @@ async function login(req, res) {
         
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack,
+            hasDatabaseUrl: !!DATABASE_URL,
+            databaseUrlPrefix: DATABASE_URL ? DATABASE_URL.substring(0, 30) + '...' : 'N/A'
+        });
+        res.status(500).json({ 
+            error: 'Lỗi server',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     } finally {
         client.release();
     }

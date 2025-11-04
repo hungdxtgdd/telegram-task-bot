@@ -1,6 +1,6 @@
 require('dotenv').config();
-const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
+const { createPool } = require('./db-utils');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -9,12 +9,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const pool = createPool(DATABASE_URL);
 
 module.exports = async (req, res) => {
   // Enable CORS

@@ -1,6 +1,6 @@
 require('dotenv').config();
-const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
+const { createPool } = require('./db-utils');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -9,18 +9,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  // Tối ưu connection pool
-  max: 20, // Tăng số connection tối đa
-  min: 2,  // Giữ ít nhất 2 connection
-  idleTimeoutMillis: 30000, // Giảm thời gian idle
-  connectionTimeoutMillis: 2000, // Giảm timeout
-  acquireTimeoutMillis: 2000
-});
+const pool = createPool(DATABASE_URL);
 
 module.exports = async (req, res) => {
   // Enable CORS
@@ -36,10 +25,10 @@ module.exports = async (req, res) => {
   // Verify authentication for all OKR operations - tối ưu với cache
   const startTime = Date.now();
   await new Promise((resolve) => {
-    verifyToken(req, res, async () => {
+  verifyToken(req, res, async () => {
       const authTime = Date.now() - startTime;
       console.log(`Auth took: ${authTime}ms`);
-      await handleOKRRequest(req, res);
+    await handleOKRRequest(req, res);
       resolve();
     });
   });

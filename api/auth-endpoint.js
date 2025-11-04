@@ -1,19 +1,25 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
-
 require('dotenv').config();
+const { createPool } = require('./db-utils');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 
+// Log connection string info (without password) for debugging
+if (!DATABASE_URL) {
+  console.error('❌ DATABASE_URL not found in environment variables');
+} else {
+  const urlInfo = DATABASE_URL.replace(/:[^:@]+@/, ':****@');
+  console.log('📡 Database connection info:', {
+    hasUrl: !!DATABASE_URL,
+    urlPrefix: urlInfo.substring(0, 60) + '...',
+    isSupabase: DATABASE_URL.includes('supabase.co'),
+    isPooled: DATABASE_URL.includes(':6543')
+  });
+}
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const pool = createPool(DATABASE_URL);
 
 // Auth functions
 async function login(req, res) {
@@ -67,7 +73,17 @@ async function login(req, res) {
     }
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Lỗi server' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+      hasDatabaseUrl: !!DATABASE_URL,
+      databaseUrlPrefix: DATABASE_URL ? DATABASE_URL.substring(0, 30) + '...' : 'N/A'
+    });
+    res.status(500).json({ 
+      error: 'Lỗi server',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
 
@@ -109,12 +125,12 @@ async function verify(req, res) {
       
       const user = result.rows[0];
       const userData = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        name: user.full_name,
-        role: user.role,
-        is_active: user.is_active
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.full_name,
+          role: user.role,
+          is_active: user.is_active
       };
       
       // Cache user data for next request
@@ -219,7 +235,15 @@ module.exports = async (req, res) => {
         }
     } catch (error) {
         console.error('Auth endpoint error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        res.status(500).json({ 
+            error: 'Lỗi server',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 
