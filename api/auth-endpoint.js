@@ -7,30 +7,48 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 
 // Log connection string info (without password) for debugging
+console.log('🔍 Initializing auth endpoint...');
+console.log('📡 DATABASE_URL check:', {
+  exists: !!DATABASE_URL,
+  length: DATABASE_URL ? DATABASE_URL.length : 0,
+  prefix: DATABASE_URL ? DATABASE_URL.substring(0, 50) + '...' : 'N/A'
+});
+
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL not found in environment variables');
+  console.error('❌ Cannot initialize database connection');
 } else {
   const urlInfo = DATABASE_URL.replace(/:[^:@]+@/, ':****@');
   console.log('📡 Database connection info:', {
     hasUrl: !!DATABASE_URL,
     urlPrefix: urlInfo.substring(0, 60) + '...',
     isSupabase: DATABASE_URL.includes('supabase.co'),
-    isPooled: DATABASE_URL.includes(':6543')
+    isPooled: DATABASE_URL.includes(':6543'),
+    hostname: DATABASE_URL.match(/@([^:]+):/)?.[1] || 'N/A'
   });
 }
 
-const pool = createPool(DATABASE_URL);
+const pool = DATABASE_URL ? createPool(DATABASE_URL) : null;
 
 // Auth functions
 async function login(req, res) {
   try {
+    console.log('🔐 Login attempt:', { username: req.body?.username });
+    
+    if (!pool) {
+      console.error('❌ Database pool not initialized - DATABASE_URL missing');
+      return res.status(500).json({ error: 'Database configuration error' });
+    }
+    
     const { username, password } = req.body;
     
     if (!username || !password) {
       return res.status(400).json({ error: 'Tên đăng nhập và mật khẩu là bắt buộc' });
     }
 
+    console.log('📡 Attempting database connection...');
     const client = await pool.connect();
+    console.log('✅ Database connection established');
     try {
       const query = 'SELECT * FROM users WHERE username = $1 AND is_active = true';
       const result = await client.query(query, [username]);
