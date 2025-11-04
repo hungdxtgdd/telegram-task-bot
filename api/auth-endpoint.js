@@ -132,6 +132,11 @@ async function verify(req, res) {
     }
     
     // Only query database if not in cache
+    if (!pool) {
+      console.error('❌ Database pool not initialized - DATABASE_URL missing');
+      return res.status(500).json({ error: 'Database configuration error' });
+    }
+    
     const client = await pool.connect();
     try {
       const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
