@@ -21,9 +21,17 @@
     "fix-db": "node scripts/fix-database-schema.js",
     "optimize-db": "node scripts/optimize-database-schema.js",
     "import-sheets": "node scripts/import-from-google-sheets.js",
-    "import-full": "node scripts/import-full-sheets.js"
+    "import-full": "node scripts/import-full-sheets.js",
+    "migrate:backup": "node scripts/migrate-neon-to-supabase.js --backup",
+    "migrate:verify-connection": "node scripts/migrate-neon-to-supabase.js --verify-connection",
+    "migrate:import-schema": "node scripts/migrate-neon-to-supabase.js --import-schema",
+    "migrate:import-data": "node scripts/migrate-neon-to-supabase.js --import-data",
+    "migrate:verify": "node scripts/migrate-neon-to-supabase.js --verify",
+    "migrate:full": "node scripts/migrate-neon-to-supabase.js --full",
+    "test:supabase": "node scripts/test-supabase-connection.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.79.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

@@ -2,43 +2,32 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { createPool } = require('./db-utils');
+const { getUserByUsername, getUserById, updateLastLogin } = require('./supabase-client');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 
-// Log connection string info (without password) for debugging
+// Log initialization
 console.log('🔍 Initializing auth endpoint...');
-console.log('📡 DATABASE_URL check:', {
-  exists: !!DATABASE_URL,
-  length: DATABASE_URL ? DATABASE_URL.length : 0,
-  prefix: DATABASE_URL ? DATABASE_URL.substring(0, 50) + '...' : 'N/A'
-});
+console.log('📡 Using Supabase JS client (REST API) to bypass DNS issues');
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  console.error('❌ Cannot initialize database connection');
+// Try to initialize direct connection as fallback
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed, will use Supabase client only:', error.message);
+  }
 } else {
-  const urlInfo = DATABASE_URL.replace(/:[^:@]+@/, ':****@');
-  console.log('📡 Database connection info:', {
-    hasUrl: !!DATABASE_URL,
-    urlPrefix: urlInfo.substring(0, 60) + '...',
-    isSupabase: DATABASE_URL.includes('supabase.co'),
-    isPooled: DATABASE_URL.includes(':6543'),
-    hostname: DATABASE_URL.match(/@([^:]+):/)?.[1] || 'N/A'
-  });
+  console.log('📡 Using Supabase client only (no DATABASE_URL)');
 }
-
-const pool = DATABASE_URL ? createPool(DATABASE_URL) : null;
 
 // Auth functions
 async function login(req, res) {
   try {
     console.log('🔐 Login attempt:', { username: req.body?.username });
-    
-    if (!pool) {
-      console.error('❌ Database pool not initialized - DATABASE_URL missing');
-      return res.status(500).json({ error: 'Database configuration error' });
-    }
     
     const { username, password } = req.body;
     
@@ -46,57 +35,75 @@ async function login(req, res) {
       return res.status(400).json({ error: 'Tên đăng nhập và mật khẩu là bắt buộc' });
     }
 
-    console.log('📡 Attempting database connection...');
-    const client = await pool.connect();
-    console.log('✅ Database connection established');
-    try {
-      const query = 'SELECT * FROM users WHERE username = $1 AND is_active = true';
-      const result = await client.query(query, [username]);
-      
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-      }
-      
-      const user = result.rows[0];
-      const isValidPassword = await bcrypt.compare(password, user.password_hash);
-      
-      if (!isValidPassword) {
-        return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-      }
-      
-      const token = jwt.sign(
-        { 
-          id: user.id, 
-          username: user.username, 
-          role: user.role,
-          name: user.full_name
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          is_active: user.is_active
+    // Try Supabase client first (bypasses DNS issues)
+    console.log('📡 Attempting Supabase client query...');
+    let user = await getUserByUsername(username);
+    
+    // Fallback to direct connection if Supabase client fails
+    if (!user && pool) {
+      console.log('⚠️ Supabase client failed, trying direct connection...');
+      try {
+        const client = await pool.connect();
+        try {
+          const query = 'SELECT * FROM users WHERE username = $1 AND is_active = true';
+          const result = await client.query(query, [username]);
+          if (result.rows.length > 0) {
+            user = result.rows[0];
+            console.log('✅ Direct connection successful');
+          }
+        } finally {
+          client.release();
         }
-      });
-    } finally {
-      client.release();
+      } catch (error) {
+        console.error('Direct connection also failed:', error.message);
+      }
     }
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+    }
+    
+    console.log('✅ User found:', user.username);
+    
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+    }
+    
+    // Update last login (try Supabase client first)
+    await updateLastLogin(user.id);
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        username: user.username, 
+        role: user.role,
+        name: user.full_name
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        is_active: user.is_active
+      }
+    });
   } catch (error) {
     console.error('Login error:', error);
     console.error('Error details:', {
       message: error.message,
       code: error.code,
-      stack: error.stack,
-      hasDatabaseUrl: !!DATABASE_URL,
-      databaseUrlPrefix: DATABASE_URL ? DATABASE_URL.substring(0, 30) + '...' : 'N/A'
+      stack: error.stack
     });
     res.status(500).json({ 
       error: 'Lỗi server',
@@ -132,43 +139,50 @@ async function verify(req, res) {
     }
     
     // Only query database if not in cache
-    if (!pool) {
-      console.error('❌ Database pool not initialized - DATABASE_URL missing');
-      return res.status(500).json({ error: 'Database configuration error' });
+    // Try Supabase client first
+    let user = await getUserById(decoded.id);
+    
+    // Fallback to direct connection if Supabase client fails
+    if (!user && pool) {
+      try {
+        const client = await pool.connect();
+        try {
+          const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
+          const result = await client.query(query, [decoded.id]);
+          if (result.rows.length > 0) {
+            user = result.rows[0];
+          }
+        } finally {
+          client.release();
+        }
+      } catch (error) {
+        console.error('Direct connection failed:', error.message);
+      }
     }
     
-    const client = await pool.connect();
-    try {
-      const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
-      const result = await client.query(query, [decoded.id]);
-      
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'User không tồn tại hoặc đã bị vô hiệu hóa' });
-      }
-      
-      const user = result.rows[0];
-      const userData = {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          name: user.full_name,
-          role: user.role,
-          is_active: user.is_active
-      };
-      
-      // Cache user data for next request
-      userCache.set(cacheKey, {
-        user: userData,
-        timestamp: Date.now()
-      });
-      
-      res.json({
-        valid: true,
-        user: userData
-      });
-    } finally {
-      client.release();
+    if (!user) {
+      return res.status(401).json({ error: 'User không tồn tại hoặc đã bị vô hiệu hóa' });
     }
+    
+    const userData = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.full_name,
+        role: user.role,
+        is_active: user.is_active
+    };
+    
+    // Cache user data for next request
+    userCache.set(cacheKey, {
+      user: userData,
+      timestamp: Date.now()
+    });
+    
+    res.json({
+      valid: true,
+      user: userData
+    });
   } catch (error) {
     console.error('Verify error:', error);
     res.status(401).json({ error: 'Token không hợp lệ' });
