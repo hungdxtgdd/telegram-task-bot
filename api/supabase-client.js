@@ -283,6 +283,226 @@ async function updateProjectsOKRId(projectIds, okrId) {
   }
 }
 
+// Project helper functions
+async function getAllProjects(filters = {}) {
+  try {
+    let query = supabase.from('projects').select('*');
+    
+    if (filters.okr_id) {
+      query = query.eq('okr_id', filters.okr_id);
+    }
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.priority) {
+      query = query.eq('priority', filters.priority);
+    }
+    
+    query = query.order('created_at', { ascending: false });
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase getAllProjects error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getAllProjects exception:', error);
+    return null;
+  }
+}
+
+async function getProjectById(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .single();
+    
+    if (error) {
+      console.error('Supabase getProjectById error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getProjectById exception:', error);
+    return null;
+  }
+}
+
+async function createProject(projectData) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .insert(projectData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase createProject error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase createProject exception:', error);
+    return null;
+  }
+}
+
+async function updateProject(projectId, updates) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', projectId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase updateProject error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase updateProject exception:', error);
+    return null;
+  }
+}
+
+async function deleteProject(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase deleteProject error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase deleteProject exception:', error);
+    return null;
+  }
+}
+
+async function getProjectTasks(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Supabase getProjectTasks error:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Supabase getProjectTasks exception:', error);
+    return [];
+  }
+}
+
+async function getProjectMembers(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('project_members')
+      .select('*, users(*)')
+      .eq('project_id', projectId);
+    
+    if (error) {
+      console.error('Supabase getProjectMembers error:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Supabase getProjectMembers exception:', error);
+    return [];
+  }
+}
+
+async function addProjectMember(projectId, userId, role = 'member') {
+  try {
+    // Use upsert to handle ON CONFLICT (update if exists, insert if not)
+    const { data, error } = await supabase
+      .from('project_members')
+      .upsert({
+        project_id: projectId,
+        user_id: userId,
+        role: role,
+        joined_at: new Date().toISOString()
+      }, {
+        onConflict: 'project_id,user_id'
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase addProjectMember error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase addProjectMember exception:', error);
+    return null;
+  }
+}
+
+async function removeProjectMember(projectId, userId) {
+  try {
+    const { data, error } = await supabase
+      .from('project_members')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase removeProjectMember error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase removeProjectMember exception:', error);
+    return null;
+  }
+}
+
+async function getProjectCount() {
+  try {
+    const { count, error } = await supabase
+      .from('projects')
+      .select('*', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error('Supabase getProjectCount error:', error);
+      return 0;
+    }
+    
+    return count || 0;
+  } catch (error) {
+    console.error('Supabase getProjectCount exception:', error);
+    return 0;
+  }
+}
+
 module.exports = {
   supabase,
   queryDatabase,
@@ -297,6 +517,16 @@ module.exports = {
   getOKREditHistory,
   getProjectsByOKRId,
   insertOKREditHistory,
-  updateProjectsOKRId
+  updateProjectsOKRId,
+  getAllProjects,
+  getProjectById,
+  createProject,
+  updateProject,
+  deleteProject,
+  getProjectTasks,
+  getProjectMembers,
+  addProjectMember,
+  removeProjectMember,
+  getProjectCount
 };
 
