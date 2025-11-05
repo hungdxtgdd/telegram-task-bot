@@ -88,11 +88,14 @@ module.exports = async (req, res) => {
 async function handleUserRequest(req, res, endpoint, userId) {
   // Check if pool is available
   if (!pool) {
+    console.log('⚠️ Users endpoint: No database pool available, returning 503');
     return res.status(503).json({ 
       error: 'Database connection not available. Please configure DATABASE_URL or use Supabase client.',
       details: 'This endpoint requires direct database connection which is not configured.'
     });
   }
+  
+  console.log('✅ Users endpoint: Database pool available');
 
   const { method } = req;
   
