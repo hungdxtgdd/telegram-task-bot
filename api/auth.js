@@ -3,14 +3,22 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 const { createPool } = require('./db-utils');
 
+const { getUserById } = require('./supabase-client');
+
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  process.exit(1);
+// Create pool only if DATABASE_URL is available (optional for Supabase client usage)
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed:', error.message);
+  }
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL)');
 }
-
-const pool = createPool(DATABASE_URL);
 
 // Cache user info để tránh query database mỗi lần
 const userCache = new Map();
@@ -53,13 +61,34 @@ async function verifyToken(req, res, next) {
                 return next();
             }
             
-            // Get user info from database
-            const client = await pool.connect();
-            const userQuery = await client.query('SELECT id, username, full_name, email, role FROM users WHERE id = $1', [decoded.id]);
-            client.release();
+            // Get user info from database (try Supabase client first)
+            let user = null;
             
-            if (userQuery.rows.length > 0) {
-                const user = userQuery.rows[0];
+            // Try Supabase client first
+            try {
+                user = await getUserById(decoded.id);
+            } catch (error) {
+                console.warn('Supabase client failed, trying direct connection:', error.message);
+            }
+            
+            // Fallback to direct connection if Supabase client fails
+            if (!user && pool) {
+                try {
+                    const client = await pool.connect();
+                    try {
+                        const userQuery = await client.query('SELECT id, username, full_name, email, role FROM users WHERE id = $1', [decoded.id]);
+                        if (userQuery.rows.length > 0) {
+                            user = userQuery.rows[0];
+                        }
+                    } finally {
+                        client.release();
+                    }
+                } catch (error) {
+                    console.error('Direct connection also failed:', error.message);
+                }
+            }
+            
+            if (user) {
                 req.user = {
                     id: user.id,
                     name: user.full_name,
@@ -109,6 +138,14 @@ async function verifyToken(req, res, next) {
 
 // Login endpoint
 async function login(req, res) {
+    // This function is not used anymore (auth-endpoint.js handles login)
+    // But keep it for backward compatibility
+    if (!pool) {
+        return res.status(503).json({ 
+            error: 'Database connection not available. Please use /api/auth/login endpoint.'
+        });
+    }
+    
     const client = await pool.connect();
     
     try {
@@ -218,6 +255,12 @@ async function logout(req, res) {
 
 // Change password endpoint
 async function changePassword(req, res) {
+    if (!pool) {
+        return res.status(503).json({ 
+            error: 'Database connection not available. Please configure DATABASE_URL.'
+        });
+    }
+    
     const client = await pool.connect();
     
     try {

@@ -1,19 +1,22 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
+const { createPool } = require('./db-utils');
+
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  process.exit(1);
-}
-
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
+// Create pool only if DATABASE_URL is available (optional for Supabase client usage)
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed:', error.message);
   }
-});
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL)');
+}
 
 module.exports = async (req, res) => {
   // Enable CORS
@@ -42,16 +45,31 @@ module.exports = async (req, res) => {
 
   try {
     // Check database connection
-    const dbStartTime = Date.now();
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    
-    healthCheck.checks.database = {
-      status: 'healthy',
-      responseTime: Date.now() - dbStartTime,
-      message: 'Database connection successful'
-    };
+    if (pool) {
+      const dbStartTime = Date.now();
+      try {
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        
+        healthCheck.checks.database = {
+          status: 'healthy',
+          responseTime: Date.now() - dbStartTime,
+          message: 'Database connection successful'
+        };
+      } catch (error) {
+        healthCheck.checks.database = {
+          status: 'unhealthy',
+          error: error.message,
+          message: 'Database connection failed'
+        };
+      }
+    } else {
+      healthCheck.checks.database = {
+        status: 'degraded',
+        message: 'Using Supabase client (no direct database connection)'
+      };
+    }
 
     // Check API endpoints
     const apiChecks = await checkAPIEndpoints();
