@@ -626,6 +626,115 @@ async function deleteTask(taskId) {
   }
 }
 
+// User helper functions (for admin operations)
+async function getAllUsers(simple = false) {
+  try {
+    let query = supabase.from('users').select('*');
+    
+    if (simple) {
+      query = query.select('id, username, full_name, email').eq('is_active', true).order('full_name', { ascending: true });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase getAllUsers error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getAllUsers exception:', error);
+    return null;
+  }
+}
+
+async function createUser(userData) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(userData)
+      .select('id, username, email, full_name, role, is_active, created_at')
+      .single();
+    
+    if (error) {
+      console.error('Supabase createUser error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase createUser exception:', error);
+    return null;
+  }
+}
+
+async function updateUser(userId, updates) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select('id, username, email, full_name, role, is_active, updated_at')
+      .single();
+    
+    if (error) {
+      console.error('Supabase updateUser error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase updateUser exception:', error);
+    return null;
+  }
+}
+
+async function deleteUser(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
+      .select('username')
+      .single();
+    
+    if (error) {
+      console.error('Supabase deleteUser error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase deleteUser exception:', error);
+    return null;
+  }
+}
+
+async function checkUsernameExists(username, excludeUserId = null) {
+  try {
+    let query = supabase.from('users').select('id').eq('username', username);
+    
+    if (excludeUserId) {
+      query = query.neq('id', excludeUserId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase checkUsernameExists error:', error);
+      return false;
+    }
+    
+    return (data && data.length > 0);
+  } catch (error) {
+    console.error('Supabase checkUsernameExists exception:', error);
+    return false;
+  }
+}
+
 module.exports = {
   supabase,
   queryDatabase,
@@ -655,6 +764,11 @@ module.exports = {
   getTaskById,
   createTask,
   updateTask,
-  deleteTask
+  deleteTask,
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  checkUsernameExists
 };
 
