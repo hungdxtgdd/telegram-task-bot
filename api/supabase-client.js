@@ -103,11 +103,200 @@ async function updateLastLogin(userId) {
   }
 }
 
+// OKR helper functions
+async function getAllOKRs() {
+  try {
+    const { data, error } = await supabase
+      .from('okrs')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Supabase getAllOKRs error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getAllOKRs exception:', error);
+    return null;
+  }
+}
+
+async function getOKRById(okrId) {
+  try {
+    const { data, error } = await supabase
+      .from('okrs')
+      .select('*')
+      .eq('id', okrId)
+      .single();
+    
+    if (error) {
+      console.error('Supabase getOKRById error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getOKRById exception:', error);
+    return null;
+  }
+}
+
+async function createOKR(okrData) {
+  try {
+    const { data, error } = await supabase
+      .from('okrs')
+      .insert(okrData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase createOKR error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase createOKR exception:', error);
+    return null;
+  }
+}
+
+async function updateOKR(okrId, updates) {
+  try {
+    const { data, error } = await supabase
+      .from('okrs')
+      .update(updates)
+      .eq('id', okrId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase updateOKR error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase updateOKR exception:', error);
+    return null;
+  }
+}
+
+async function deleteOKR(okrId) {
+  try {
+    const { data, error } = await supabase
+      .from('okrs')
+      .delete()
+      .eq('id', okrId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase deleteOKR error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase deleteOKR exception:', error);
+    return null;
+  }
+}
+
+async function getOKREditHistory(okrId) {
+  try {
+    const { data, error } = await supabase
+      .from('okr_edit_history')
+      .select('username, field_name, old_value, new_value, edited_at')
+      .eq('okr_id', okrId)
+      .order('edited_at', { ascending: false })
+      .limit(20);
+    
+    if (error) {
+      console.error('Supabase getOKREditHistory error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getOKREditHistory exception:', error);
+    return null;
+  }
+}
+
+async function getProjectsByOKRId(okrId) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, project_name, project_code, status')
+      .eq('okr_id', okrId);
+    
+    if (error) {
+      console.error('Supabase getProjectsByOKRId error:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Supabase getProjectsByOKRId exception:', error);
+    return [];
+  }
+}
+
+async function insertOKREditHistory(historyData) {
+  try {
+    const { data, error } = await supabase
+      .from('okr_edit_history')
+      .insert(historyData)
+      .select();
+    
+    if (error) {
+      console.error('Supabase insertOKREditHistory error:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Supabase insertOKREditHistory exception:', error);
+    return false;
+  }
+}
+
+async function updateProjectsOKRId(projectIds, okrId) {
+  try {
+    const { error } = await supabase
+      .from('projects')
+      .update({ okr_id: okrId })
+      .in('id', projectIds);
+    
+    if (error) {
+      console.error('Supabase updateProjectsOKRId error:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Supabase updateProjectsOKRId exception:', error);
+    return false;
+  }
+}
+
 module.exports = {
   supabase,
   queryDatabase,
   getUserByUsername,
   getUserById,
-  updateLastLogin
+  updateLastLogin,
+  getAllOKRs,
+  getOKRById,
+  createOKR,
+  updateOKR,
+  deleteOKR,
+  getOKREditHistory,
+  getProjectsByOKRId,
+  insertOKREditHistory,
+  updateProjectsOKRId
 };
 
