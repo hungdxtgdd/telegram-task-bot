@@ -1,21 +1,23 @@
 require('dotenv').config();
-const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const { verifyToken } = require('./auth');
 
+const { createPool } = require('./db-utils');
+
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  process.exit(1);
-}
-
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
+// Create pool only if DATABASE_URL is available (optional for Supabase client usage)
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed:', error.message);
   }
-});
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL) - some endpoints may not work');
+}
 
 // Middleware to check if user is admin
 function requireAdmin(req, res, next) {
@@ -84,6 +86,14 @@ module.exports = async (req, res) => {
 };
 
 async function handleUserRequest(req, res, endpoint, userId) {
+  // Check if pool is available
+  if (!pool) {
+    return res.status(503).json({ 
+      error: 'Database connection not available. Please configure DATABASE_URL or use Supabase client.',
+      details: 'This endpoint requires direct database connection which is not configured.'
+    });
+  }
+
   const { method } = req;
   
   console.log('handleUserRequest called with:', { endpoint, userId, method });

@@ -4,12 +4,18 @@ const { createPool } = require('./db-utils');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  process.exit(1);
+// Create pool only if DATABASE_URL is available (optional for Supabase client usage)
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed:', error.message);
+  }
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL) - some endpoints may not work');
 }
-
-const pool = createPool(DATABASE_URL);
 
 module.exports = async (req, res) => {
   // Enable CORS
@@ -35,6 +41,14 @@ module.exports = async (req, res) => {
 };
 
 async function handleOKRRequest(req, res) {
+  // Check if pool is available
+  if (!pool) {
+    return res.status(503).json({ 
+      error: 'Database connection not available. Please configure DATABASE_URL or use Supabase client.',
+      details: 'This endpoint requires direct database connection which is not configured.'
+    });
+  }
+
   const { method, url } = req;
   
   try {
