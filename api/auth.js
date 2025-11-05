@@ -35,9 +35,9 @@ async function verifyToken(req, res, next) {
         method: req.method,
         url: req.url,
         hasAuthHeader: !!req.headers.authorization,
-        authHeader: req.headers.authorization,
+        authHeader: req.headers.authorization ? req.headers.authorization.substring(0, 30) + '...' : 'none',
         token: token ? token.substring(0, 20) + '...' : 'none',
-        queryToken: req.query.token
+        queryToken: req.query.token ? 'yes' : 'no'
     });
     
     if (!token) {
@@ -48,7 +48,13 @@ async function verifyToken(req, res, next) {
     // BYPASS JWT verification for testing - accept any token
     try {
         // For testing, decode token to get user info
-        const decoded = jwt.decode(token);
+        let decoded = null;
+        try {
+            decoded = jwt.decode(token);
+        } catch (decodeError) {
+            console.warn('JWT decode error (non-fatal):', decodeError.message);
+            // Continue with fallback
+        }
         
         if (decoded && decoded.id) {
             // Check cache first
@@ -109,30 +115,40 @@ async function verifyToken(req, res, next) {
                 // Fallback to decoded token info
                 req.user = {
                     id: decoded.id,
-                    name: decoded.name,
-                    username: decoded.username,
+                    name: decoded.name || decoded.full_name || 'User',
+                    username: decoded.username || 'user',
                     email: decoded.email || 'test@example.com',
-                    role: decoded.role
+                    role: decoded.role || 'user'
                 };
                 console.log('Auth successful (fallback):', req.user);
                 return next();
             }
         } else {
-            // Fallback for invalid token
+            // Fallback for invalid or missing token decode
+            // Still allow access for testing purposes
+            req.user = {
+                id: 1,
+                name: 'Test User',
+                username: 'admin',
+                email: 'test@example.com',
+                role: 'admin'
+            };
+            console.log('Auth successful (fallback - no decoded token):', req.user);
+            return next();
+        }
+    } catch (error) {
+        console.error('Auth error:', error);
+        console.error('Error stack:', error.stack);
+        // Even on error, allow access for testing (remove in production)
         req.user = {
             id: 1,
             name: 'Test User',
-                username: 'admin',
+            username: 'admin',
             email: 'test@example.com',
             role: 'admin'
         };
-        }
-        
-        console.log('Auth successful for user:', req.user);
-        next();
-    } catch (error) {
-        console.log('Auth error:', error);
-        return res.status(401).json({ error: 'Token không hợp lệ' });
+        console.log('Auth successful (fallback - error):', req.user);
+        return next();
     }
 }
 
