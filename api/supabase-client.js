@@ -503,6 +503,129 @@ async function getProjectCount() {
   }
 }
 
+// Task helper functions
+async function getAllTasks(filters = {}) {
+  try {
+    let query = supabase.from('tasks').select('*');
+    
+    if (filters.project_id) {
+      query = query.eq('project_id', filters.project_id);
+    }
+    if (filters.assignee_id) {
+      query = query.eq('assignee_id', filters.assignee_id);
+    }
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.priority) {
+      query = query.eq('priority', filters.priority);
+    }
+    if (filters.deadline_from) {
+      query = query.gte('deadline', filters.deadline_from);
+    }
+    if (filters.deadline_to) {
+      query = query.lte('deadline', filters.deadline_to);
+    }
+    
+    // Order by priority and deadline
+    query = query.order('deadline', { ascending: true, nullsFirst: false });
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase getAllTasks error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getAllTasks exception:', error);
+    return null;
+  }
+}
+
+async function getTaskById(taskId) {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', taskId)
+      .single();
+    
+    if (error) {
+      console.error('Supabase getTaskById error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase getTaskById exception:', error);
+    return null;
+  }
+}
+
+async function createTask(taskData) {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert(taskData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase createTask error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase createTask exception:', error);
+    return null;
+  }
+}
+
+async function updateTask(taskId, updates) {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', taskId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase updateTask error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase updateTask exception:', error);
+    return null;
+  }
+}
+
+async function deleteTask(taskId) {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase deleteTask error:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Supabase deleteTask exception:', error);
+    return null;
+  }
+}
+
 module.exports = {
   supabase,
   queryDatabase,
@@ -527,6 +650,11 @@ module.exports = {
   getProjectMembers,
   addProjectMember,
   removeProjectMember,
-  getProjectCount
+  getProjectCount,
+  getAllTasks,
+  getTaskById,
+  createTask,
+  updateTask,
+  deleteTask
 };
 
