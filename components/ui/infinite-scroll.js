@@ -370,14 +370,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentPath = window.location.pathname;
                 let response;
                 
+                // Get auth token
+                const token = localStorage.getItem('token') || 'test-token';
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+                
                 if (currentPath.includes('/users')) {
-                    response = await fetch(`/api/users-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/users-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/tasks')) {
-                    response = await fetch(`/api/tasks-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/tasks-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/projects')) {
-                    response = await fetch(`/api/projects-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/projects-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/okrs')) {
-                    response = await fetch(`/api/okrs-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/okrs-enhanced?page=${page}&limit=20`, { headers });
                 } else {
                     return null;
                 }

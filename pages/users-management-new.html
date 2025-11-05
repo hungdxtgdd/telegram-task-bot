@@ -542,18 +542,26 @@
             });
 
         // Load camera integration
-        fetch('/components/ui/camera-integration.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('camera-integration-container').innerHTML = html;
-            });
+        const cameraContainer = document.getElementById('camera-integration-container');
+        if (cameraContainer) {
+            fetch('/components/ui/camera-integration.html')
+                .then(response => response.text())
+                .then(html => {
+                    cameraContainer.innerHTML = html;
+                })
+                .catch(err => console.warn('Could not load camera integration:', err));
+        }
 
         // Load voice notes
-        fetch('/components/ui/voice-notes.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('voice-notes-container').innerHTML = html;
-            });
+        const voiceNotesContainer = document.getElementById('voice-notes-container');
+        if (voiceNotesContainer) {
+            fetch('/components/ui/voice-notes.html')
+                .then(response => response.text())
+                .then(html => {
+                    voiceNotesContainer.innerHTML = html;
+                })
+                .catch(err => console.warn('Could not load voice notes:', err));
+        }
     </script>
 
     <!-- Load Mobile Gestures -->
@@ -577,25 +585,51 @@
             initializeInfiniteScroll();
         });
 
+        // Get auth headers helper
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token') || 'test-token';
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
         // Load users from API
         async function loadUsers() {
             try {
-                const response = await fetch('/api/users-enhanced');
+                const response = await fetch('/api/users-enhanced', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.success) {
-                    users = data.users || [];
-                    filteredUsers = [...users];
-                    renderUsers();
-                    updateStats();
+                // API returns array directly, not wrapped in {success: true, users: [...]}
+                if (Array.isArray(data)) {
+                    users = data;
+                } else if (data.success && Array.isArray(data.users)) {
+                    users = data.users;
+                } else if (Array.isArray(data.data)) {
+                    users = data.data;
                 } else {
-                    showError('Không thể tải danh sách users: ' + data.message);
+                    users = [];
                 }
+                
+                filteredUsers = [...users];
+                renderUsers();
+                updateStats();
             } catch (error) {
                 console.error('Error loading users:', error);
-                showError('Lỗi khi tải danh sách users');
+                showError('Lỗi khi tải danh sách users: ' + error.message);
             } finally {
-                document.getElementById('loadingState').classList.add('hidden');
+                const loadingState = document.getElementById('loadingState');
+                if (loadingState) {
+                    loadingState.classList.add('hidden');
+                }
             }
         }
 
@@ -807,20 +841,23 @@
             try {
                 const response = await fetch('/api/users-enhanced', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(formData)
                 });
                 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.success) {
-                    showSuccess('Thêm user thành công!');
+                if (data.message || response.ok) {
+                    showSuccess(data.message || 'Thêm user thành công!');
                     closeAddUserModal();
                     loadUsers();
                 } else {
-                    showError('Lỗi khi thêm user: ' + data.message);
+                    showError('Lỗi khi thêm user: ' + (data.error || data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error adding user:', error);
@@ -844,20 +881,23 @@
             try {
                 const response = await fetch(`/api/users-enhanced/${userId}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(formData)
                 });
                 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.success) {
-                    showSuccess('Cập nhật user thành công!');
+                if (data.message || response.ok) {
+                    showSuccess(data.message || 'Cập nhật user thành công!');
                     closeEditUserModal();
                     loadUsers();
                 } else {
-                    showError('Lỗi khi cập nhật user: ' + data.message);
+                    showError('Lỗi khi cập nhật user: ' + (data.error || data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error updating user:', error);
@@ -871,16 +911,22 @@
             
             try {
                 const response = await fetch(`/api/users-enhanced/${userId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
                 });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showSuccess('Xóa user thành công!');
+                if (data.message || response.ok) {
+                    showSuccess(data.message || 'Xóa user thành công!');
                     loadUsers();
                 } else {
-                    showError('Lỗi khi xóa user: ' + data.message);
+                    showError('Lỗi khi xóa user: ' + (data.error || data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error deleting user:', error);
