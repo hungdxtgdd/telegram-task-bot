@@ -970,7 +970,8 @@
         // Normalize status
         function normalizeStatus(status) {
             if (!status) return 'todo';
-            const statusLower = status.toLowerCase().replace(/_/g, '-');
+            // Replace spaces and underscores with hyphens, then lowercase
+            const statusLower = status.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-');
             const statusMap = {
                 'pending': 'todo',
                 'completed': 'done',
