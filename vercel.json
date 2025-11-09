@@ -272,6 +272,10 @@
       "dest": "/pages/test-user.html"
     },
     {
+      "src": "/test-tasks-ui",
+      "dest": "/pages/test-tasks-ui.html"
+    },
+    {
       "src": "/",
       "dest": "/pages/projects-enhanced.html"
     },
@@ -446,6 +450,10 @@
     {
       "src": "/scripts/test-tasks-ui.js",
       "dest": "/scripts/test-tasks-ui.js"
+    },
+    {
+      "src": "/scripts/test-runner-complete.js",
+      "dest": "/scripts/test-runner-complete.js"
     }
   ],
   "env": {
