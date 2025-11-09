@@ -118,6 +118,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "assets/css/tasks-ui.css",
+      "use": "@vercel/static"
+    },
+    {
       "src": "components/mobile-nav.html",
       "use": "@vercel/static"
     },
@@ -163,6 +167,34 @@
     },
     {
       "src": "components/ui/realtime-collaboration.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/task-card.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/view-mode-switcher.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/filter-bar.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "components/ui/kanban-board.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "pages/test-tasks-ui.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "scripts/test-runner-complete.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "scripts/test-tasks-ui.js",
       "use": "@vercel/static"
     }
   ],
@@ -336,6 +368,10 @@
       "dest": "/assets/css/tailwind.css"
     },
     {
+      "src": "/assets/css/tasks-ui.css",
+      "dest": "/assets/css/tasks-ui.css"
+    },
+    {
       "src": "/components/mobile-nav.html",
       "dest": "/components/mobile-nav.html"
     },
@@ -382,6 +418,34 @@
     {
       "src": "/components/ui/realtime-collaboration.css",
       "dest": "/components/ui/realtime-collaboration.css"
+    },
+    {
+      "src": "/components/ui/task-card.js",
+      "dest": "/components/ui/task-card.js"
+    },
+    {
+      "src": "/components/ui/view-mode-switcher.js",
+      "dest": "/components/ui/view-mode-switcher.js"
+    },
+    {
+      "src": "/components/ui/filter-bar.js",
+      "dest": "/components/ui/filter-bar.js"
+    },
+    {
+      "src": "/components/ui/kanban-board.js",
+      "dest": "/components/ui/kanban-board.js"
+    },
+    {
+      "src": "/pages/test-tasks-ui.html",
+      "dest": "/pages/test-tasks-ui.html"
+    },
+    {
+      "src": "/scripts/test-runner-complete.js",
+      "dest": "/scripts/test-runner-complete.js"
+    },
+    {
+      "src": "/scripts/test-tasks-ui.js",
+      "dest": "/scripts/test-tasks-ui.js"
     }
   ],
   "env": {
