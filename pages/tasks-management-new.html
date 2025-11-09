@@ -8,6 +8,8 @@
     <!-- CoreUI CSS -->
     <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.2/dist/css/coreui.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tasks UI CSS -->
+    <link rel="stylesheet" href="/assets/css/tasks-ui.css">
     <style>
         .task-priority-high { border-left: 4px solid var(--error-500); }
         .task-priority-medium { border-left: 4px solid var(--warning-500); }
@@ -288,10 +290,17 @@
                             <li class="breadcrumb-item active">Tasks</li>
                         </ol>
                         
-                        <!-- Page Title -->
-                        <div class="row">
-                            <div class="col-12">
-                                <h1>Quản lý Tasks</h1>
+                        <!-- Page Title & View Switcher -->
+                        <div class="tasks-header">
+                            <div class="tasks-header-left">
+                                <h1 style="margin: 0;">Quản lý Tasks</h1>
+                                <span class="tasks-count" id="tasksCount">0 tasks</span>
+                            </div>
+                            <div class="tasks-header-right">
+                                <div id="viewModeSwitcher"></div>
+                                <button class="btn btn-primary" onclick="showAddTaskModal()">
+                                    <i class="fas fa-plus"></i> Thêm Task
+                                </button>
                             </div>
                         </div>
     
@@ -354,8 +363,11 @@
                     </div>
                 </div>
 
-                    <!-- Filter Bar -->
-                    <div class="card mb-4">
+                    <!-- Filter Bar (New Component) -->
+                    <div id="filterBarContainer"></div>
+                    
+                    <!-- Legacy Filter Bar (Hidden, for backward compatibility) -->
+                    <div class="card mb-4 hidden" id="legacyFilterBar">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3">
@@ -390,23 +402,35 @@
                                         <option value="">Tất cả người phụ trách</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-primary" onclick="addTask()">
-                                        <i class="fas fa-plus"></i> Thêm Task
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
 
                 <!-- Kanban Board View -->
                 <div id="kanbanView" class="hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Mobile Tabs -->
+                    <div class="kanban-tabs" id="kanbanTabs">
+                        <button class="kanban-tab active" data-status="todo">
+                            To Do <span class="kanban-tab-count" id="mobileTodoCount">0</span>
+                        </button>
+                        <button class="kanban-tab" data-status="in-progress">
+                            In Progress <span class="kanban-tab-count" id="mobileInProgressCount">0</span>
+                        </button>
+                        <button class="kanban-tab" data-status="done">
+                            Done <span class="kanban-tab-count" id="mobileDoneCount">0</span>
+                        </button>
+                        <button class="kanban-tab" data-status="blocked">
+                            Blocked <span class="kanban-tab-count" id="mobileBlockedCount">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Desktop Columns -->
+                    <div class="kanban-columns-desktop" id="kanbanColumnsDesktop">
                         <!-- To Do Column -->
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-semibold text-gray-900">To Do</h3>
-                                <span class="badge badge-gray" id="todoCount">0</span>
+                        <div class="kanban-column bg-gray-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">To Do</h3>
+                                <span class="kanban-column-count" id="todoCount">0</span>
                             </div>
                             <div id="todoTasks" class="space-y-3 min-h-96">
                                 <!-- Tasks will be loaded here -->
@@ -414,10 +438,10 @@
                         </div>
                         
                         <!-- In Progress Column -->
-                        <div class="bg-blue-50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-semibold text-gray-900">In Progress</h3>
-                                <span class="badge badge-primary" id="inProgressCount">0</span>
+                        <div class="kanban-column bg-blue-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">In Progress</h3>
+                                <span class="kanban-column-count" id="inProgressCount">0</span>
                             </div>
                             <div id="inProgressTasks" class="space-y-3 min-h-96">
                                 <!-- Tasks will be loaded here -->
@@ -425,10 +449,10 @@
                         </div>
                         
                         <!-- Done Column -->
-                        <div class="bg-green-50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-semibold text-gray-900">Done</h3>
-                                <span class="badge badge-success" id="doneCount">0</span>
+                        <div class="kanban-column bg-green-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">Done</h3>
+                                <span class="kanban-column-count" id="doneCount">0</span>
                             </div>
                             <div id="doneTasks" class="space-y-3 min-h-96">
                                 <!-- Tasks will be loaded here -->
@@ -436,12 +460,58 @@
                         </div>
                         
                         <!-- Blocked Column -->
-                        <div class="bg-red-50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-semibold text-gray-900">Blocked</h3>
-                                <span class="badge badge-error" id="blockedCount">0</span>
+                        <div class="kanban-column bg-red-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">Blocked</h3>
+                                <span class="kanban-column-count" id="blockedCount">0</span>
                             </div>
                             <div id="blockedTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Columns (shown one at a time) -->
+                    <div class="kanban-columns-mobile active" data-status="todo">
+                        <div class="kanban-column bg-gray-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">To Do</h3>
+                                <span class="kanban-column-count" id="mobileTodoCountColumn">0</span>
+                            </div>
+                            <div id="mobileTodoTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-columns-mobile" data-status="in-progress">
+                        <div class="kanban-column bg-blue-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">In Progress</h3>
+                                <span class="kanban-column-count" id="mobileInProgressCountColumn">0</span>
+                            </div>
+                            <div id="mobileInProgressTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-columns-mobile" data-status="done">
+                        <div class="kanban-column bg-green-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">Done</h3>
+                                <span class="kanban-column-count" id="mobileDoneCountColumn">0</span>
+                            </div>
+                            <div id="mobileDoneTasks" class="space-y-3 min-h-96">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-columns-mobile" data-status="blocked">
+                        <div class="kanban-column bg-red-50 rounded-lg p-4">
+                            <div class="kanban-column-header">
+                                <h3 class="kanban-column-title">Blocked</h3>
+                                <span class="kanban-column-count" id="mobileBlockedCountColumn">0</span>
+                            </div>
+                            <div id="mobileBlockedTasks" class="space-y-3 min-h-96">
                                 <!-- Tasks will be loaded here -->
                             </div>
                         </div>
@@ -449,8 +519,8 @@
                 </div>
 
                 <!-- List View -->
-                <div id="listView">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tasksGrid">
+                <div id="listView" class="tasks-container">
+                    <div class="tasks-grid" id="tasksGrid">
                         <!-- Task cards will be loaded here -->
                     </div>
                 </div>
@@ -622,13 +692,12 @@
     </div>
 
     <!-- Include Components -->
-    <script>
-        // Mobile navigation and sidebar are now handled by CoreUI layout
-        // No need to fetch external components
-
-        // Components are now handled by CoreUI layout
-        // No need to fetch external components
-    </script>
+    <script src="/components/ui/task-card.js"></script>
+    <script src="/components/ui/view-mode-switcher.js"></script>
+    <script src="/components/ui/filter-bar.js"></script>
+    <script src="/components/ui/kanban-board.js"></script>
+    <!-- SortableJS for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <!-- Mobile Gestures are now handled by CoreUI -->
 
@@ -637,14 +706,305 @@
         let tasks = [];
         let filteredTasks = [];
         let users = [];
-        let currentView = 'list'; // 'list' or 'kanban'
+        let projects = [];
+        let currentView = 'list'; // 'list', 'kanban', 'gantt', 'timeline'
+        let viewModeSwitcher = null;
+        let filterBar = null;
+        let kanbanBoard = null;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
+            initializeComponents();
             setupEventListeners();
+            // Setup mobile tabs after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                setupMobileKanbanTabs();
+            }, 100);
             initializeInfiniteScroll();
         });
+
+        // Initialize new components
+        function initializeComponents() {
+            // Initialize View Mode Switcher
+            const switcherContainer = document.getElementById('viewModeSwitcher');
+            if (switcherContainer) {
+                viewModeSwitcher = new ViewModeSwitcher(switcherContainer, {
+                    currentView: currentView,
+                    onChange: function(viewId) {
+                        currentView = viewId;
+                        switchView(viewId);
+                    }
+                });
+                // Load saved view from localStorage
+                viewModeSwitcher.loadSavedView();
+            }
+
+            // Initialize Filter Bar (will be initialized after users and projects are loaded)
+            // This will be called in loadUsers() and loadProjects()
+        }
+
+        // Initialize Kanban Board
+        function initializeKanbanBoard() {
+            const kanbanView = document.getElementById('kanbanView');
+            if (!kanbanView) return;
+            
+            kanbanBoard = new KanbanBoard(kanbanView, {
+                onTaskMove: async function(moveData) {
+                    // Auto-save task status change
+                    await updateTaskStatus(moveData.taskId, moveData.newStatus);
+                },
+                onTaskDrop: function(dropData) {
+                    // Update column counts
+                    updateKanbanCounts();
+                }
+            });
+        }
+
+        // Update task status via API
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                // Map normalized status to API status format
+                // API accepts: 'Pending', 'In Progress', 'Done', 'Blocked', 'Cancelled'
+                const statusMap = {
+                    'todo': 'Pending',
+                    'in-progress': 'In Progress',
+                    'done': 'Done',
+                    'blocked': 'Blocked'
+                };
+                const apiStatus = statusMap[newStatus] || 'Pending';
+                
+                const response = await fetch(`/api/tasks-enhanced/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer test-token',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: apiStatus
+                    })
+                });
+                
+                if (response.ok) {
+                    const updatedTask = await response.json();
+                    
+                    // Update task in local array
+                    const taskIndex = tasks.findIndex(t => t.id == taskId);
+                    if (taskIndex !== -1) {
+                        tasks[taskIndex] = { ...tasks[taskIndex], ...updatedTask };
+                    }
+                    
+                    // Update filtered tasks if needed
+                    const filteredIndex = filteredTasks.findIndex(t => t.id == taskId);
+                    if (filteredIndex !== -1) {
+                        filteredTasks[filteredIndex] = { ...filteredTasks[filteredIndex], ...updatedTask };
+                    }
+                    
+                    // Update stats
+                    updateStats();
+                    console.log(`✅ Task ${taskId} status updated to ${apiStatus}`);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Failed to update task status:', errorText);
+                    // Revert the change by re-rendering
+                    renderTasks();
+                    showError('Không thể cập nhật trạng thái task. Vui lòng thử lại.');
+                }
+            } catch (error) {
+                console.error('❌ Error updating task status:', error);
+                // Revert the change by re-rendering
+                renderTasks();
+                showError('Lỗi khi cập nhật trạng thái task. Vui lòng thử lại.');
+            }
+        }
+
+        // Update Kanban column counts
+        function updateKanbanCounts() {
+            const columns = {
+                'todo': document.getElementById('todoTasks'),
+                'in-progress': document.getElementById('inProgressTasks'),
+                'done': document.getElementById('doneTasks'),
+                'blocked': document.getElementById('blockedTasks')
+            };
+            
+            const mobileColumns = {
+                'todo': document.getElementById('mobileTodoTasks'),
+                'in-progress': document.getElementById('mobileInProgressTasks'),
+                'done': document.getElementById('mobileDoneTasks'),
+                'blocked': document.getElementById('mobileBlockedTasks')
+            };
+            
+            Object.keys(columns).forEach(status => {
+                const column = columns[status];
+                const mobileColumn = mobileColumns[status];
+                
+                // Count from filtered tasks instead of DOM
+                const count = filteredTasks.filter(t => normalizeStatus(t.status) === status).length;
+                
+                // Update desktop count
+                const countEl = document.getElementById(`${status}Count`);
+                if (countEl) countEl.textContent = count;
+                
+                // Update mobile tab count
+                const statusCamel = status.split('-').map((s, i) => 
+                    i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1)
+                ).join('');
+                const mobileTabCountEl = document.getElementById(`mobile${statusCamel.charAt(0).toUpperCase() + statusCamel.slice(1)}Count`);
+                if (mobileTabCountEl) mobileTabCountEl.textContent = count;
+                
+                // Update mobile column count
+                const mobileColumnCountEl = document.getElementById(`mobile${statusCamel.charAt(0).toUpperCase() + statusCamel.slice(1)}CountColumn`);
+                if (mobileColumnCountEl) mobileColumnCountEl.textContent = count;
+            });
+        }
+
+        // Initialize Filter Bar after data is loaded
+        function initializeFilterBar() {
+            const filterContainer = document.getElementById('filterBarContainer');
+            if (filterContainer) {
+                // Don't wait for users, initialize with empty arrays
+                filterBar = new FilterBar(filterContainer, {
+                    filters: {
+                        status: [],
+                        priority: [],
+                        assignee: [],
+                        project: [],
+                        dueDate: null,
+                        search: ''
+                    },
+                    users: users || [],
+                    projects: projects || [],
+                    onChange: function(filters) {
+                        applyFilters(filters);
+                    }
+                });
+            }
+        }
+
+        // Switch view mode
+        function switchView(viewId) {
+            const kanbanView = document.getElementById('kanbanView');
+            const listView = document.getElementById('listView');
+            const ganttView = document.getElementById('ganttView');
+            const timelineView = document.getElementById('timelineView');
+
+            // Hide all views first
+            if (kanbanView) kanbanView.classList.add('hidden');
+            if (listView) listView.classList.add('hidden');
+            if (ganttView) ganttView?.classList.add('hidden');
+            if (timelineView) timelineView?.classList.add('hidden');
+
+            // Show selected view
+            if (viewId === 'kanban' && kanbanView) {
+                kanbanView.classList.remove('hidden');
+                // Initialize Kanban board if not already initialized
+                if (!kanbanBoard) {
+                    initializeKanbanBoard();
+                }
+            } else if (viewId === 'list' && listView) {
+                listView.classList.remove('hidden');
+            } else if (viewId === 'gantt' && ganttView) {
+                ganttView.classList.remove('hidden');
+                // TODO: Initialize Gantt chart
+            } else if (viewId === 'timeline' && timelineView) {
+                timelineView.classList.remove('hidden');
+                // TODO: Initialize Timeline view
+            } else {
+                // Default to list view if view not found
+                if (listView) listView.classList.remove('hidden');
+            }
+
+            // Re-render tasks for current view
+            renderTasks();
+        }
+
+        // Apply filters from FilterBar component
+        function applyFilters(filters) {
+            filteredTasks = tasks.filter(task => {
+                // Status filter (AND - must match any of selected)
+                if (filters.status && filters.status.length > 0) {
+                    const taskStatus = normalizeStatus(task.status);
+                    if (!filters.status.includes(taskStatus)) return false;
+                }
+
+                // Priority filter (AND - must match any of selected)
+                if (filters.priority && filters.priority.length > 0) {
+                    const taskPriority = normalizePriority(task.priority);
+                    if (!filters.priority.includes(taskPriority)) return false;
+                }
+
+                // Assignee filter (OR - any of selected)
+                if (filters.assignee && filters.assignee.length > 0) {
+                    const assigneeId = String(task.assignee_id || '');
+                    if (!filters.assignee.includes(assigneeId)) return false;
+                }
+
+                // Project filter (OR - any of selected)
+                if (filters.project && filters.project.length > 0) {
+                    const projectId = String(task.project_id || '');
+                    if (!filters.project.includes(projectId)) return false;
+                }
+
+                // Search filter (title, description)
+                if (filters.search && filters.search.trim()) {
+                    const searchLower = filters.search.toLowerCase();
+                    const title = (task.task_name || task.title || '').toLowerCase();
+                    const description = (task.description || '').toLowerCase();
+                    if (!title.includes(searchLower) && !description.includes(searchLower)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderTasks();
+            updateTasksCount();
+            
+            // Update Kanban counts if in Kanban view
+            if (currentView === 'kanban') {
+                updateKanbanCounts();
+            }
+        }
+
+        // Normalize status
+        function normalizeStatus(status) {
+            if (!status) return 'todo';
+            const statusLower = status.toLowerCase().replace(/_/g, '-');
+            const statusMap = {
+                'pending': 'todo',
+                'completed': 'done',
+                'cancelled': 'blocked',
+                'in-progress': 'in-progress',
+                'inprogress': 'in-progress',
+                'todo': 'todo',
+                'done': 'done',
+                'blocked': 'blocked'
+            };
+            return statusMap[statusLower] || 'todo';
+        }
+
+        // Normalize priority
+        function normalizePriority(priority) {
+            if (!priority) return 'medium';
+            const priorityLower = priority.toLowerCase();
+            const priorityMap = {
+                'emergency': 'emergency',
+                'high': 'high',
+                'medium': 'medium',
+                'low': 'low'
+            };
+            return priorityMap[priorityLower] || 'medium';
+        }
+
+        // Update tasks count
+        function updateTasksCount() {
+            const countElement = document.getElementById('tasksCount');
+            if (countElement) {
+                const count = filteredTasks.length;
+                countElement.textContent = `${count} task${count !== 1 ? 's' : ''}`;
+            }
+        }
 
         async function checkAuth() {
             try {
@@ -660,6 +1020,7 @@
                 setupRoleBasedUI();
                 
                 loadUsers();
+                loadProjects();
                 loadTasks();
             } catch (error) {
                 console.error('Auth check failed:', error);
@@ -686,12 +1047,64 @@
                 });
                 const data = await response.json();
                 
-                if (data.success) {
-                    users = data.users || [];
-                    updateAssigneeDropdowns();
+                // Handle different response formats
+                if (Array.isArray(data)) {
+                    users = data;
+                } else if (data.success && Array.isArray(data.users)) {
+                    users = data.users;
+                } else if (Array.isArray(data.data)) {
+                    users = data.data;
+                } else {
+                    users = [];
+                }
+                
+                updateAssigneeDropdowns();
+                // Initialize filter bar after users are loaded
+                if (!filterBar) {
+                    initializeFilterBar();
+                } else {
+                    // Re-render filter bar with updated users
+                    filterBar.users = users;
+                    filterBar.render();
+                    filterBar.attachEventListeners();
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
+                users = [];
+            }
+        }
+
+        // Load projects for project filter
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects-enhanced/projects', {
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                const data = await response.json();
+                
+                // Handle different response formats
+                if (Array.isArray(data)) {
+                    projects = data;
+                } else if (data.success && Array.isArray(data.projects)) {
+                    projects = data.projects;
+                } else if (Array.isArray(data.data)) {
+                    projects = data.data;
+                } else {
+                    projects = [];
+                }
+                
+                // Update filter bar with projects
+                if (filterBar) {
+                    filterBar.projects = projects || [];
+                    filterBar.render();
+                    filterBar.attachEventListeners();
+                } else {
+                    // If filter bar not initialized yet, initialize it now
+                    initializeFilterBar();
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                projects = [];
             }
         }
 
@@ -703,10 +1116,33 @@
                 });
                 
                 if (response.ok) {
-                    tasks = await response.json();
-                    filteredTasks = [...tasks];
+                    // Handle different response formats
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        tasks = data;
+                    } else if (data.success && Array.isArray(data.tasks)) {
+                        tasks = data.tasks;
+                    } else if (Array.isArray(data.data)) {
+                        tasks = data.data;
+                    } else {
+                        tasks = [];
+                    }
+                    
+                    // Apply current filters
+                    if (filterBar) {
+                        applyFilters(filterBar.getFilters());
+                    } else {
+                        filteredTasks = [...tasks];
+                    }
+                    
                     renderTasks();
                     updateStats();
+                    updateTasksCount();
+                    
+                    // Update Kanban counts if in Kanban view
+                    if (currentView === 'kanban') {
+                        updateKanbanCounts();
+                    }
                 } else {
                     showError('Không thể tải danh sách tasks');
                 }
@@ -732,15 +1168,49 @@
             const grid = document.getElementById('tasksGrid');
             const emptyState = document.getElementById('emptyState');
             
+            if (!grid) return;
+            
             if (filteredTasks.length === 0) {
                 grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
             
-            emptyState.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
             
-            grid.innerHTML = filteredTasks.map(task => createTaskCard(task)).join('');
+            // Use TaskCard component
+            grid.innerHTML = '';
+            filteredTasks.forEach(task => {
+                const taskCard = new TaskCard(task, {
+                    variant: 'standard',
+                    onClick: function(task) {
+                        showTaskDetail(task.id);
+                    },
+                    onEdit: function(btn) {
+                        const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                        if (taskId) editTask(taskId);
+                    },
+                    onDelete: function(btn) {
+                        const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                        if (taskId) deleteTask(taskId);
+                    }
+                });
+                const cardElement = taskCard.render();
+                // Store callbacks on the element for later use
+                cardElement._taskCard = taskCard;
+                grid.appendChild(cardElement);
+            });
+            
+            // Attach global handlers for edit/delete
+            window.handleTaskEdit = function(btn) {
+                const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                if (taskId) editTask(taskId);
+            };
+            
+            window.handleTaskDelete = function(btn) {
+                const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                if (taskId) deleteTask(taskId);
+            };
         }
 
         // Render kanban view
@@ -752,6 +1222,14 @@
                 'blocked': document.getElementById('blockedTasks')
             };
             
+            // Mobile columns
+            const mobileColumns = {
+                'todo': document.getElementById('mobileTodoTasks'),
+                'in-progress': document.getElementById('mobileInProgressTasks'),
+                'done': document.getElementById('mobileDoneTasks'),
+                'blocked': document.getElementById('mobileBlockedTasks')
+            };
+            
             const counts = {
                 'todo': 0,
                 'in-progress': 0,
@@ -759,26 +1237,119 @@
                 'blocked': 0
             };
             
-            // Clear all columns
+            // Clear all columns (desktop and mobile)
             Object.values(columns).forEach(column => {
-                column.innerHTML = '';
+                if (column) column.innerHTML = '';
+            });
+            Object.values(mobileColumns).forEach(column => {
+                if (column) column.innerHTML = '';
             });
             
             // Group tasks by status
             filteredTasks.forEach(task => {
-                const status = task.status || 'todo';
+                const status = normalizeStatus(task.status);
+                
+                // Render for desktop column
                 if (columns[status]) {
-                    columns[status].innerHTML += createTaskCard(task, true);
+                    const taskCard = new TaskCard(task, {
+                        variant: 'compact',
+                        onClick: function(task) {
+                            showTaskDetail(task.id);
+                        },
+                        onEdit: function(btn) {
+                            const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                            if (taskId) editTask(taskId);
+                        },
+                        onDelete: function(btn) {
+                            const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                            if (taskId) deleteTask(taskId);
+                        }
+                    });
+                    const cardElement = taskCard.render();
+                    cardElement._taskCard = taskCard;
+                    columns[status].appendChild(cardElement);
                     counts[status]++;
+                }
+                
+                // Render for mobile column
+                if (mobileColumns[status]) {
+                    const taskCard = new TaskCard(task, {
+                        variant: 'compact',
+                        onClick: function(task) {
+                            showTaskDetail(task.id);
+                        },
+                        onEdit: function(btn) {
+                            const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                            if (taskId) editTask(taskId);
+                        },
+                        onDelete: function(btn) {
+                            const taskId = btn.closest('.task-card')?.getAttribute('data-task-id');
+                            if (taskId) deleteTask(taskId);
+                        }
+                    });
+                    const cardElement = taskCard.render();
+                    cardElement._taskCard = taskCard;
+                    mobileColumns[status].appendChild(cardElement);
                 }
             });
             
-            // Update counts
+            // Update counts (desktop and mobile)
             Object.keys(counts).forEach(status => {
+                const count = counts[status];
+                
+                // Desktop counts
                 const countElement = document.getElementById(`${status}Count`);
-                if (countElement) {
-                    countElement.textContent = counts[status];
-                }
+                if (countElement) countElement.textContent = count;
+                
+                // Mobile counts
+                const statusCamel = status.split('-').map((s, i) => 
+                    i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1)
+                ).join('');
+                const mobileCountEl = document.getElementById(`mobile${statusCamel.charAt(0).toUpperCase() + statusCamel.slice(1)}Count`);
+                if (mobileCountEl) mobileCountEl.textContent = count;
+                
+                const mobileCountColumnEl = document.getElementById(`mobile${statusCamel.charAt(0).toUpperCase() + statusCamel.slice(1)}CountColumn`);
+                if (mobileCountColumnEl) mobileCountColumnEl.textContent = count;
+            });
+            
+            // Reinitialize Kanban board after rendering (only if Kanban view is active)
+            if (kanbanBoard && currentView === 'kanban') {
+                // Use setTimeout to ensure DOM is fully updated
+                setTimeout(() => {
+                    kanbanBoard.reinitialize();
+                }, 100);
+            }
+        }
+
+        // Setup mobile Kanban tabs
+        function setupMobileKanbanTabs() {
+            const tabs = document.querySelectorAll('.kanban-tab');
+            const mobileColumns = document.querySelectorAll('.kanban-columns-mobile');
+            
+            if (tabs.length === 0 || mobileColumns.length === 0) {
+                // Elements not found, might not be on page yet
+                return;
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const status = tab.getAttribute('data-status');
+                    
+                    if (!status) return;
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding column
+                    mobileColumns.forEach(col => {
+                        col.classList.remove('active');
+                        if (col.getAttribute('data-status') === status) {
+                            col.classList.add('active');
+                        }
+                    });
+                });
             });
         }
 
@@ -877,17 +1448,31 @@
         // Update statistics
         function updateStats() {
             const totalTasks = tasks.length;
-            const inProgressTasks = tasks.filter(t => t.status === 'in-progress').length;
-            const completedTasks = tasks.filter(t => t.status === 'done').length;
+            const inProgressTasks = tasks.filter(t => {
+                const status = normalizeStatus(t.status);
+                return status === 'in-progress';
+            }).length;
+            const completedTasks = tasks.filter(t => {
+                const status = normalizeStatus(t.status);
+                return status === 'done';
+            }).length;
             const overdueTasks = tasks.filter(t => {
-                if (!t.due_date || t.status === 'done') return false;
-                return new Date(t.due_date) < new Date();
+                const dueDate = t.deadline || t.due_date;
+                if (!dueDate) return false;
+                const status = normalizeStatus(t.status);
+                if (status === 'done') return false;
+                return new Date(dueDate) < new Date();
             }).length;
             
-            document.getElementById('totalTasks').textContent = totalTasks;
-            document.getElementById('inProgressTasks').textContent = inProgressTasks;
-            document.getElementById('completedTasks').textContent = completedTasks;
-            document.getElementById('overdueTasks').textContent = overdueTasks;
+            const totalEl = document.getElementById('totalTasks');
+            const inProgressEl = document.getElementById('inProgressTasks');
+            const completedEl = document.getElementById('completedTasks');
+            const overdueEl = document.getElementById('overdueTasks');
+            
+            if (totalEl) totalEl.textContent = totalTasks;
+            if (inProgressEl) inProgressEl.textContent = inProgressTasks;
+            if (completedEl) completedEl.textContent = completedTasks;
+            if (overdueEl) overdueEl.textContent = overdueTasks;
         }
 
         // Setup event listeners
