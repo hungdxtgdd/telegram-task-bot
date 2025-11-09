@@ -450,10 +450,6 @@
     {
       "src": "/scripts/test-tasks-ui.js",
       "dest": "/scripts/test-tasks-ui.js"
-    },
-    {
-      "src": "/scripts/test-runner-complete.js",
-      "dest": "/scripts/test-runner-complete.js"
     }
   ],
   "env": {
