@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks UI Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.25rem;
+        }
+        
+        .test-section p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        button.secondary {
+            background: #6b7280;
+        }
+        
+        button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        button.success {
+            background: #10b981;
+        }
+        
+        button.success:hover {
+            background: #059669;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .results pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status.running {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .instructions {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #1e3a8a;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Tasks UI Test Page</h1>
+        <p class="subtitle">Comprehensive test suite for Tasks UI components and functionality</p>
+        
+        <div class="instructions">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Open this page in the same browser where you have the Tasks page open</li>
+                <li>Or navigate to <span class="code">/tasks</span> page first, then open this test page</li>
+                <li>Click "Run All Tests" to execute the complete test suite</li>
+                <li>Check the browser console (F12) for detailed test results</li>
+                <li>Results will also appear in the results section below</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Quick Tests</h2>
+            <p>Run individual test suites or all tests at once</p>
+            <div class="button-group">
+                <button onclick="runAllTests()" class="success">▶️ Run All Tests</button>
+                <button onclick="runNormalizationTests()">🧪 Normalization Tests</button>
+                <button onclick="runFilterTests()">🔍 Filter Tests</button>
+                <button onclick="runComponentTests()">🧩 Component Tests</button>
+                <button onclick="runEdgeCaseTests()">⚠️ Edge Case Tests</button>
+                <button onclick="clearResults()" class="secondary">🗑️ Clear Results</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results <span id="testStatus" class="status pending">Pending</span></h2>
+            <div id="results" class="results">
+                <p style="color: #666;">Click "Run All Tests" to start testing...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 Links</h2>
+            <p>Navigate to the actual Tasks page to test UI interactions:</p>
+            <div class="button-group">
+                <button onclick="window.open('/tasks', '_blank')">📋 Open Tasks Page</button>
+                <button onclick="window.open('/tasks-management-new.html', '_blank')" class="secondary">📋 Open Tasks Management Page</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load test scripts -->
+    <script src="/components/ui/task-card.js"></script>
+    <script src="/components/ui/view-mode-switcher.js"></script>
+    <script src="/components/ui/filter-bar.js"></script>
+    <script src="/scripts/test-runner-complete.js"></script>
+    
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        let consoleOutput = [];
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.push({ type: 'log', message: args.join(' ') });
+            updateResults();
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleOutput.push({ type: 'error', message: args.join(' ') });
+            updateResults();
+        };
+        
+        function updateResults() {
+            const resultsDiv = document.getElementById('results');
+            const statusSpan = document.getElementById('testStatus');
+            
+            if (consoleOutput.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #666;">Click "Run All Tests" to start testing...</p>';
+                statusSpan.textContent = 'Pending';
+                statusSpan.className = 'status pending';
+                return;
+            }
+            
+            const output = consoleOutput.slice(-100).map(item => {
+                const color = item.type === 'error' ? '#ef4444' : '#f9fafb';
+                return `<div style="color: ${color};">${escapeHtml(item.message)}</div>`;
+            }).join('');
+            
+            resultsDiv.innerHTML = `<pre>${output}</pre>`;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function runAllTests() {
+            const statusSpan = document.getElementById('testStatus');
+            statusSpan.textContent = 'Running...';
+            statusSpan.className = 'status running';
+            consoleOutput = [];
+            
+            try {
+                if (typeof CompleteTestRunner !== 'undefined' && CompleteTestRunner.runAll) {
+                    await CompleteTestRunner.runAll();
+                } else {
+                    console.error('Test runner not loaded. Please ensure test-runner-complete.js is loaded.');
+                }
+                
+                statusSpan.textContent = 'Completed';
+                statusSpan.className = 'status completed';
+            } catch (error) {
+                console.error('Test execution error:', error);
+                statusSpan.textContent = 'Failed';
+                statusSpan.className = 'status failed';
+            }
+        }
+        
+        async function runNormalizationTests() {
+            console.log('Running Normalization Tests...');
+            if (typeof CompleteTestRunner !== 'undefined') {
+                await testNormalization();
+            }
+        }
+        
+        async function runFilterTests() {
+            console.log('Running Filter Tests...');
+            if (typeof CompleteTestRunner !== 'undefined') {
+                await testFilterLogic();
+            }
+        }
+        
+        async function runComponentTests() {
+            console.log('Running Component Tests...');
+            if (typeof CompleteTestRunner !== 'undefined') {
+                await testComponentInitialization();
+            }
+        }
+        
+        async function runEdgeCaseTests() {
+            console.log('Running Edge Case Tests...');
+            if (typeof CompleteTestRunner !== 'undefined') {
+                await testEdgeCases();
+            }
+        }
+        
+        function clearResults() {
+            consoleOutput = [];
+            updateResults();
+            const statusSpan = document.getElementById('testStatus');
+            statusSpan.textContent = 'Pending';
+            statusSpan.className = 'status pending';
+        }
+        
+        // Auto-run on load if requested
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autorun') === 'true') {
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+

@@ -1,73 +1,114 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
-
 require('dotenv').config();
+const { createPool } = require('./db-utils');
+const { getUserByUsername, getUserById, updateLastLogin } = require('./supabase-client');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || 'fa0d6e1cc58fa4031cbdbcd32ee2452f399fbf56235e409b7579ba75690f10d453801853c9796f8cfea508f0c20ed3dd20bd0c02c080c0f871e02d01c1a4a1fd';
 
+// Log initialization
+console.log('🔍 Initializing auth endpoint...');
+console.log('📡 Using Supabase JS client (REST API) to bypass DNS issues');
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
+// Try to initialize direct connection as fallback
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed, will use Supabase client only:', error.message);
   }
-});
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL)');
+}
 
 // Auth functions
 async function login(req, res) {
   try {
+    console.log('🔐 Login attempt:', { username: req.body?.username });
+    
     const { username, password } = req.body;
     
     if (!username || !password) {
       return res.status(400).json({ error: 'Tên đăng nhập và mật khẩu là bắt buộc' });
     }
 
-    const client = await pool.connect();
-    try {
-      const query = 'SELECT * FROM users WHERE username = $1 AND is_active = true';
-      const result = await client.query(query, [username]);
-      
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-      }
-      
-      const user = result.rows[0];
-      const isValidPassword = await bcrypt.compare(password, user.password_hash);
-      
-      if (!isValidPassword) {
-        return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-      }
-      
-      const token = jwt.sign(
-        { 
-          id: user.id, 
-          username: user.username, 
-          role: user.role,
-          name: user.full_name
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          is_active: user.is_active
+    // Try Supabase client first (bypasses DNS issues)
+    console.log('📡 Attempting Supabase client query...');
+    let user = await getUserByUsername(username);
+    
+    // Fallback to direct connection if Supabase client fails
+    if (!user && pool) {
+      console.log('⚠️ Supabase client failed, trying direct connection...');
+      try {
+        const client = await pool.connect();
+        try {
+          const query = 'SELECT * FROM users WHERE username = $1 AND is_active = true';
+          const result = await client.query(query, [username]);
+          if (result.rows.length > 0) {
+            user = result.rows[0];
+            console.log('✅ Direct connection successful');
+          }
+        } finally {
+          client.release();
         }
-      });
-    } finally {
-      client.release();
+      } catch (error) {
+        console.error('Direct connection also failed:', error.message);
+      }
     }
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+    }
+    
+    console.log('✅ User found:', user.username);
+    
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+    }
+    
+    // Update last login (try Supabase client first)
+    await updateLastLogin(user.id);
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        username: user.username, 
+        role: user.role,
+        name: user.full_name
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        is_active: user.is_active
+      }
+    });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Lỗi server' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      error: 'Lỗi server',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
 
@@ -98,38 +139,50 @@ async function verify(req, res) {
     }
     
     // Only query database if not in cache
-    const client = await pool.connect();
-    try {
-      const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
-      const result = await client.query(query, [decoded.id]);
-      
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'User không tồn tại hoặc đã bị vô hiệu hóa' });
+    // Try Supabase client first
+    let user = await getUserById(decoded.id);
+    
+    // Fallback to direct connection if Supabase client fails
+    if (!user && pool) {
+      try {
+        const client = await pool.connect();
+        try {
+          const query = 'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1 AND is_active = true';
+          const result = await client.query(query, [decoded.id]);
+          if (result.rows.length > 0) {
+            user = result.rows[0];
+          }
+        } finally {
+          client.release();
+        }
+      } catch (error) {
+        console.error('Direct connection failed:', error.message);
       }
-      
-      const user = result.rows[0];
-      const userData = {
+    }
+    
+    if (!user) {
+      return res.status(401).json({ error: 'User không tồn tại hoặc đã bị vô hiệu hóa' });
+    }
+    
+    const userData = {
         id: user.id,
         username: user.username,
         email: user.email,
         name: user.full_name,
         role: user.role,
         is_active: user.is_active
-      };
-      
-      // Cache user data for next request
-      userCache.set(cacheKey, {
-        user: userData,
-        timestamp: Date.now()
-      });
-      
-      res.json({
-        valid: true,
-        user: userData
-      });
-    } finally {
-      client.release();
-    }
+    };
+    
+    // Cache user data for next request
+    userCache.set(cacheKey, {
+      user: userData,
+      timestamp: Date.now()
+    });
+    
+    res.json({
+      valid: true,
+      user: userData
+    });
   } catch (error) {
     console.error('Verify error:', error);
     res.status(401).json({ error: 'Token không hợp lệ' });
@@ -219,7 +272,15 @@ module.exports = async (req, res) => {
         }
     } catch (error) {
         console.error('Auth endpoint error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        res.status(500).json({ 
+            error: 'Lỗi server',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

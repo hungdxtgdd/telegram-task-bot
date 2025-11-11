@@ -370,33 +370,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentPath = window.location.pathname;
                 let response;
                 
+                // Get auth token
+                const token = localStorage.getItem('token') || 'test-token';
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+                
                 if (currentPath.includes('/users')) {
-                    response = await fetch(`/api/users-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/users-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/tasks')) {
-                    response = await fetch(`/api/tasks-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/tasks-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/projects')) {
-                    response = await fetch(`/api/projects-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/projects-enhanced?page=${page}&limit=20`, { headers });
                 } else if (currentPath.includes('/okrs')) {
-                    response = await fetch(`/api/okrs-enhanced?page=${page}&limit=20`);
+                    response = await fetch(`/api/okrs-enhanced?page=${page}&limit=20`, { headers });
                 } else {
                     return null;
                 }
                 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.success) {
-                    // Render new items
-                    if (typeof renderItems === 'function') {
-                        renderItems(data.items || data.data || []);
-                    }
-                    
-                    return {
-                        hasMore: data.hasMore !== false,
-                        totalPages: data.totalPages || Math.ceil((data.total || 0) / 20)
-                    };
-                } else {
-                    throw new Error(data.message || 'Failed to load data');
+                // Handle both array response and object response
+                let items = [];
+                if (Array.isArray(data)) {
+                    items = data;
+                } else if (data.success && Array.isArray(data.items)) {
+                    items = data.items;
+                } else if (data.success && Array.isArray(data.data)) {
+                    items = data.data;
+                } else if (Array.isArray(data.items)) {
+                    items = data.items;
+                } else if (Array.isArray(data.data)) {
+                    items = data.data;
                 }
+                
+                // Render new items
+                if (typeof renderItems === 'function') {
+                    renderItems(items);
+                }
+                
+                return {
+                    hasMore: data.hasMore !== false && items.length > 0,
+                    totalPages: data.totalPages || Math.ceil((data.total || items.length) / 20)
+                };
             } catch (error) {
                 console.error('Error loading more data:', error);
                 throw error;

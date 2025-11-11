@@ -1,26 +1,34 @@
 require('dotenv').config();
-const { Pool } = require('pg');
 const { verifyToken, requireAdmin, requireAdminOrManager } = require('./auth');
+const { createPool } = require('./db-utils');
+const { 
+  getAllOKRs: supabaseGetAllOKRs, 
+  getOKRById: supabaseGetOKRById,
+  createOKR: supabaseCreateOKR,
+  updateOKR: supabaseUpdateOKR,
+  deleteOKR: supabaseDeleteOKR,
+  getOKREditHistory: supabaseGetOKREditHistory,
+  getProjectsByOKRId,
+  getUserById,
+  insertOKREditHistory,
+  updateProjectsOKRId,
+  supabase
+} = require('./supabase-client');
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found in environment variables');
-  process.exit(1);
+// Create pool only if DATABASE_URL is available (optional for Supabase client usage)
+let pool = null;
+if (DATABASE_URL) {
+  try {
+    pool = createPool(DATABASE_URL);
+    console.log('📡 Direct PostgreSQL connection available as fallback');
+  } catch (error) {
+    console.warn('⚠️ Direct connection initialization failed:', error.message);
+  }
+} else {
+  console.log('📡 Using Supabase client only (no DATABASE_URL) - some endpoints may not work');
 }
-
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  // Tối ưu connection pool
-  max: 20, // Tăng số connection tối đa
-  min: 2,  // Giữ ít nhất 2 connection
-  idleTimeoutMillis: 30000, // Giảm thời gian idle
-  connectionTimeoutMillis: 2000, // Giảm timeout
-  acquireTimeoutMillis: 2000
-});
 
 module.exports = async (req, res) => {
   // Enable CORS
@@ -36,16 +44,19 @@ module.exports = async (req, res) => {
   // Verify authentication for all OKR operations - tối ưu với cache
   const startTime = Date.now();
   await new Promise((resolve) => {
-    verifyToken(req, res, async () => {
+  verifyToken(req, res, async () => {
       const authTime = Date.now() - startTime;
       console.log(`Auth took: ${authTime}ms`);
-      await handleOKRRequest(req, res);
+    await handleOKRRequest(req, res);
       resolve();
     });
   });
 };
 
 async function handleOKRRequest(req, res) {
+  // Use Supabase client (no need for pool check)
+  console.log('✅ OKR endpoint: Using Supabase client');
+
   const { method, url } = req;
   
   try {
@@ -126,147 +137,143 @@ async function handleOKRRequest(req, res) {
 }
 
 async function getAllOKRs(req, res) {
-  const client = await pool.connect();
-  
   try {
     const startTime = Date.now();
     
-    // Tối ưu: Sử dụng 1 query duy nhất với LEFT JOIN thay vì 2 queries riêng biệt
-    const okrsQuery = `
-      SELECT 
-        o.*,
-        u.username as owner_username,
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'id', p.id,
-              'project_name', p.project_name,
-              'project_code', p.project_code,
-              'status', p.status
-            )
-          ) FILTER (WHERE p.id IS NOT NULL),
-          '[]'::json
-        ) as projects
-      FROM okrs o
-      LEFT JOIN users u ON o.owner_id = u.id
-      LEFT JOIN projects p ON o.id = p.okr_id
-      GROUP BY o.id, u.username
-      ORDER BY o.created_at DESC
-    `;
+    // Use Supabase client to get OKRs
+    let okrs = await supabaseGetAllOKRs();
     
-    const okrsResult = await client.query(okrsQuery);
+    if (!okrs) {
+      // Fallback to direct connection if available
+      if (pool) {
+        console.log('⚠️ Supabase client failed, trying direct connection...');
+        const client = await pool.connect();
+        try {
+          const okrsQuery = `SELECT * FROM okrs ORDER BY created_at DESC`;
+          const okrsResult = await client.query(okrsQuery);
+          okrs = okrsResult.rows;
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(500).json({ error: 'Failed to fetch OKRs' });
+      }
+    }
+    
+    // Enrich with owner username and projects
+    const enrichedOKRs = await Promise.all(okrs.map(async (okr) => {
+      // Get owner username
+      let ownerUsername = null;
+      if (okr.owner_id) {
+        const owner = await getUserById(okr.owner_id);
+        ownerUsername = owner?.username || null;
+      }
+      
+      // Get projects for this OKR
+      const projects = await getProjectsByOKRId(okr.id);
+      
+      return {
+        ...okr,
+        owner_username: ownerUsername,
+        projects: projects.map(p => ({
+          id: p.id,
+          project_name: p.project_name,
+          project_code: p.project_code,
+          status: p.status
+        }))
+      };
+    }));
     
     const queryTime = Date.now() - startTime;
     console.log(`getAllOKRs query took: ${queryTime}ms`);
     
-    // Ensure description column exists (chỉ chạy 1 lần)
-    await client.query(`
-      ALTER TABLE okrs ADD COLUMN IF NOT EXISTS description TEXT;
-    `);
-    
-    res.status(200).json(okrsResult.rows);
+    res.status(200).json(enrichedOKRs);
   } catch (error) {
     console.error('Error fetching OKRs:', error);
     res.status(500).json({ error: 'Failed to fetch OKRs' });
-  } finally {
-    client.release();
   }
 }
 
 async function getOKRById(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
-    const query = `
-      SELECT 
-        o.*,
-        u.username as owner_username
-      FROM okrs o
-      LEFT JOIN users u ON o.owner_id = u.id
-      WHERE o.id = $1
-    `;
+    let okr = await supabaseGetOKRById(okrId);
     
-    const result = await client.query(query, [okrId]);
-    
-    if (result.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    if (!okr) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = `SELECT * FROM okrs WHERE id = $1`;
+          const result = await client.query(query, [okrId]);
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          okr = result.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(404).json({ error: 'OKR not found' });
+      }
     }
     
-    res.status(200).json(result.rows[0]);
+    // Get owner username
+    let ownerUsername = null;
+    if (okr.owner_id) {
+      const owner = await getUserById(okr.owner_id);
+      ownerUsername = owner?.username || null;
+    }
+    
+    res.status(200).json({
+      ...okr,
+      owner_username: ownerUsername
+    });
   } catch (error) {
     console.error('Error fetching OKR:', error);
     res.status(500).json({ error: 'Failed to fetch OKR' });
-  } finally {
-    client.release();
   }
 }
 
 async function getOKREditHistory(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
     const startTime = Date.now();
     
-    // Tối ưu: Chỉ tạo table/indexes nếu chưa tồn tại (tránh overhead)
-    const tableExistsQuery = `
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'okr_edit_history'
-      );
-    `;
-    const tableExists = await client.query(tableExistsQuery);
+    let history = await supabaseGetOKREditHistory(okrId);
     
-    if (!tableExists.rows[0].exists) {
-      await client.query(`
-        CREATE TABLE okr_edit_history (
-          id SERIAL PRIMARY KEY,
-          okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
-          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-          username VARCHAR(100),
-          field_name VARCHAR(100),
-          old_value TEXT,
-          new_value TEXT,
-          edited_at TIMESTAMP DEFAULT NOW()
-        );
-        
-        CREATE INDEX idx_okr_edit_history_okr_id ON okr_edit_history(okr_id);
-        CREATE INDEX idx_okr_edit_history_edited_at ON okr_edit_history(edited_at DESC);
-      `);
+    if (!history) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = `
+            SELECT username, field_name, old_value, new_value, edited_at
+            FROM okr_edit_history
+            WHERE okr_id = $1
+            ORDER BY edited_at DESC
+            LIMIT 20
+          `;
+          const result = await client.query(query, [okrId]);
+          history = result.rows;
+        } finally {
+          client.release();
+        }
+      } else {
+        // Table might not exist, return empty array
+        history = [];
+      }
     }
-    
-    // Tối ưu query với chỉ các fields cần thiết
-    const query = `
-      SELECT 
-        username,
-        field_name,
-        old_value,
-        new_value,
-        edited_at
-      FROM okr_edit_history
-      WHERE okr_id = $1
-      ORDER BY edited_at DESC
-      LIMIT 20
-    `;
-    
-    const result = await client.query(query, [okrId]);
     
     const queryTime = Date.now() - startTime;
     console.log(`getOKREditHistory query took: ${queryTime}ms`);
     
-    res.status(200).json(result.rows);
+    res.status(200).json(history || []);
   } catch (error) {
     console.error('Error fetching OKR edit history:', error);
     res.status(500).json({ error: 'Failed to fetch OKR edit history' });
-  } finally {
-    client.release();
   }
 }
 
 async function createOKR(req, res) {
-  const client = await pool.connect();
-  
   try {
     const {
       objective,
@@ -283,63 +290,113 @@ async function createOKR(req, res) {
       progress
     } = req.body;
 
-    const query = `
-      INSERT INTO okrs (
-        objective, description, key_results, target_value, unit, current_value, status,
-        quarter, year, start_date, end_date, progress, owner_id, created_at, updated_at
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
-      RETURNING *
-    `;
-
-    const result = await client.query(query, [
+    const okrData = {
       objective,
-      description || '',
-      JSON.stringify(key_results || []),
-      target_value || null,
-      unit || '%',
-      current_value || 0,
-      status || 'active',
-      quarter || null,
-      year || new Date().getFullYear(),
-      start_date || null,
-      end_date || null,
-      progress || 0,
-      req.user.id
-    ]);
+      description: description || '',
+      key_results: key_results || [],
+      target_value: target_value || null,
+      unit: unit || '%',
+      current_value: current_value || 0,
+      status: status || 'active',
+      quarter: quarter || null,
+      year: year || new Date().getFullYear(),
+      start_date: start_date || null,
+      end_date: end_date || null,
+      progress: progress || 0,
+      owner_id: req.user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-    res.status(201).json(result.rows[0]);
+    let okr = await supabaseCreateOKR(okrData);
+    
+    if (!okr) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = `
+            INSERT INTO okrs (
+              objective, description, key_results, target_value, unit, current_value, status,
+              quarter, year, start_date, end_date, progress, owner_id, created_at, updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
+            RETURNING *
+          `;
+          const result = await client.query(query, [
+            objective,
+            description || '',
+            JSON.stringify(key_results || []),
+            target_value || null,
+            unit || '%',
+            current_value || 0,
+            status || 'active',
+            quarter || null,
+            year || new Date().getFullYear(),
+            start_date || null,
+            end_date || null,
+            progress || 0,
+            req.user.id
+          ]);
+          okr = result.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(500).json({ error: 'Failed to create OKR' });
+      }
+    }
+
+    res.status(201).json(okr);
   } catch (error) {
     console.error('Error creating OKR:', error);
     res.status(500).json({ error: 'Failed to create OKR' });
-  } finally {
-    client.release();
   }
 }
 
 async function updateOKR(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
     // Get current OKR values before update for comparison
-    const getCurrentQuery = 'SELECT * FROM okrs WHERE id = $1';
-    const currentResult = await client.query(getCurrentQuery, [okrId]);
+    let oldValues = await supabaseGetOKRById(okrId);
     
-    if (currentResult.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    if (!oldValues) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const getCurrentQuery = 'SELECT * FROM okrs WHERE id = $1';
+          const currentResult = await client.query(getCurrentQuery, [okrId]);
+          if (currentResult.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          oldValues = currentResult.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(404).json({ error: 'OKR not found' });
+      }
     }
-    
-    const oldValues = currentResult.rows[0];
     
     console.log('Update OKR request body:', req.body);
     
-    // Update database constraint to allow new status values
-    await client.query(`
-      ALTER TABLE okrs DROP CONSTRAINT IF EXISTS okrs_status_check;
-      ALTER TABLE okrs ADD CONSTRAINT okrs_status_check 
-      CHECK (status IN ('active', 'completed', 'archived'));
-    `);
+    // Update database constraint to allow new status values (only if pool available)
+    if (pool) {
+      try {
+        const client = await pool.connect();
+        try {
+          await client.query(`
+            ALTER TABLE okrs DROP CONSTRAINT IF EXISTS okrs_status_check;
+            ALTER TABLE okrs ADD CONSTRAINT okrs_status_check 
+            CHECK (status IN ('active', 'completed', 'archived'));
+          `);
+        } finally {
+          client.release();
+        }
+      } catch (e) {
+        console.warn('Could not update constraint:', e.message);
+      }
+    }
     
     const {
       objective,
@@ -417,97 +474,111 @@ async function updateOKR(req, res, okrId) {
     // If current_value and target_value are provided, update key_results
     let updatedKeyResults = key_results;
     if (current_value !== undefined && target_value !== undefined && !key_results) {
-      // Get current OKR
-      const getOKRQuery = 'SELECT key_results FROM okrs WHERE id = $1';
-      const okrResult = await client.query(getOKRQuery, [okrId]);
-      
-      if (okrResult.rows.length > 0) {
-        let existingKeyResults = [];
-        try {
-          existingKeyResults = typeof okrResult.rows[0].key_results === 'string' 
-            ? JSON.parse(okrResult.rows[0].key_results) 
-            : okrResult.rows[0].key_results || [];
-        } catch (e) {
-          existingKeyResults = [];
-        }
-        
-        // Update the first key result with new values
-        if (existingKeyResults.length > 0) {
-          existingKeyResults[0].current = current_value;
-          existingKeyResults[0].current_value = current_value;
-          existingKeyResults[0].target = target_value;
-          existingKeyResults[0].target_value = target_value;
-        } else {
-          // Create a default key result
-          existingKeyResults = [{
-            description: objective || 'Key Result',
-            current: current_value,
-            current_value: current_value,
-            target: target_value,
-            target_value: target_value
-          }];
-        }
-        
-        updatedKeyResults = existingKeyResults;
+      // Use oldValues if available
+      let existingKeyResults = [];
+      try {
+        existingKeyResults = typeof oldValues.key_results === 'string' 
+          ? JSON.parse(oldValues.key_results) 
+          : oldValues.key_results || [];
+      } catch (e) {
+        existingKeyResults = [];
       }
+      
+      // Update the first key result with new values
+      if (existingKeyResults.length > 0) {
+        existingKeyResults[0].current = current_value;
+        existingKeyResults[0].current_value = current_value;
+        existingKeyResults[0].target = target_value;
+        existingKeyResults[0].target_value = target_value;
+      } else {
+        // Create a default key result
+        existingKeyResults = [{
+          description: objective || 'Key Result',
+          current: current_value,
+          current_value: current_value,
+          target: target_value,
+          target_value: target_value
+        }];
+      }
+      
+      updatedKeyResults = existingKeyResults;
     }
 
-    const query = `
-      UPDATE okrs
-      SET
-        objective = COALESCE($2, objective),
-        description = COALESCE($3, description),
-        key_results = COALESCE($4, key_results),
-        target_value = COALESCE($5, target_value),
-        unit = COALESCE($6, unit),
-        current_value = COALESCE($7, current_value),
-        status = COALESCE($8, status),
-        quarter = COALESCE($9, quarter),
-        year = COALESCE($10, year),
-        start_date = COALESCE($11, start_date),
-        end_date = COALESCE($12, end_date),
-        progress = COALESCE($13, progress),
-        updated_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
+    // Build update object (only include fields that are provided)
+    const updates = {
+      updated_at: new Date().toISOString()
+    };
+    
+    if (objective !== undefined) updates.objective = objective;
+    if (description !== undefined) updates.description = description;
+    if (updatedKeyResults !== undefined) updates.key_results = updatedKeyResults;
+    if (target_value !== undefined) updates.target_value = target_value;
+    if (unit !== undefined) updates.unit = unit;
+    if (current_value !== undefined) updates.current_value = current_value;
+    if (status !== undefined) updates.status = status;
+    if (quarter !== undefined) updates.quarter = quarter;
+    if (year !== undefined) updates.year = year;
+    if (start_date !== undefined) updates.start_date = start_date;
+    if (end_date !== undefined) updates.end_date = end_date;
+    if (progress !== undefined) updates.progress = progress;
 
-    const result = await client.query(query, [
-      okrId,
-      objective,
-      description,
-      updatedKeyResults ? JSON.stringify(updatedKeyResults) : null,
-      target_value,
-      unit,
-      current_value,
-      status,
-      quarter,
-      year,
-      start_date,
-      end_date,
-      progress
-    ]);
-
-    if (result.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    const updatedOKR = await supabaseUpdateOKR(okrId, updates);
+    
+    if (!updatedOKR) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = `
+            UPDATE okrs
+            SET
+              objective = COALESCE($2, objective),
+              description = COALESCE($3, description),
+              key_results = COALESCE($4, key_results),
+              target_value = COALESCE($5, target_value),
+              unit = COALESCE($6, unit),
+              current_value = COALESCE($7, current_value),
+              status = COALESCE($8, status),
+              quarter = COALESCE($9, quarter),
+              year = COALESCE($10, year),
+              start_date = COALESCE($11, start_date),
+              end_date = COALESCE($12, end_date),
+              progress = COALESCE($13, progress),
+              updated_at = NOW()
+            WHERE id = $1
+            RETURNING *
+          `;
+          const result = await client.query(query, [
+            okrId,
+            objective,
+            description,
+            updatedKeyResults ? JSON.stringify(updatedKeyResults) : null,
+            target_value,
+            unit,
+            current_value,
+            status,
+            quarter,
+            year,
+            start_date,
+            end_date,
+            progress
+          ]);
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          return res.status(200).json(result.rows[0]);
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(500).json({ error: 'Failed to update OKR' });
+      }
     }
     
     // Save edit history
     if (changes.length > 0 && req.user) {
       try {
-        // Get user info from database
-        // Get username for edit history
-        console.log('Debug user info:', { 
-          userId: req.user.id, 
-          username: req.user.username,
-          userObject: req.user 
-        });
-        
-        const userQuery = await client.query('SELECT username FROM users WHERE id = $1', [req.user.id]);
-        console.log('User query result:', userQuery.rows);
-        
-        const username = userQuery.rows[0]?.username || req.user.username || 'Unknown';
+        const username = req.user.username || 'Unknown';
         
         console.log('Saving edit history:', { 
           okrId, 
@@ -516,65 +587,58 @@ async function updateOKR(req, res, okrId) {
           changes: changes.length 
         });
         
-        // Ensure edit history table exists
-        await client.query(`
-          CREATE TABLE IF NOT EXISTS okr_edit_history (
-            id SERIAL PRIMARY KEY,
-            okr_id INTEGER NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
-            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-            username VARCHAR(100),
-            field_name VARCHAR(100),
-            old_value TEXT,
-            new_value TEXT,
-            edited_at TIMESTAMP DEFAULT NOW()
-          )
-        `);
-        
-        const historyQueries = changes.map(change => ({
-          text: `INSERT INTO okr_edit_history (okr_id, user_id, username, field_name, old_value, new_value, edited_at) 
-                 VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-          values: [
-            okrId,
-            req.user.id,
-            username,
-            change.field,
-            String(change.old),
-            String(change.new)
-          ]
+        // Prepare history data for batch insert
+        const historyData = changes.map(change => ({
+          okr_id: okrId,
+          user_id: req.user.id,
+          username: username,
+          field_name: change.field,
+          old_value: String(change.old),
+          new_value: String(change.new),
+          edited_at: new Date().toISOString()
         }));
         
-        await Promise.all(historyQueries.map(q => client.query(q.text, q.values)));
+        // Insert history using Supabase client
+        await insertOKREditHistory(historyData);
       } catch (historyError) {
         console.error('Error saving edit history:', historyError);
         // Don't fail the update if history fails
       }
     }
 
-    res.status(200).json(result.rows[0]);
+    res.status(200).json(updatedOKR);
   } catch (error) {
     console.error('Error updating OKR:', error);
     res.status(500).json({ error: 'Failed to update OKR' });
-  } finally {
-    client.release();
   }
 }
 
 async function updateOKRProgress(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
     const { current_value } = req.body;
 
     // First get current OKR to update key_results
-    const getOKRQuery = 'SELECT * FROM okrs WHERE id = $1';
-    const okrResult = await client.query(getOKRQuery, [okrId]);
+    let okr = await supabaseGetOKRById(okrId);
     
-    if (okrResult.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    if (!okr) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const getOKRQuery = 'SELECT * FROM okrs WHERE id = $1';
+          const okrResult = await client.query(getOKRQuery, [okrId]);
+          if (okrResult.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          okr = okrResult.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(404).json({ error: 'OKR not found' });
+      }
     }
     
-    const okr = okrResult.rows[0];
     let keyResults = [];
     
     // Parse and update key_results
@@ -585,6 +649,7 @@ async function updateOKRProgress(req, res, okrId) {
         // Update the first key result with current_value
         if (keyResults.length > 0) {
           keyResults[0].current = current_value;
+          keyResults[0].current_value = current_value;
         }
       } catch (e) {
         console.warn('Error parsing key_results:', e);
@@ -592,50 +657,75 @@ async function updateOKRProgress(req, res, okrId) {
       }
     }
 
-    const query = `
-      UPDATE okrs
-      SET
-        current_value = $2,
-        key_results = $3,
-        updated_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
+    const updates = {
+      current_value,
+      key_results: keyResults,
+      updated_at: new Date().toISOString()
+    };
 
-    const result = await client.query(query, [
-      okrId, 
-      current_value, 
-      JSON.stringify(keyResults)
-    ]);
-
-    if (result.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    const updatedOKR = await supabaseUpdateOKR(okrId, updates);
+    
+    if (!updatedOKR) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = `
+            UPDATE okrs
+            SET
+              current_value = $2,
+              key_results = $3,
+              updated_at = NOW()
+            WHERE id = $1
+            RETURNING *
+          `;
+          const result = await client.query(query, [
+            okrId, 
+            current_value, 
+            JSON.stringify(keyResults)
+          ]);
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          return res.status(200).json(result.rows[0]);
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(500).json({ error: 'Failed to update OKR progress' });
+      }
     }
 
-    res.status(200).json(result.rows[0]);
+    res.status(200).json(updatedOKR);
   } catch (error) {
     console.error('Error updating OKR progress:', error);
     res.status(500).json({ error: 'Failed to update OKR progress' });
-  } finally {
-    client.release();
   }
 }
 
 async function syncOKRWithRealData(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
     // Get OKR details
-    const okrQuery = 'SELECT * FROM okrs WHERE id = $1';
-    const okrResult = await client.query(okrQuery, [okrId]);
+    let okr = await supabaseGetOKRById(okrId);
     
-    if (okrResult.rows.length === 0) {
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    if (!okr) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const okrQuery = 'SELECT * FROM okrs WHERE id = $1';
+          const okrResult = await client.query(okrQuery, [okrId]);
+          if (okrResult.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          okr = okrResult.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(404).json({ error: 'OKR not found' });
+      }
     }
-    
-    const okr = okrResult.rows[0];
     
     // Simulate getting real data based on OKR objective
     let realDataValue = 0;
@@ -660,39 +750,59 @@ async function syncOKRWithRealData(req, res, okrId) {
     const progressPercentage = Math.min((realDataValue / targetValue) * 100, 100);
     
     // Update OKR with real data
-    const updateQuery = `
-      UPDATE okrs
-      SET
-        current_value = $2,
-        progress = $3,
-        updated_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
+    const updates = {
+      current_value: realDataValue,
+      progress: progressPercentage,
+      updated_at: new Date().toISOString()
+    };
     
-    const updateResult = await client.query(updateQuery, [
-      okrId,
-      realDataValue,
-      progressPercentage
-    ]);
+    const updatedOKR = await supabaseUpdateOKR(okrId, updates);
     
-    // Log the sync in project_okr_updates table
-    const logQuery = `
-      INSERT INTO project_okr_updates (okr_id, current_value, update_note, updated_by)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `;
+    if (!updatedOKR) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const updateQuery = `
+            UPDATE okrs
+            SET
+              current_value = $2,
+              progress = $3,
+              updated_at = NOW()
+            WHERE id = $1
+            RETURNING *
+          `;
+          const updateResult = await client.query(updateQuery, [
+            okrId,
+            realDataValue,
+            progressPercentage
+          ]);
+          okr = updateResult.rows[0];
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(500).json({ error: 'Failed to sync OKR with real data' });
+      }
+    } else {
+      okr = updatedOKR;
+    }
     
-    await client.query(logQuery, [
-      okrId,
-      realDataValue,
-      `Auto-sync from ${dataSource}: ${realDataValue} ${okr.unit || ''}`,
-      req.user.id
-    ]);
+    // Log the sync in project_okr_updates table (optional, skip if table doesn't exist)
+    try {
+      await supabase.from('project_okr_updates').insert({
+        okr_id: okrId,
+        current_value: realDataValue,
+        update_note: `Auto-sync from ${dataSource}: ${realDataValue} ${okr.unit || ''}`,
+        updated_by: req.user.id
+      });
+    } catch (e) {
+      console.warn('Could not log sync to project_okr_updates:', e.message);
+    }
     
     res.status(200).json({
       message: 'OKR synced with real data successfully',
-      okr: updateResult.rows[0],
+      okr: okr,
       realData: {
         value: realDataValue,
         source: dataSource,
@@ -703,38 +813,60 @@ async function syncOKRWithRealData(req, res, okrId) {
   } catch (error) {
     console.error('Error syncing OKR with real data:', error);
     res.status(500).json({ error: 'Failed to sync OKR with real data' });
-  } finally {
-    client.release();
   }
 }
 
 async function deleteOKR(req, res, okrId) {
-  const client = await pool.connect();
-  
   try {
-    await client.query('BEGIN');
-    
     // First, unlink related projects (set okr_id to NULL instead of deleting)
-    await client.query('UPDATE projects SET okr_id = NULL WHERE okr_id = $1', [okrId]);
-    console.log('Unlinked related projects for OKR:', okrId);
+    // Get projects linked to this OKR
+    const projects = await getProjectsByOKRId(okrId);
+    if (projects.length > 0) {
+      const projectIds = projects.map(p => p.id);
+      // Update projects to unlink from OKR
+      // Note: Supabase client doesn't support setting NULL directly, need to use updateProjectsOKRId
+      // For now, we'll use a workaround - update to null via direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          await client.query('UPDATE projects SET okr_id = NULL WHERE okr_id = $1', [okrId]);
+          console.log('Unlinked related projects for OKR:', okrId);
+        } finally {
+          client.release();
+        }
+      } else {
+        // Try to update projects via Supabase (set to null value)
+        for (const projectId of projectIds) {
+          await supabase.from('projects').update({ okr_id: null }).eq('id', projectId);
+        }
+      }
+    }
     
     // Then delete the OKR
-    const query = 'DELETE FROM okrs WHERE id = $1 RETURNING *';
-    const result = await client.query(query, [okrId]);
-
-    if (result.rows.length === 0) {
-      await client.query('ROLLBACK');
-      res.status(404).json({ error: 'OKR not found' });
-      return;
+    const deletedOKR = await supabaseDeleteOKR(okrId);
+    
+    if (!deletedOKR) {
+      // Fallback to direct connection if available
+      if (pool) {
+        const client = await pool.connect();
+        try {
+          const query = 'DELETE FROM okrs WHERE id = $1 RETURNING *';
+          const result = await client.query(query, [okrId]);
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'OKR not found' });
+          }
+          return res.status(200).json({ message: 'OKR deleted successfully', okr: result.rows[0] });
+        } finally {
+          client.release();
+        }
+      } else {
+        return res.status(404).json({ error: 'OKR not found' });
+      }
     }
 
-    await client.query('COMMIT');
-    res.status(200).json({ message: 'OKR deleted successfully', okr: result.rows[0] });
+    res.status(200).json({ message: 'OKR deleted successfully', okr: deletedOKR });
   } catch (error) {
     console.error('Error deleting OKR:', error);
-    await client.query('ROLLBACK');
     res.status(500).json({ error: 'Failed to delete OKR' });
-  } finally {
-    client.release();
   }
 }
